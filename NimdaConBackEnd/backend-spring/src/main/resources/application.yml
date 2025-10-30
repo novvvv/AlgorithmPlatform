@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: nimda-con
+  
+  datasource:
+    url: jdbc:mysql://nimda-db.cpu8uk0eauv0.ap-northeast-2.rds.amazonaws.com:3306/nimda_con?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: nimda
+    password: nimda123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true # sql Formatting
+        show_sql: true
+    defer-datasource-initialization: true
+  
+  sql:
+    init:
+      mode: always 
+  
+  security:
+    user:
+      name: admin
+      password: 1234
+
+server:
+  port: 80
+
+# JWT 설정
+jwt:
+  header: Authorization # JWT Token을 Request Header에서 탐색할 때 사용할 헤더 이름 
+  secret: bmltZGEtY29uLXNlY3JldC1rZXktMjAyNC12ZXJ5LWxvbmctc2VjcmV0LWtleS1mb3Itand0LXNlY3VyaXR5 # JWT 토큰 서명 검증키 (Base64 인코딩됨)
+  token-validity-in-seconds: 86400 # JWT 토큰 만료 시간 24시간 (초)
+
+logging:
+  level:
+    com.nimda.con: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

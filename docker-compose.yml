@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  backend:
+    image: novvvv/nimda-backend:latest
+    container_name: nimda-backend
+    ports:
+      - "80:3002" # 포트 매핑
+    environment:
+      # 환경변수
+      - SPRING_DATASOURCE_URL=jdbc:mysql://nimda-db.cpu8uk0eauv0.ap-northeast-2.rds.amazonaws.com:3306/nimda_con?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=nimda
+      - SPRING_DATASOURCE_PASSWORD=nimda123
