@@ -1,11 +1,2 @@
-# NimdaPage
-Nimda Security Web Page Team Project 
-
-## BackEnd API 
-### 채점 관련 API
-
-`GET /api/judge/submissions`  - 코드 제출 목록 조회 
-
-### 유저 관련 API 
-
-`GET /api/auth/register` - 회원가입 API 
+# 데이터베이스 설계 기말 프로젝트 
+대학생 알고리즘 문제 출제 플랫폼 
