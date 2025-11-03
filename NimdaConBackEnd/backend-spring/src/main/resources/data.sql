@@ -15,6 +15,8 @@ INSERT IGNORE INTO authority (authority_name) VALUES
 ('ROLE_ADMIN');
 
 -- 기본 관리자 계정 생성 (비밀번호: password)
+-- 참고: 아래 해시는 BCrypt로 암호화된 "password" 비밀번호입니다.
+-- 모든 개발자가 동일한 비밀번호로 테스트할 수 있도록 공통 해시를 사용합니다.
 INSERT IGNORE INTO users (username, password, email) VALUES 
 ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com'),
 ('익명', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'anonymous@nimda.com'),
