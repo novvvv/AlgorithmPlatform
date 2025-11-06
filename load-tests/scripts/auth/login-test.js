@@ -22,7 +22,7 @@ export const options = {
 };
 
 // 테스트 데이터
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:8080';
 const TEST_USER = {
   username: 'admin',
   password: 'password'
