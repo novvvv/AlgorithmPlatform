@@ -1,4 +1,3 @@
-import "./App.css";
 import Layout from "@/components/Layout";
 import BlackLineButton from "@/components/common/Button/BlackLine";
 import { useNavigate } from "react-router-dom";
