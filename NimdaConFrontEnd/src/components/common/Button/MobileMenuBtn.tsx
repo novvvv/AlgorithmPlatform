@@ -1,6 +1,6 @@
 import React from "react";
-import HamburgerIcon from "@/components/icons/HamburgerIcon";
-import CloseIcon from "@/components/icons/Close";
+import HamburgerIcon from "@/assets/icons/HamburgerIcon";
+import CloseIcon from "@/assets/icons/Close";
 
 interface MobileMenuButtonProps {
   isOpen: boolean;

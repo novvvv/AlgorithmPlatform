@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { submitCodeAPI, getAllSubmissionsAPI } from "@/api/judge";
+import { submitCodeAPI, getAllSubmissionsAPI } from "@/apis/judge";
 
 interface JudgeStatus {
   status:

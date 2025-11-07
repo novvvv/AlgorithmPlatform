@@ -2,7 +2,7 @@
 
 export const CONFIG = {
   // 서버 설정
-  BASE_URL: 'http://localhost:3001',
+  BASE_URL: 'http://localhost:8080',
   
   // 테스트 사용자
   TEST_USER: {

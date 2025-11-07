@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import BlackLineButton from '@/components/Button/BlackLine';
+import BlackLineButton from '@/components/common/Button/BlackLine';
 import { useNavigate } from 'react-router-dom';
-import { getAllUsersAPI } from '@/api/admin/admin';
-import { getAllProblemsAPI } from '@/api/problem';
+import { getAllUsersAPI } from '@/apis/admin/admin';
+import { getAllProblemsAPI } from '@/apis/problem';
 
 function AdminDashboard() {
   const navigate = useNavigate();

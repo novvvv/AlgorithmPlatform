@@ -13,7 +13,7 @@ const API_BASE_URL = "/api";
  * localStorage.getItem('authToken') : 로컬스토리지에 저장된 JWT 토큰 가져오기
  *
  */
-const parseJsonSafe = async (response) => {
+export const parseJsonSafe = async (response) => {
   try {
     const text = await response.text();
     if (!text) return null;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createProblemAPI } from '@/api/problem';
+import { createProblemAPI } from '@/apis/problem';
 
 function ProblemCreatePage() {
 

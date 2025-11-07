@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import BlackLineButton from '@/components/Button/BlackLine';
+import BlackLineButton from '@/components/common/Button/BlackLine';
 
 function ProblemDetail() {
   const { id } = useParams();

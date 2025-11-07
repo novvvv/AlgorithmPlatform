@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
-import BlackLineButton from "@/components/Button/BlackLine";
+import BlackLineButton from "@/components/common/Button/BlackLine";
 
 interface Problem {
   id: number;

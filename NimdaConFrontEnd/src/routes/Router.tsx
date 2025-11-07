@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import LoginPage from "@/domains/User/Login/Page";
-import SignUp from "@/domains/User/Register";
-import ProblemSubmitPage from "@/domains/Contest/Problem/ProblemSubmit"; // [DEBUG] 테스트용 코드
-import JudgingStatusPage from "@/domains/Contest/Problem/JudgingStatus";
-import ProblemsPage from "@/domains/Contest/Problem/Problems";
-import ProblemCreatePage from "@/domains/Contest/Problem/ProblemCreate";
-import AdminDashboard from "@/domains/admin/AdminDashboard.jsx";
-import ProblemDetail from "@/domains/Contest/Problem/ProblemDetail/ProblemDetail.jsx";
-import Home from "@/domains/Home";
+import LoginPage from "@/pages/LoginPage";
+import SignUp from "@/pages/SignUp";
+import ProblemSubmitPage from "@/pages/Contest/Problem/ProblemSubmit"; // [DEBUG] 테스트용 코드
+import JudgingStatusPage from "@/pages/JudgingStatusPage";
+import ProblemsPage from "@/pages/ProblemsPage";
+import ProblemCreatePage from "@/pages/ProblemCreatePage";
+import AdminDashboard from "@/pages/AdminDashboard.jsx";
+import ProblemDetail from "@/pages/ProblemDetail.jsx";
+import Home from "@/pages/HomePage";
 
-import ContestHome from "@/domains/Contest/Home";
+import ContestHome from "@/pages/ContestHomePage";
 
 const Router = () => {
   return (

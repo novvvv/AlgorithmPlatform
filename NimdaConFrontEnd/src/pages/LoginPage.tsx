@@ -1,10 +1,10 @@
 import "@/App.css";
-import BlackButton from "@/components/Button/Black";
+import BlackButton from "@/components/common/Button/Black";
 import Layout from "@/components/Layout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/Input";
-import { loginAPI } from "@/api/auth";
+import { Input } from "@/components/common/Input";
+import { loginAPI } from "@/apis/auth";
 
 function LogInPage() {
   const handleLogin = async (e: React.FormEvent) => {

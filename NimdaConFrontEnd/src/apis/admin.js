@@ -1,5 +1,3 @@
-// 관리자 관련 API 함수들
-
 const API_BASE_URL = "/api";
 
 const parseJsonSafe = async (response) => {

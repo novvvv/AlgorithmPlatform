@@ -1,32 +1,4 @@
-// 채점 관련 API 함수들
-
 const API_BASE_URL = "/api";
-
-export interface SubmissionRequest {
-  title: string;
-  code: string;
-  language: string;
-  description?: string;
-  flag?: string;
-  hints?: string;
-  points?: number;
-}
-
-export interface JudgeResponse {
-  success: boolean;
-  message: string;
-  result?: {
-    status: string;
-    message?: string;
-    output?: string;
-    errorOutput?: string;
-    executionTime?: number;
-    memoryUsage?: number;
-    score?: number;
-  };
-  submittedBy?: string;
-  submissionId?: number;
-}
 
 /**
  * 코드 제출 및 채점 API 호출

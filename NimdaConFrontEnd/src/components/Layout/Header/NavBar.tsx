@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Logo from "@/components/icons/Logo";
-import Logout from "@/components/icons/Logout.svg";
+import Logo from "@/assets/icons/Logo";
+import Logout from "@/assets/icons/Logout.svg";
 import { getCurrentUsername, isAdmin } from "@/utils/jwt";
-import { isLoggedIn, logoutAPI } from "@/api/auth";
+import { isLoggedIn, logoutAPI } from "@/apis/auth";
 
 interface MenuItem {
   name: string;
@@ -14,8 +14,8 @@ interface NavbarProps {
   menuItems: MenuItem[];
 }
 
-import MobileMenuButton from "@/components/Button/MobileMenuBtn";
-import Dropdown from "@/components/Dropdown";
+import MobileMenuButton from "@/components/common/Button/MobileMenuBtn";
+import Dropdown from "@/components/common/Dropdown";
 import Right from "./Right";
 
 const Navbar: React.FC<NavbarProps> = ({ menuItems }) => {
