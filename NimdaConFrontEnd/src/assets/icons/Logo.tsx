@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "/public/nimda.png";
+import Logo from "@/assets/images/nimda.png";
 
 const BrandSection: React.FC = () => {
   return (

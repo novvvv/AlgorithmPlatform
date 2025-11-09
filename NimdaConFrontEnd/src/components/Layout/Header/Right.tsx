@@ -1,5 +1,5 @@
 import React from "react";
-import Logout from "@/components/icons/Logout.svg";
+import Logout from "@/assets/icons/Logout.svg";
 
 interface RightProps {
   username: string | null;

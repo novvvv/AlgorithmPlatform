@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Layout from '@/components/Layout';
+import Layout from '@/components/Layout/MenuIndex';
 import BlackLineButton from '@/components/common/Button/BlackLine';
 
 function ProblemDetail() {
