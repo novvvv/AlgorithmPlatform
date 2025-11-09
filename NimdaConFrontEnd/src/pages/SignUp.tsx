@@ -1,9 +1,9 @@
-import "@/App.css";
-import BlackButton from "@/components/Button/Black";
-import Layout from "@/components/Layout";
+import "@/App.tsx";
+import BlackButton from "@/components/common/Button/Black";
+import Layout from "@/components/Layout/MenuIndex";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/Input";
+import { Input } from "@/components/common/Input";
 
 function LogInPage() {
   const handleLogin = (e: React.FormEvent) => {
