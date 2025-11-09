@@ -1,6 +1,6 @@
 import "@/App.css";
 import BlackButton from "@/components/common/Button/Black";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layout/MenuIndex";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/common/Input";

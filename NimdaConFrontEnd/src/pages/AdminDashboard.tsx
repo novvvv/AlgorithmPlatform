@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '@/components/Layout';
+import Layout from '@/components/Layout/MenuIndex';
 import BlackLineButton from '@/components/common/Button/BlackLine';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsersAPI } from '@/apis/admin/admin';
