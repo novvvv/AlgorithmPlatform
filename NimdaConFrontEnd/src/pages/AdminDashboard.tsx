@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout/MenuIndex';
 import BlackLineButton from '@/components/common/Button/BlackLine';
 import { useNavigate } from 'react-router-dom';
-import { getAllUsersAPI } from '@/apis/admin/admin';
+import { getAllUsersAPI } from '@/apis/admin';
 import { getAllProblemsAPI } from '@/apis/problem';
 
 function AdminDashboard() {

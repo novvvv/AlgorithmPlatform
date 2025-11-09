@@ -4,7 +4,7 @@ const API_BASE_URL = "/api";
  * 로그인 API 호출
  */
 export const loginAPI = async (
-  loginData: LoginRequest
+  loginData: LoginRequest 
 ): Promise<LoginResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {

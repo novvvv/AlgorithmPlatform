@@ -1,4 +1,4 @@
-import "@/App.css";
+import "@/App.tsx";
 import BlackButton from "@/components/common/Button/Black";
 import Layout from "@/components/Layout/MenuIndex";
 import { useState } from "react";
