@@ -1,6 +1,7 @@
 import "@/index.css";
 import Layout from "@/components/Layout/MenuIndex";
-import Banner from "@/components/Home/banner";
+// import Banner from "@/components/Home/banner";
+import Banner from "@/components/common/banner";
 import { useNavigate } from "react-router-dom";
 
 import { getCurrentUsername, isAdmin } from "@/utils/jwt"; // 현재 로그인한 유저 출력
