@@ -111,7 +111,7 @@
                     <target>17</target>
                     <release>17</release>
 
-                <!-- lombok : mvn clean install을 위함 -->
+            <!-- lombok : mvn clean install을 위함 -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
