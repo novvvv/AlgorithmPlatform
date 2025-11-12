@@ -30,5 +30,4 @@ export interface IGroupMembership {
   left_at: string | null;
   // 관계
   user?: IUser;
-
 }

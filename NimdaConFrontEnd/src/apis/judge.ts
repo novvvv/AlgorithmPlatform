@@ -1,11 +1,13 @@
+import type { ISubmissionRequest, IJudgeResponse } from "@/types/judge";
+
 const API_BASE_URL = "/api";
 
 /**
  * 코드 제출 및 채점 API 호출
  */
 export const submitCodeAPI = async (
-  submissionData: SubmissionRequest
-): Promise<JudgeResponse> => {
+  submissionData: ISubmissionRequest
+): Promise<IJudgeResponse> => {
   try {
     // localStorage에서 토큰 가져오기
     const token = localStorage.getItem("authToken");
@@ -96,3 +98,4 @@ export const getAllSubmissionsAPI = async () => {
     };
   }
 };
+

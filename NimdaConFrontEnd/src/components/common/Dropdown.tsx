@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 interface DropdownItem {
   name: string;
@@ -12,8 +13,8 @@ interface DropdownProps {
 
 const Dropdown: React.FC<DropdownProps> = ({ items }) => {
   return (
-    <div className="absolute mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-gray-300 ring-opacity-5">
-      <div
+    <DropdownContainer>
+      <DropdownMenu
         className="py-1"
         role="menu"
         aria-orientation="vertical"
@@ -23,15 +24,41 @@ const Dropdown: React.FC<DropdownProps> = ({ items }) => {
           <Link
             key={item.name}
             to={item.href}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:font-semibold"
+            className={DropdownLink}
             role="menuitem"
           >
             {item.name}
           </Link>
         ))}
-      </div>
-    </div>
+      </DropdownMenu>
+    </DropdownContainer>
   );
 };
 
 export default Dropdown;
+
+const DropdownContainer = styled.div`
+  position: absolute;
+  margin-top: 0.5rem;
+  width: 9rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+`;
+
+const DropdownMenu = styled.div`
+  padding: 0.25rem 0;
+`;
+
+const DropdownLink = styled(Link)`
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  
+  &:hover {
+    background-color: #f3f4f6;
+    font-weight: 600;
+  }
+`;
