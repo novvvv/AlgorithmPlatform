@@ -1,20 +1,16 @@
-import "@/index.css";
-import Layout from "@/components/Layout/MenuIndex";
-// import Banner from "@/components/Home/banner";
-import Banner from "@/components/common/banner";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import styled from "styled-components";
 
-import { getCurrentUsername, isAdmin } from "@/utils/jwt"; // 현재 로그인한 유저 출력
-import { useState, useEffect } from "react";
-
-function Home() {
+const HomePage: React.FC = () => {
   return (
-    <Layout>
-      <div className="flex flex-col items-center gap-4 -mt-16">
-        <Banner />
-      </div>
-    </Layout>
-  );
+    <PageContainer>
+      <h1>Home Page</h1>
+    </PageContainer>
+  )
 }
 
-export default Home;
+export default HomePage
+
+const PageContainer = styled.div`
+  background-color: #cb8484ff;
+`;

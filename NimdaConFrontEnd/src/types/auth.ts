@@ -1,9 +1,10 @@
-export interface LoginRequest {
+// types/auth.ts
+export interface ILoginRequest {
   username: string;
   password: string;
 }
 
-export interface LoginResponse {
+export interface ILoginResponse {
   success: boolean;
   message: string;
   token?: string;
@@ -14,7 +15,7 @@ export interface LoginResponse {
   };
 }
 
-export interface RegisterRequest {
+export interface IRegisterRequest {
   username: string;
   password: string;
   email: string;

@@ -1,16 +1,17 @@
-import Layout from "@/components/Layout/MenuIndex";
-import BlackLineButton from "@/components/common/Button/BlackLine";
-import { useNavigate } from "react-router-dom";
-
-import { getCurrentUsername, isAdmin } from "@/utils/jwt"; // 현재 로그인한 유저 출력
-import { useState, useEffect } from "react";
+import Layout from "@/components/Layout/Layout";
+import styled from "styled-components";
 
 function App() {
   return (
     <Layout>
-      <div className="flex flex-col items-center gap-4"></div>
+      <AppContainer />
     </Layout>
   );
 }
 
 export default App;
+
+const AppContainer = styled.div`
+  height: 100%;
+  width: 100%;
+`;

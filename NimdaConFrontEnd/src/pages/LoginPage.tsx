@@ -1,65 +1,96 @@
-import "@/App.tsx";
-import BlackButton from "@/components/common/Button/Black";
-import Layout from "@/components/Layout/MenuIndex";
+import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/common/Input";
-import { loginAPI } from "@/apis/auth";
+import BlueButton from "@/components/common/Button/BlueButton";
+import FormField from "@/components/common/FormField";
 
-function LogInPage() {
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // 폼의 기본 제출 동작 방지
+export default function LoginPage() {
+  // const [formData, setFormData] = useState({
+  //   username: "",
+  //   password: "",
+  // });
+  // const navigate = useNavigate();
 
-    // FormData로 폼의 모든 input 값 수집
-    const formData = new FormData(e.target as HTMLFormElement);
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData(prev => ({ ...prev, [name]: value }));
+  // };
 
-    // 입력값 검증
-    if (!username || !password) {
-      alert("아이디와 비밀번호를 입력해주세요.");
-      return;
-    }
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("Login attempt:", formData);
+  //   alert("로그인 성공! (현재는 UI 테스트 모드)");
+  //   navigate("/");
+  // };
 
-    // 로그인 API 호출
-    const result = await loginAPI({ username, password });
+  // const handleSignUpClick = () => {
+  //   navigate("/signup");
+  // };
 
-    if (result.success) {
-      alert("로그인 성공!");
-      navigate("/"); // 메인 페이지로 이동
-    } else {
-      alert(result.message);
-    }
-  };
-
-  const navigate = useNavigate();
-
-  const goToLogIn = () => {
-    navigate("/login");
-  };
-
-  const goToSignUp = () => {
-    navigate("/signup");
-  };
-
-  return (
-    <Layout>
-      <div className="flex flex-col items-center justify-center pt-14">
-        <h1 className="text-3xl font-bold mb-12">NIMDA CON</h1>
-        <div className="text-xl font-bold mb-4">로그인</div>
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <Input name="username" placeholder="아이디" />
-          <Input name="password" placeholder="비밀번호" type="password" />
-
-          <BlackButton type="submit">로그인</BlackButton>
-
-          <BlackButton type="button" onClick={goToSignUp}>
-            회원가입
-          </BlackButton>
-        </form>
-      </div>
-    </Layout>
-  );
+  // return (
+  //   <PageContainer>
+  //     <PageTitle>NIMDA CON</PageTitle>
+  //     <LoginSubtitle>로그인</LoginSubtitle>
+  //     <Form onSubmit={handleSubmit}>
+  //       <FormField
+  //         label="아이디"
+  //         type="text"
+  //         name="username"
+  //         value={formData.username}
+  //         onChange={handleChange}
+  //         placeholder="아이디를 입력하세요"
+  //         required
+  //       />
+  //       <FormField
+  //         label="비밀번호"
+  //         type="password"
+  //         name="password"
+  //         value={formData.password}
+  //         onChange={handleChange}
+  //         placeholder="비밀번호를 입력하세요"
+  //         required
+  //       />
+  //       <BlueButton type="submit">로그인</BlueButton>
+  //       <SignUpLink type="button" onClick={handleSignUpClick}>
+  //         회원가입
+  //       </SignUpLink>
+  //     </Form>
+  //   </PageContainer>
+  // );
 }
 
-export default LogInPage;
+const PageContainer = styled.div`
+`;
+
+const PageTitle = styled.h1`
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #1a1a1a;
+  font-weight: bold;
+`;
+
+const LoginSubtitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: #555;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const SignUpLink = styled.button`
+  padding: 0.75rem;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
+`;

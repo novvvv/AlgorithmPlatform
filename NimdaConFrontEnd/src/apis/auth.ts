@@ -1,11 +1,13 @@
+import type { ILoginRequest, ILoginResponse, IRegisterRequest } from "@/types/auth";
+
 const API_BASE_URL = "/api";
 
 /**
  * 로그인 API 호출
  */
 export const loginAPI = async (
-  loginData: LoginRequest 
-): Promise<LoginResponse> => {
+  loginData: ILoginRequest
+): Promise<ILoginResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
@@ -50,8 +52,8 @@ export const loginAPI = async (
  * 회원가입 API 호출
  */
 export const registerAPI = async (
-  registerData: RegisterRequest
-): Promise<LoginResponse> => {
+  registerData: IRegisterRequest
+): Promise<ILoginResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
@@ -114,3 +116,4 @@ export const isLoggedIn = (): boolean => {
   const token = getAuthToken();
   return !!token;
 };
+
