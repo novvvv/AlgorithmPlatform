@@ -1,13 +1,35 @@
-import type { ILoginRequest, ILoginResponse, IRegisterRequest } from "@/types/auth";
+// 인증 관련 API 함수들
 
 const API_BASE_URL = "/api";
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  user?: {
+    id: number;
+    username: string;
+    email: string;
+  };
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email: string;
+}
 
 /**
  * 로그인 API 호출
  */
 export const loginAPI = async (
-  loginData: ILoginRequest
-): Promise<ILoginResponse> => {
+  loginData: LoginRequest
+): Promise<LoginResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
@@ -19,18 +41,24 @@ export const loginAPI = async (
 
     const result = await response.json();
 
+    // 백엔드 응답 형태가 access_token(legacy) 또는 accessToken(new) 둘 다 가능
+    const accessToken = result.access_token ?? result.accessToken;
+    const userInfo = result.user;
+
     if (response.ok) {
       // 로그인 성공 시 토큰 저장 (access_token 키로 받음)
-      if (result.access_token) {
-        localStorage.setItem("authToken", result.access_token);
-        localStorage.setItem("user", JSON.stringify(result.user));
+      if (accessToken) {
+        localStorage.setItem("authToken", accessToken);
+        if (userInfo) {
+          localStorage.setItem("user", JSON.stringify(userInfo));
+        }
       }
 
       return {
         success: true,
         message: "로그인 성공",
-        token: result.access_token,
-        user: result.user,
+        token: accessToken,
+        user: userInfo,
       };
     } else {
       // 로그인 실패
@@ -52,8 +80,8 @@ export const loginAPI = async (
  * 회원가입 API 호출
  */
 export const registerAPI = async (
-  registerData: IRegisterRequest
-): Promise<ILoginResponse> => {
+  registerData: RegisterRequest
+): Promise<LoginResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
@@ -116,4 +144,3 @@ export const isLoggedIn = (): boolean => {
   const token = getAuthToken();
   return !!token;
 };
-
