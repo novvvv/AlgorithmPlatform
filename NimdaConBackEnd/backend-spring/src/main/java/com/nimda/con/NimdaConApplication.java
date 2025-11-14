@@ -13,7 +13,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "com.nimda.con.judge.entity",
         "com.nimda.con.group.entity"
 })
-@EnableJpaRepositories(basePackages = { "com.nimda.con.user.repository", "com.nimda.con.judge.repository" })
+// @EnableJpaRepositories(basePackages = { "com.nimda.con.user.repository",
+// "com.nimda.con.judge.repository" })
 public class NimdaConApplication {
 
     public static void main(String[] args) {
