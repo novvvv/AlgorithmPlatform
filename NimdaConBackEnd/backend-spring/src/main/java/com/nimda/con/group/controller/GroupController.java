@@ -45,4 +45,11 @@ public class GroupController {
     public ResponseEntity<List<GroupResponse>> getGroups() {
         return ResponseEntity.ok(groupService.getAllGroups());
     }
+
+    // * 스터디 그룹 멤버 조회 API *
+    // * @PathVariable -> groupid
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<GroupMemberResponse>> getGroupMembers(@PathVariable Long groupId) {
+        return ResponseEntity.ok(groupService.getGroupMembers(groupId));
+    }
 }
