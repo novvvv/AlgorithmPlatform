@@ -31,5 +31,7 @@ const SidePanelContainer = styled.div`
   height: 100%;
   width: var(--sidebar-width);
   background-color: #f3f4f6;
-  overflow-y: auto;
+  border-right: 1px solid #e5e7eb;
+  overflow: hidden; /* 자식(ListContainer)이 스크롤 관리 */
+  box-sizing: border-box;
 `;
