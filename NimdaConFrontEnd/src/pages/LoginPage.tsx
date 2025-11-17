@@ -5,61 +5,27 @@ import BlueButton from "@/components/common/Button/BlueButton";
 import FormField from "@/components/common/FormField";
 
 export default function LoginPage() {
-  // const [formData, setFormData] = useState({
-  //   username: "",
-  //   password: "",
-  // });
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData(prev => ({ ...prev, [name]: value }));
-  // };
+  const handleSignUpClick = () => {
+    navigate("/signup");
+  };
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   console.log("Login attempt:", formData);
-  //   alert("로그인 성공! (현재는 UI 테스트 모드)");
-  //   navigate("/");
-  // };
-
-  // const handleSignUpClick = () => {
-  //   navigate("/signup");
-  // };
-
-  // return (
-  //   <PageContainer>
-  //     <PageTitle>NIMDA CON</PageTitle>
-  //     <LoginSubtitle>로그인</LoginSubtitle>
-  //     <Form onSubmit={handleSubmit}>
-  //       <FormField
-  //         label="아이디"
-  //         type="text"
-  //         name="username"
-  //         value={formData.username}
-  //         onChange={handleChange}
-  //         placeholder="아이디를 입력하세요"
-  //         required
-  //       />
-  //       <FormField
-  //         label="비밀번호"
-  //         type="password"
-  //         name="password"
-  //         value={formData.password}
-  //         onChange={handleChange}
-  //         placeholder="비밀번호를 입력하세요"
-  //         required
-  //       />
-  //       <BlueButton type="submit">로그인</BlueButton>
-  //       <SignUpLink type="button" onClick={handleSignUpClick}>
-  //         회원가입
-  //       </SignUpLink>
-  //     </Form>
-  //   </PageContainer>
-  // );
+  return (
+    <PageContainer>
+      <SignUpButton onClick={handleSignUpClick}>
+        회원가입
+      </SignUpButton>
+    </PageContainer>
+  );
 }
 
 const PageContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 `;
 
 const PageTitle = styled.h1`
@@ -79,6 +45,22 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+`;
+
+const SignUpButton = styled.button`
+  padding: 0.75rem 2rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
 `;
 
 const SignUpLink = styled.button`

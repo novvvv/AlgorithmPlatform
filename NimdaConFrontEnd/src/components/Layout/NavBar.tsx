@@ -16,6 +16,7 @@ const NavBar: React.FC = () => {
     { name: "문제 풀기", href: "/problem/1" },
     { name: "채점 결과", href: "/problem-result" },
     { name: "마이페이지", href: "/mypage" },
+    { name: "로그인", href: "/login" },
   ];
 
   return (
