@@ -31,5 +31,5 @@ const SidePanelContainer = styled.div`
   height: 100%;
   width: var(--sidebar-width);
   background-color: #f3f4f6;
-  overflow-y: auto;
+  overflow-y: hidden;
 `;

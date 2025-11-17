@@ -1,41 +1,52 @@
 import React from "react";
-import styled from "styled-components";
+import ProblemItem from "@/components/side/ProblemItem";
+import mockProblems from "@/mocks/mockProblems";
+import {
+  ListContainer,
+  FilterBar,
+  Dropdown,
+  ListWrapper,
+  FixedButton,
+} from "@/components/common/SidePanelCommon";
 
-/**
- * ProblemList 컴포넌트
- * 
- * 문제 목록을 표시하는 컴포넌트입니다.
- * SidePanel에서 Problem 관련 페이지일 때 표시됩니다.
- */
 const ProblemList: React.FC = () => {
   return (
-    <ProblemListContainer>
-      <ProblemListTitle>
-        문제 목록
-        </ProblemListTitle>
-      <ProblemListText>
-        문제 목록이 여기에 표시됩니다.
-      </ProblemListText>
-    </ProblemListContainer>
+    <ListContainer>
+      {/* 필터 바 */}
+      <FilterBar>
+        <Dropdown defaultValue="전체 난이도">
+          <option>전체 난이도</option>
+          {/* Enum 값 사용 */}
+          <option value="EASY">하</option>
+          <option value="MEDIUM">중</option>
+          <option value="HARD">상</option>
+        </Dropdown>
+        <Dropdown defaultValue="전체 언어">
+          <option>전체 언어</option>
+          {/* Enum 값 사용 */}
+          <option value="PYTHON">Python</option>
+          <option value="JAVA">Java</option>
+          <option value="CPP">C++</option>
+        </Dropdown>
+      </FilterBar>
+
+      {/* 목록 */}
+      <ListWrapper>
+        {mockProblems.map((problem, index: number) => (
+          <ProblemItem
+            key={index}
+            title={problem.title}
+            language={problem.language}
+            correctRate={problem.correctRate}
+            difficulty={problem.difficulty}
+          />
+        ))}
+      </ListWrapper>
+
+      {/* 하단 버튼 */}
+      <FixedButton>추가하기</FixedButton>
+    </ListContainer>
   );
 };
 
 export default ProblemList;
-
-
-const ProblemListContainer = styled.div`
-  height: 100%;
-  padding: 1rem;
-`;
-
-const ProblemListTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
-`;
-
-const ProblemListText = styled.p`
-  color: #4b5563;
-  font-size: 0.875rem;
-`;
