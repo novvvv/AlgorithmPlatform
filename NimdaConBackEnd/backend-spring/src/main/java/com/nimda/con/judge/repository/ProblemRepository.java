@@ -24,11 +24,6 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
     List<Problem> findByDifficulty(Difficulty difficulty);
 
     /**
-     * 점수 범위로 문제 조회
-     */
-    List<Problem> findByPointsBetween(Integer minPoints, Integer maxPoints);
-
-    /**
      * 문제 제목에 키워드가 포함된 문제들 검색
      */
     @Query("SELECT p FROM Problem p WHERE p.title LIKE %:keyword%")

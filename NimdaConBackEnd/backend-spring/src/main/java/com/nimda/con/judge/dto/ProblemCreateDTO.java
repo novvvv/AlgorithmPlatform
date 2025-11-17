@@ -26,10 +26,6 @@ public class ProblemCreateDTO {
     @Size(max = 10000, message = "문제 설명은 10000자를 초과할 수 없습니다")
     private String description;
 
-    @NotNull(message = "점수를 입력해주세요")
-    @Positive(message = "점수는 양수여야 합니다")
-    private Integer points;
-
     @NotNull(message = "시간 제한을 입력해주세요")
     @Positive(message = "시간 제한은 양수여야 합니다")
     private Integer timeLimit;

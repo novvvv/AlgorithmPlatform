@@ -228,7 +228,7 @@ public class JudgeService {
             "모든 테스트케이스를 통과했습니다!",
             0, // 실행시간은 추후 개선 필요
             0, // 메모리 사용량은 추후 구현
-            problem.getPoints()
+            100 // 기본 점수 (points 필드 제거로 인해 기본값 사용)
         );
     }
     
@@ -328,7 +328,7 @@ public class JudgeService {
             "모든 테스트케이스를 통과했습니다!",
             0, // 실행시간은 추후 개선 필요
             0, // 메모리 사용량은 추후 구현
-            problem.getPoints()
+            100 // 기본 점수 (points 필드 제거로 인해 기본값 사용)
         );
     }
     

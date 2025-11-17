@@ -35,7 +35,6 @@ public class ProblemService {
         Problem problem = new Problem();
         problem.setTitle(problemCreateDTO.getTitle());
         problem.setDescription(problemCreateDTO.getDescription());
-        problem.setPoints(problemCreateDTO.getPoints());
         problem.setTimeLimit(problemCreateDTO.getTimeLimit());
         problem.setMemoryLimit(problemCreateDTO.getMemoryLimit());
         problem.setDifficulty(problemCreateDTO.getDifficulty());

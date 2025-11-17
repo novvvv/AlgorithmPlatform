@@ -31,9 +31,9 @@ INSERT IGNORE INTO user_authorities (user_id, authority_name)
 SELECT u.id, 'ROLE_ADMIN' FROM users u WHERE u.username = 'seoyun';
 
 -- 기본 문제 데이터 삽입
-INSERT IGNORE INTO problems (id, title, description, points, time_limit, memory_limit, difficulty, created_at, updated_at) VALUES 
-(1, 'A + B', '두 정수 A와 B를 입력받아 A+B를 출력하는 프로그램을 작성하시오.', 100, 5000, 262144, 'EASY', NOW(), NOW()),
-(2, 'Hello World', 'Hello World를 출력하는 프로그램을 작성하시오.', 50, 5000, 262144, 'EASY', NOW(), NOW());
+INSERT IGNORE INTO problems (id, title, description, time_limit, memory_limit, difficulty, created_at, updated_at) VALUES 
+(1, 'A + B', '두 정수 A와 B를 입력받아 A+B를 출력하는 프로그램을 작성하시오.', 5000, 262144, 'EASY', NOW(), NOW()),
+(2, 'Hello World', 'Hello World를 출력하는 프로그램을 작성하시오.', 5000, 262144, 'EASY', NOW(), NOW());
 
 -- 기본 테스트케이스 데이터 삽입
 -- A + B 문제용 (ID: 1)

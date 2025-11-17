@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "problems")
@@ -31,7 +29,6 @@ public class Problem {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    private Integer points; // 점수 (기본 100점)
     private Integer timeLimit; // 시간 제한 (밀리초, 기본 5000ms)
     private Integer memoryLimit; // 메모리 제한 (KB, 기본 256MB)
 
@@ -78,9 +75,6 @@ public class Problem {
         }
 
         // 기본값 설정
-        if (this.points == null) {
-            this.points = 100;
-        }
         if (this.timeLimit == null) {
             this.timeLimit = 5000;
         }
