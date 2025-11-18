@@ -1,11 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
+import { getProblemsByGroupAPI } from "@/apis/problem";
+import { joinGroupAPI } from "@/apis/studyGroup";
 import type { IStudyGroup } from "@/types/studyGroup";
+import type { IGroupJoinRequest } from "@/types/studyGroup";
+
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 import { mockStudyGroupDetail } from "@/mocks/mockStudyGroupDetail";
 import { mockProblems } from "@/mocks/mockProblems";
-import { getProblemsByGroupAPI } from "@/apis/problem";
-import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
+
 import {
   PageContainer,
   Header,
@@ -78,6 +82,9 @@ const getActivityPeriod = (createdAt: string) => {
     return `${diffDays}일`;
 };
 
+//임시
+const CURRENT_USER_ID = 101;
+const CURRENT_USER_ROLE = "MEMBER";
 
 export default function StudyGroupContent({
   groupId,
@@ -85,20 +92,18 @@ export default function StudyGroupContent({
   onHeaderButtonClick,
 }: StudyGroupContentProps) {
   const navigate = useNavigate();
-  // 1. 그룹 데이터 초기화 및 상태 관리
+  
   const initialGroupData = useMemo(() => 
     mockStudyGroups.find(g => g.group_id === groupId) || mockStudyGroupDetail, 
     [groupId]
   );
   const groupData: IStudyGroup = initialGroupData;
 
-  // 2. 문제 목록 상태 관리
   const [problems, setProblems] = useState(() => 
     mockProblems.filter(p => p.group_id === groupData.group_id)
   );
-  const [isModalOpen, setIsModalOpen] = useState(false); // 가입 모달 (JoinPage 전용)
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
-  // 3. 문제 데이터 비동기 로드
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -117,8 +122,6 @@ export default function StudyGroupContent({
     return () => { mounted = false; };
   }, [groupId, groupData.group_id]);
 
-
-  // 4. 이벤트 핸들러 (두 페이지에서 공통)
   const handleDetail = (id: number | string) => {
     navigate(`/problem/${id}/detail`);
   };
@@ -127,14 +130,35 @@ export default function StudyGroupContent({
     navigate(`/problem/${id}`);
   };
 
-  const handleCodeSubmit = (code: string) => {
-    console.log("참여코드 제출:", code);
-    setIsModalOpen(false);
-    // 실제 서버 연동 후 navigate가 필요
-    navigate(`/studygroup/${groupData.group_id}`);
+  const handlePublicJoin = async () => {
+    // ⚠️ 가입 코드가 없는 경우 빈 문자열을 전달
+    await attemptJoinGroup("");
   };
 
-  // 5. 헤더 버튼 컴포넌트 분기 처리
+  const handleCodeSubmit = async (code: string) => {
+    setIsModalOpen(false);
+    await attemptJoinGroup(code);
+  };
+
+  const attemptJoinGroup = async (participationCode: string) => {
+    try {
+      const requestData: IGroupJoinRequest = {
+        userId: CURRENT_USER_ID,
+        role: CURRENT_USER_ROLE,
+        participationCode: participationCode,
+      };
+      
+      await joinGroupAPI(groupId, requestData); 
+
+      alert(`${groupData.group_name} 그룹에 성공적으로 가입했습니다!`);
+      navigate(`/studygroup/${groupId}`);
+      
+    } catch (error) {
+      console.error("가입 처리 실패:", error);
+      alert(`가입 실패: ${error.message}`);
+    }
+  };
+
   const HeaderButton = () => {
     if (isDetailPage) {
       return <LeaveButton onClick={onHeaderButtonClick}>그룹 나가기</LeaveButton>;
@@ -145,8 +169,7 @@ export default function StudyGroupContent({
             if (!groupData.is_public) {
               setIsModalOpen(true);
             } else {
-              // 실제 가입 API 호출 로직 필요
-              onHeaderButtonClick(); // JoinPage의 navigate('/studygroup/...') 실행
+              handlePublicJoin();
             }
           }}
         >

@@ -31,3 +31,21 @@ export interface IGroupMembership {
   // 관계
   user?: IUser;
 }
+
+// API 요청 본문 타입
+export interface IGroupJoinRequest {
+  userId: number;
+  role: 'LEADER' | 'MEMBER' | string; 
+  participationCode: string;
+}
+// API 성공 응답 타입 (Response body)
+export interface IGroupJoinResponse {
+  membershipId: number;
+  groupId: number;
+  userId: number;
+  username: string;
+  role: 'LEADER' | 'MEMBER' | string;
+  active: boolean;
+  joinedAt: string;
+  leftAt: string | null;
+}
