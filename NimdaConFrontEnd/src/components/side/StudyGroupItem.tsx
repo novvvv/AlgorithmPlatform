@@ -23,7 +23,7 @@ const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
   const membersCount = current_members ? current_members.length : 0;
 
   const handleJoin = () => {
-    navigate(`/studygroup-detail`, { state: { groupId: id } });
+    navigate(`/studygroup/${id}/join`);
   };
   
   return (
