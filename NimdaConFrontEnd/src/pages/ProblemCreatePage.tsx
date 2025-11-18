@@ -172,10 +172,8 @@ const PageWrapper = styled.div`
 `;
 
 const Card = styled.div`
-  width: 90%;
-  max-width: 900px;
+  width: 100%;
   background: #f3f4f6;
-  border-radius: 8px;
   padding: 1.5rem 1.75rem 2rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 `;
@@ -191,6 +189,7 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+  margin: 1rem;
 `;
 
 const Field = styled.div`
