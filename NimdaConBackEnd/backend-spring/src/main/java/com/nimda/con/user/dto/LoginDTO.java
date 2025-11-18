@@ -18,7 +18,7 @@ public class LoginDTO {
     private String userId;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 4, max = 20, message = "Password must be between 4 and 20 characters")
+    @Size(min = 4, max = 100, message = "Password must be between 4 and 100 characters")
     private String password;
 
 }

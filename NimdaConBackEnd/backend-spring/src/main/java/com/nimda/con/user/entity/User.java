@@ -53,8 +53,8 @@ public class User {
     // 닉네임 (변경 가능, 표시용)
 
     @NotBlank
-    @Size(min = 4, max = 20)
-    @Column(nullable = false)
+    @Size(min = 4, max = 100)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Email
