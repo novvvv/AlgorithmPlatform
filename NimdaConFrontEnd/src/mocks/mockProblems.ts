@@ -25,7 +25,7 @@ export const mockProblems: IProblemWithProgress[] = [
     completionRate: 75,
     completionCount: 3,
     totalMembers: 4,
-    solved_by: [101, 102, 103],
+    solved_by: [101, 103],
   },
   {
     problem_id: 2,

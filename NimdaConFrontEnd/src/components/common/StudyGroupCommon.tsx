@@ -1,4 +1,3 @@
-// StudyGroupContent.tsx (새로 생성)
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import type { IStudyGroup } from "@/types/studyGroup";
@@ -39,14 +38,14 @@ import {
   ProblemHeader,
   ProblemTitle,
   DifficultyBadge,
-  StatusButton,
-  ProblemFooter,
   ProgressText,
-  ProgressInfo,
   ProgressBar,
   ProgressFill,
   ProgressLabel,
   SolveButton,
+  ActionGroup, 
+  ProgressGroup, 
+  DetailButton,
 } from "@/components/common/StudyGroupStyle";
 
 // 두 페이지에서 공통으로 사용할 Props 정의
@@ -91,7 +90,7 @@ export default function StudyGroupContent({
     mockStudyGroups.find(g => g.group_id === groupId) || mockStudyGroupDetail, 
     [groupId]
   );
-  const groupData: IStudyGroup = initialGroupData; // 타입 명시
+  const groupData: IStudyGroup = initialGroupData;
 
   // 2. 문제 목록 상태 관리
   const [problems, setProblems] = useState(() => 
@@ -161,7 +160,7 @@ export default function StudyGroupContent({
     <PageContainer>
       <Header>
         <Title>{groupData.group_name}</Title>
-        <HeaderButton /> {/* 분기된 헤더 버튼 사용 */}
+        <HeaderButton /> 
       </Header>
       <Subtitle>{groupData.description}</Subtitle>
 
@@ -241,36 +240,46 @@ export default function StudyGroupContent({
               <Tab>해결</Tab>
             </TabBar>
             <ProblemList>
-              {problems
-                .filter(p => p.group_id === groupData.group_id)
-                .map((problem) => {
-                  const groupMemberIds = groupData.current_members?.filter(Boolean).map(m => m.user_id) || [];
-                  const completionCount = (problem.solved_by || []).filter(uid => groupMemberIds.includes(uid)).length;
-                  const totalMembers = groupMemberIds.length;
-                  const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
+            {problems
+            .filter(p => p.group_id === groupData.group_id)
+            .map((problem) => {
+            const groupMemberIds = groupData.current_members?.filter(Boolean).map(m => m.user_id) || [];
+            const completionCount = (problem.solved_by || []).filter(uid => groupMemberIds.includes(uid)).length;
+            const totalMembers = groupMemberIds.length;
+            const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
 
-                  return (
-                    <ProblemItem key={problem.problem_id}>
-                      <ProblemHeader>
+            return (
+                <ProblemItem key={problem.problem_id}>
+                    {/* 1. 제목 및 문제 설명 (ProblemHeader 역할 대체) */}
+                    <ProblemHeader>
                         <ProblemTitle>{problem.title}</ProblemTitle>
-                        <DifficultyBadge $difficulty={problem.difficulty}>
-                          {getDifficultyText(problem.difficulty)}
-                        </DifficultyBadge>
-                        <StatusButton onClick={() => handleDetail(problem.problem_id)}>상세</StatusButton>
-                      </ProblemHeader>
-                      <ProblemFooter>
-                        <ProgressText>{problem.description}</ProgressText>
-                        <ProgressInfo>
-                          <ProgressBar>
+                        <ProgressText>{problem.description}</ProgressText> {/* 문제 설명 */}
+                    </ProblemHeader>
+
+                    {/* 2. 난이도 태그 */}
+                    <DifficultyBadge $difficulty={problem.difficulty}>
+                        {getDifficultyText(problem.difficulty)}
+                    </DifficultyBadge>
+                    
+                    {/* 3. 진행바 및 해결 인원 */}
+                    <ProgressGroup>
+                        <ProgressBar>
                             <ProgressFill style={{ width: `${completionRate}%` }} />
-                          </ProgressBar>
-                          <ProgressLabel>{completionCount}/{totalMembers} 명 해결</ProgressLabel>
-                          <SolveButton onClick={() => handleSolve(problem.problem_id)}>풀기</SolveButton>
-                        </ProgressInfo>
-                      </ProblemFooter>
+                        </ProgressBar>
+                        <ProgressLabel>
+                            {completionCount}/{totalMembers} 명 해결
+                        </ProgressLabel>
+                    </ProgressGroup>
+
+                    {/* 4. 액션 버튼 (상세, 풀기) */}
+                    <ActionGroup>
+                        <DetailButton onClick={() => handleDetail(problem.problem_id)}>상세</DetailButton>
+                        <SolveButton onClick={() => handleSolve(problem.problem_id)}>풀기</SolveButton>
+                    </ActionGroup>
+
                     </ProblemItem>
-                  );})
-                }
+                    );
+                })}
             </ProblemList>
           </Card>
         </RightSection>

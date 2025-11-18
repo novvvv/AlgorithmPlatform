@@ -11,6 +11,8 @@ import {
   FixedButton,
 } from "@/components/common/SidePanelCommon";
 
+const CURRENT_USER_ID = 101;
+
 const StudyGroupList: React.FC = () => {
   return (
     <ListContainer>
@@ -27,6 +29,7 @@ const StudyGroupList: React.FC = () => {
             current_members={group.current_members}
             max_members={group.max_members}
             is_public={group.is_public}
+            currentUserId={CURRENT_USER_ID}
           />
         ))}
       </ListWrapper>

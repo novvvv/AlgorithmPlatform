@@ -22,7 +22,7 @@ const displayDifficulty = (diff: ProblemDifficulty): string => {
 
 const getDifficultyColor = (diff: ProblemDifficulty): string => {
   switch (diff) {
-    case "EASY": return "#10b981"; 
+    case "EASY": return "#69b469"; 
     case "MEDIUM": return "#f59e0b"; 
     case "HARD": return "#ef4444"; 
     default: return "#6b7280";

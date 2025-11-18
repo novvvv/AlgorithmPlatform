@@ -229,64 +229,114 @@ export const ProblemList = styled.div`
   gap: 1rem;
 `;
 
+// 📌 StudyGroupCommon.tsx (Problems 섹션 수정)
+
+// Problems
+// ... (ProblemList는 변경 없음)
+
 export const ProblemItem = styled.div`
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 1rem;
   background: white;
+  
+  /* Grid 레이아웃 적용 */
+  display: grid;
+  /* 4열: [제목/설명 영역] | [빈 공간] | [난이도/상세 버튼] | [풀기 버튼] */
+  grid-template-columns: 1fr auto auto; /* [내용] [난이도] [액션 버튼] */
+  grid-template-rows: auto auto; /* [헤더] [푸터] */
+  gap: 0.5rem 1rem;
+  align-items: center; 
 `;
 
 export const ProblemHeader = styled.div`
+  /* 기존 ProblemHeader의 역할을 ProblemTitle과 DifficultyBadge가 직접 수행하도록 변경 */
+  grid-column: 1 / 2; /* 1번째 열에 위치 */
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
+  gap: 0.2rem;
 `;
 
 export const ProblemTitle = styled.span`
   font-weight: 600;
   color: #1a1a1a;
-  flex: 1;
+  font-size: 1.1rem;
+  margin: 0;
 `;
 
+export const ProgressText = styled.span`
+  grid-column: 1 / 2; /* 1번째 열 아래쪽에 위치 */
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+`;
+
+// 난이도 태그: 2번째 열 상단에 배치
 export const DifficultyBadge = styled.span<{ $difficulty: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  grid-column: 3 / 4; /* 3번째 열 (액션 버튼 바로 왼쪽) */
+  grid-row: 1 / 2; /* 1행 */
+  justify-self: end; /* 우측 정렬 */
+  
+  margin-right: 4.5rem;
+  padding: 0.3rem 0.6rem; /* 이미지처럼 패딩 조정 */
+  border-radius: 9999px; /* 완전한 타원형 */
+  font-size: 0.9rem; /* 폰트 크기 조정 */
   font-weight: 600;
   color: white;
   background: ${props => 
-    props.$difficulty === 'EASY' ? '#10b981' : 
+    props.$difficulty === 'EASY' ? '#69b469' : 
     props.$difficulty === 'MEDIUM' ? '#f59e0b' : '#ef4444'};
 `;
 
-export const StatusButton = styled.button`
-  background: #e5e7eb;
-  color: #1f2937;
-  padding: 0.25rem 0.75rem;
+// StatusButton과 SolveButton을 감싸는 영역을 재정의합니다.
+export const ActionGroup = styled.div`
+  grid-column: 3 / 4; /* 3번째 열에 위치 */
+  grid-row: 1 / span 2; /* 1행부터 2행까지 걸쳐서 위치 */
+  display: flex;
+  flex-direction: column;
+  justify-self: end; /* 우측 정렬 */
+  gap: 0.5rem;
+  margin-left: 1rem; /* 내용 영역과의 간격 */
+`;
+
+// 상세 버튼 (StatusButton 이름 변경)
+export const DetailButton = styled.button`
+  background: #e5e5e5; /* 이미지의 밝은 회색 */
+  color: #1a1a1a;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-
+  white-space: nowrap;
+  
   &:hover {
     background: #d1d5db;
   }
 `;
 
-export const ProblemFooter = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+// 풀기 버튼 (SolveButton 이름 변경)
+export const SolveButton = styled.button`
+  background: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: #2563eb;
+  }
 `;
 
-export const ProgressText = styled.span`
-  color: #666;
-  font-size: 0.85rem;
-`;
-
-export const ProgressInfo = styled.div`
+// 진행 정보 그룹 (ProgressBar와 ProgressLabel을 묶음)
+export const ProgressGroup = styled.div`
+  grid-column: 1 / 3; /* 1열부터 2열까지 걸쳐서 배치 */
+  grid-row: 2 / 3; /* 2행에 위치 */
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -302,27 +352,13 @@ export const ProgressBar = styled.div`
 
 export const ProgressFill = styled.div`
   height: 100%;
-  background: #3b82f6;
+  background: #254bc9ff; /* 이미지처럼 진한 색상으로 변경 */
   border-radius: 4px;
 `;
 
 export const ProgressLabel = styled.span`
-  color: #666;
-  font-size: 0.8rem;
-  white-space: nowrap;
-`;
-
-export const SolveButton = styled.button`
-  background: #3b82f6;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  color: #1a1a1a; /* 글자 색상을 진하게 변경 */
+  font-size: 0.9rem; /* 크기 조정 */
   font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: #2563eb;
-  }
+  white-space: nowrap;
 `;
