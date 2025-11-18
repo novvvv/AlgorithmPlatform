@@ -32,13 +32,19 @@ export interface IGroupMembership {
   user?: IUser;
 }
 
-// API 요청 본문 타입
+//IGroupCreate
+export interface IGroupCreateRequest {
+  groupName: string;
+  description?: string;
+}
+
+
+//IGroupJoin
 export interface IGroupJoinRequest {
   userId: number;
   role: 'LEADER' | 'MEMBER' | string; 
   participationCode: string;
 }
-// API 성공 응답 타입 (Response body)
 export interface IGroupJoinResponse {
   membershipId: number;
   groupId: number;
@@ -49,3 +55,4 @@ export interface IGroupJoinResponse {
   joinedAt: string;
   leftAt: string | null;
 }
+

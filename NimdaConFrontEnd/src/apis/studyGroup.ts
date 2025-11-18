@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import type { IGroupJoinRequest, IGroupJoinResponse } from "@/types/studyGroup"; 
 // IStudyGroupDetailResponse 등 필요한 다른 타입도 Import 필요
 
@@ -28,13 +28,10 @@ export const joinGroupAPI = async (
     );
     return response.data;
   } catch (error) {
-    // API 에러 처리 (예: 잘못된 참여 코드, 이미 가입된 사용자 등)
-    if (axios.isAxiosError(error) && error.response) {
+    if (isAxiosError(error) && error.response) {
       console.error("그룹 가입 실패:", error.response.data);
-      // 서버 응답 에러 메시지를 포함하여 에러를 throw 합니다.
       throw new Error(error.response.data.message || "그룹 가입에 실패했습니다.");
     }
-    // 💡 해결: error가 Error 타입인지 확인 후 message 접근
     if (error instanceof Error) {
         throw new Error(error.message);
     }
