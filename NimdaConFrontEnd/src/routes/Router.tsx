@@ -7,6 +7,7 @@ import MyPage from "@/pages/MyPage";
 import HomePage from "@/pages/HomePage";
 import StudyGroupCreatePage from "@/pages/StudyGroupCreatePage";
 import StudyGroupDetailPage from "@/pages/StudyGroupDetailPage";
+import StudyGroupJoinPage from "@/pages/StudyGroupJoinPage";
 import ProblemCreatePage from "@/pages/ProblemCreatePage";
 import ProblemDetailPage from "@/pages/ProblemDetailPage";
 import ProblemSolvePage from "@/pages/ProblemSolvePage";
@@ -16,7 +17,6 @@ const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Layout이 필요한 페이지들 */}
         <Route path="/" element={<LayoutWrapper><HomePage /></LayoutWrapper>} />
         <Route path="/login" element={<LayoutWrapper><LoginPage /></LayoutWrapper>} />
         <Route path="/signup" element={<LayoutWrapper><SignUpPage /></LayoutWrapper>} />
@@ -24,6 +24,7 @@ const Router = () => {
         <Route path="/mypage" element={<LayoutWrapper><MyPage /></LayoutWrapper>} />
         <Route path="/studygroup-create" element={<LayoutWrapper><StudyGroupCreatePage /></LayoutWrapper>} />
         <Route path="/studygroup-detail" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
+        <Route path="/studygroup-join" element={<LayoutWrapper><StudyGroupJoinPage /></LayoutWrapper>} />
         <Route path="/problem-create" element={<LayoutWrapper><ProblemCreatePage /></LayoutWrapper>} />
         <Route path="/problem/:id/detail" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
         <Route path="/problem/:id" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
