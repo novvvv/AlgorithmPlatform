@@ -31,3 +31,28 @@ export interface IGroupMembership {
   // 관계
   user?: IUser;
 }
+
+//IGroupCreate
+export interface IGroupCreateRequest {
+  groupName: string;
+  description?: string;
+}
+
+
+//IGroupJoin
+export interface IGroupJoinRequest {
+  userId: number;
+  role: 'LEADER' | 'MEMBER' | string; 
+  participationCode: string;
+}
+export interface IGroupJoinResponse {
+  membershipId: number;
+  groupId: number;
+  userId: number;
+  username: string;
+  role: 'LEADER' | 'MEMBER' | string;
+  active: boolean;
+  joinedAt: string;
+  leftAt: string | null;
+}
+

@@ -11,7 +11,7 @@ import type { MenuItem } from "./types";
 const NavBar: React.FC = () => {
   // 네비게이션 바에 표시될 메뉴 아이템들
   const menuItems: MenuItem[] = [
-    { name: "내 스터디그룹", href: "/studygroup-detail" },
+    { name: "내 스터디그룹", href: "/studygroup/:id" },
     { name: "문제 출제", href: "/problem-create" },
     { name: "문제 풀기", href: "/problem/:id/detail" },
     { name: "채점 결과", href: "/problem-result" },

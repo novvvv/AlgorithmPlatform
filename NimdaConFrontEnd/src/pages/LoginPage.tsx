@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BlueButton from "@/components/common/Button/BlueButton";
+import BlueButton from "@/components/common/BlueButton";
 import FormField from "@/components/common/FormField";
 
 export default function LoginPage() {

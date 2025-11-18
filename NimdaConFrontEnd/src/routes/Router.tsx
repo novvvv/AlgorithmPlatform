@@ -23,8 +23,8 @@ const Router = () => {
         <Route path="/home" element={<LayoutWrapper><HomePage /></LayoutWrapper>} />
         <Route path="/mypage" element={<LayoutWrapper><MyPage /></LayoutWrapper>} />
         <Route path="/studygroup-create" element={<LayoutWrapper><StudyGroupCreatePage /></LayoutWrapper>} />
-        <Route path="/studygroup-detail" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
-        <Route path="/studygroup-join" element={<LayoutWrapper><StudyGroupJoinPage /></LayoutWrapper>} />
+        <Route path="/studygroup/:id" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
+        <Route path="/studygroup/:id/join" element={<LayoutWrapper><StudyGroupJoinPage /></LayoutWrapper>} />
         <Route path="/problem-create" element={<LayoutWrapper><ProblemCreatePage /></LayoutWrapper>} />
         <Route path="/problem/:id/detail" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
         <Route path="/problem/:id" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />

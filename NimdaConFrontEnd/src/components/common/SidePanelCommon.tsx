@@ -21,10 +21,11 @@ export const SearchBarContainer = styled.div`
 
 export const SearchInput = styled.input`
   flex-grow: 1;
+  min-width: 0;
   border: none;
   outline: none;
   font-size: 1rem;
-  padding: 0;
+  padding: 0.25rem;
   margin-right: 0.5rem;
   &::placeholder {
     color: #9ca3af;
@@ -32,8 +33,10 @@ export const SearchInput = styled.input`
 `;
 
 export const SearchIcon = styled.img`
+  flex-shrink: 0;
   height: 1.25rem;
   width: 1.25rem;
+  cursor: pointer;
 `;
  
 export const FilterBar = styled.div`

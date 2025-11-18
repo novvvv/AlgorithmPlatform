@@ -30,7 +30,7 @@ const ProblemDetailPage: React.FC = () => {
 
   return (
     <Page>
-      <Title>{mock.title}</Title>
+      <Title>{mock.title}{id ? ` (#${id})` : ""}</Title>
 
       <ContentGrid>
         <LeftColumn>
