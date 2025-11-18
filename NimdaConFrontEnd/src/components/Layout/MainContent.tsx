@@ -25,4 +25,5 @@ const MainContainer = styled.main`
   background-color: #ffffff;
   overflow-y: auto;
   box-sizing: border-box;
+  min-height: 100vh-var(--nav-height);
 `;
