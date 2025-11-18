@@ -8,6 +8,7 @@ import HomePage from "@/pages/HomePage";
 import StudyGroupCreatePage from "@/pages/StudyGroupCreatePage";
 import StudyGroupDetailPage from "@/pages/StudyGroupDetailPage";
 import ProblemCreatePage from "@/pages/ProblemCreatePage";
+import ProblemDetailPage from "@/pages/ProblemDetailPage";
 import ProblemSolvePage from "@/pages/ProblemSolvePage";
 import ProblemResultPage from "@/pages/ProblemResultPage";
 
@@ -24,6 +25,7 @@ const Router = () => {
         <Route path="/studygroup-create" element={<LayoutWrapper><StudyGroupCreatePage /></LayoutWrapper>} />
         <Route path="/studygroup-detail" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
         <Route path="/problem-create" element={<LayoutWrapper><ProblemCreatePage /></LayoutWrapper>} />
+        <Route path="/problem/:id/detail" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
         <Route path="/problem/:id" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
         <Route path="/problem-result" element={<LayoutWrapper><ProblemResultPage /></LayoutWrapper>} />
       </Routes>
