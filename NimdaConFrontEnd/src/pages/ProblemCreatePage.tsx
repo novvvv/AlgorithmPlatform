@@ -14,7 +14,7 @@ const difficultyOptions: Array<{ label: string; value: ProblemDifficulty }> = [
 ];
 
 const languageOptions: Array<{ label: string; value: ProgrammingLanguage }> = [
-  { label: "python", value: "PYTHON" },
+  { label: "Python", value: "PYTHON" },
   { label: "Java", value: "JAVA" },
   { label: "C++", value: "CPP" },
 ];
@@ -52,6 +52,7 @@ export default function ProblemCreatePage() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    
     // TODO: API 연동
     alert("문제가 생성되었습니다. (UI 동작 확인용)");
   };

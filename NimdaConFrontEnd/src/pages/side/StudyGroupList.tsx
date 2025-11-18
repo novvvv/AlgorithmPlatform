@@ -14,17 +14,15 @@ import {
 const StudyGroupList: React.FC = () => {
   return (
     <ListContainer>
-      {/* 검색 바 */}
       <SearchBarContainer>
         <SearchInput type="text" placeholder="검색..." />
         <SearchIcon src={search_icon} alt="검색 아이콘" />   {/*클릭 시 검색 로직 추가*/}
       </SearchBarContainer>
 
-      {/* 목록 */}
       <ListWrapper>
         {mockStudyGroups.map((group) => (
           <StudyGroupItem 
-            key={group.group_id} 
+            id={group.group_id}
             group_name={group.group_name}
             current_members={group.current_members}
             max_members={group.max_members}
@@ -33,8 +31,7 @@ const StudyGroupList: React.FC = () => {
         ))}
       </ListWrapper>
 
-      {/* 하단 버튼 */}
-      <FixedButton>추가하기</FixedButton>
+      <FixedButton onClick={() => window.location.href = '/studygroup-create'}>추가하기</FixedButton>
     </ListContainer>
   );
 };

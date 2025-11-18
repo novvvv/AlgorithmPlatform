@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import type { IGroupMembership } from "@/types/studyGroup";
 
 interface StudyGroupItemProps {
+  id: number;
   group_name: string;
   is_public: boolean;
   current_members?: IGroupMembership[]; 
@@ -10,24 +12,29 @@ interface StudyGroupItemProps {
 }
 
 const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
+  id,
   group_name,
   current_members,
   max_members,
   is_public,
 }) => {
-  // 실제 멤버 수를 계산
+  const navigate = useNavigate();
+
   const membersCount = current_members ? current_members.length : 0;
+
+  const handleJoin = () => {
+    navigate(`/studygroup-detail`, { state: { groupId: id } });
+  };
   
   return (
     <ItemContainer>
       <InfoSection>
-        {/* group_name 사용 */}
         <GroupName>{group_name}</GroupName>
         <MemberCount>{membersCount} / {max_members}명</MemberCount>
       </InfoSection>
       <ActionGroup> 
         <Tag $isPublic={is_public}>{is_public ? "공개" : "비공개"}</Tag>
-        <JoinButton>가입하기</JoinButton>
+        <JoinButton onClick={handleJoin}>가입하기</JoinButton>
       </ActionGroup>
     </ItemContainer>
   );
