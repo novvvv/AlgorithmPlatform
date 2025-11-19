@@ -48,7 +48,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   const navigate = useNavigate();
 
   const handleDetail = () => {
-    navigate(`/problem//detail${id}`);
+    navigate(`/problem/detail/${id}`);
   };
 
   const handleSolve = () => {

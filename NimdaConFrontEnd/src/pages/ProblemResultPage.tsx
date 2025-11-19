@@ -5,47 +5,34 @@ import CorrectCircle from "@/assets/icons/correctCircle.png";
 import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureCircle from "@/assets/icons/failureCircle.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
+import { mockProblemResults } from "@/mocks/mockProblemResults";
 
 const ProblemResultPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   // 실제 연동 전 임시 데이터
-const mock = useMemo(
-  () => ({
-      status: "정답",
-      runTime: "124ms",
-      memory: "15.2MB",
-      language: "python",
-      testCases: [
-        { name: "테스트 케이스 1", result: "통과", time: "42ms", memory: "5.1MB" },
-        { name: "테스트 케이스 2", result: "통과", time: "38ms", memory: "5.0MB" },
-        { name: "테스트 케이스 3", result: "통과", time: "44ms", memory: "5.2MB" },
-      ],
-      submittedCode: `def solution():
-    # 코드를 작성하세요`,
-      submissionInfo: {
-        time: "2025.11.10 16:02",
-        attempts: "3회",
-      },
-      stats: {
-        accuracy: "75%",
-        solved: "5명",
-        attempts: "2.3회",
-      },
-    }),
-    [],
-  );
+  const mock = useMemo(() => {
+    if (!id) return mockProblemResults[0];
+    return mockProblemResults.find(r => r.problem_id === Number(id));
+  }, [id]);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<string[]>([]);
-  const isCorrect = mock.status === "정답";
+  const isCorrect = mock?.status === "정답";
 
   const handleBack = () => {
     navigate(id ? `/problem/${id}` : "/problem/1");
   };
 
+  const isPassResult = (value: string) => {
+    if (value === "통과" || value === "정답") return true;
+    return value.toUpperCase() === "AC";
+  };
+
+  const getDisplayResult = (value: string) => (isPassResult(value) ? "통과" : "불통과");
+
   const getTestIcon = (result: string) =>
-    result.includes("통과") || result.includes("정답") ? CorrectSmall : FailureSmall;
+    isPassResult(result) ? CorrectSmall : FailureSmall;
 
   const handleAddComment = () => {
     const next = commentInput.trim();
@@ -53,6 +40,15 @@ const mock = useMemo(
     setComments(prev => [...prev, next]);
     setCommentInput("");
   };
+
+  if (!mock) {
+    return (
+      <Page>
+        <Title>채점 결과</Title>
+        <EmptyCard>문제 목록에서 문제를 선택해주세요.</EmptyCard>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -64,7 +60,7 @@ const mock = useMemo(
             <ResultHeader>
               <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={mock.status} />
               <ResultText>
-                <ResultStatus>{mock.status}</ResultStatus>
+                <ResultStatus $correct={isCorrect}>{mock.status}</ResultStatus>
               </ResultText>
             </ResultHeader>
             <ResultStats>
@@ -84,16 +80,19 @@ const mock = useMemo(
             <Divider />
             <SectionLabel>테스트 케이스 결과</SectionLabel>
             <TestList>
-              {mock.testCases.map(tc => (
-                <TestRow key={tc.name}>
-                  <TestRowLeft>
-                    <TestIcon src={getTestIcon(tc.result)} alt={tc.result} />
-                    <TestName>{tc.name}</TestName>
-                    <TestResult>{tc.result}</TestResult>
-                  </TestRowLeft>
-                  <TestMeta>{tc.time} / {tc.memory}</TestMeta>
-                </TestRow>
-              ))}
+              {mock.testCases.map(tc => {
+                const displayResult = getDisplayResult(tc.result);
+                return (
+                  <TestRow key={tc.name}>
+                    <TestRowLeft>
+                      <TestIcon src={getTestIcon(tc.result)} alt={displayResult} />
+                      <TestName>{tc.name}</TestName>
+                      <TestResult $result={displayResult}>{displayResult}</TestResult>
+                    </TestRowLeft>
+                    <TestMeta>{tc.time} / {tc.memory}</TestMeta>
+                  </TestRow>
+                );
+              })}
             </TestList>
           </Card>
 
@@ -165,17 +164,29 @@ const Page = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  background: #f5f5f5;
+  background: #f3f4f6;
   box-sizing: border-box;
+  padding-bottom: 2.5rem;
 `;
 
 const Title = styled.h1`
+  margin: 0;
   width: 92%;
   max-width: 1280px;
-  margin: 0;
-  font-size: 1.9rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  padding: 1.5rem 0.5rem 0.25rem;
+  padding: 1.5rem 0.5rem 0.3rem;
+`;
+
+const EmptyCard = styled.div`
+  width: 92%;
+  max-width: 1280px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+  font-weight: 700;
 `;
 
 const ContentGrid = styled.div`
@@ -230,10 +241,10 @@ const ResultText = styled.div`
   flex-direction: column;
 `;
 
-const ResultStatus = styled.span`
+const ResultStatus = styled.span<{ $correct: boolean }>`
   font-size: 1.3rem;
   font-weight: 800;
-  color: #16a34a;
+  color: ${({ $correct }) => ($correct ? "#16a34a" : "#dc2626")};
 `;
 
 const ResultStats = styled.div`
@@ -310,9 +321,9 @@ const TestName = styled.span`
   color: #1f2937;
 `;
 
-const TestResult = styled.span`
+const TestResult = styled.span<{ $result: string }>`
   font-weight: 700;
-  color: #16a34a;
+  color: ${({ $result }) => ($result === "통과" ? "#16a34a" : "#dc2626")};
 `;
 
 const TestMeta = styled.span`

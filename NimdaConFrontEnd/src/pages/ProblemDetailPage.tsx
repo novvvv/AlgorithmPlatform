@@ -1,26 +1,16 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
+import { mockProblemDetails } from "@/mocks/mockProblemDetails";
 
 const ProblemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // 실제 연동 전 임시 데이터
-  const mock = useMemo(
-    () => ({
-      title: "문제 이름",
-      description: "배열에서 두 수를 더해 target을 만드는 인덱스를 반환하세요.",
-      samples: [{ input: "", output: "" }],
-      constraints: ["시간 제한: 2초", "메모리 제한: 256MB"],
-      stats: {
-        accuracy: "75%",
-        solved: 5,
-        attempts: 2.3,
-      },
-    }),
-    [],
-  );
+  const problem = useMemo(() => {
+    if (!id) return undefined;
+    return mockProblemDetails.find(p => p.problem_id === Number(id));
+  }, [id]);
 
   const handleSolve = () => {
     if (id) {
@@ -28,20 +18,29 @@ const ProblemDetailPage: React.FC = () => {
     }
   };
 
+  if (!problem) {
+    return (
+      <Page>
+        <Title>문제 상세</Title>
+        <EmptyCard>문제 목록에서 문제를 선택해주세요.</EmptyCard>
+      </Page>
+    );
+  }
+
   return (
     <Page>
-      <Title>{mock.title}{id ? ` (#${id})` : ""}</Title>
+      <Title>{problem.title}{id ? ` (#${id})` : ""}</Title>
 
       <ContentGrid>
         <LeftColumn>
           <Card>
             <CardTitle>문제 설명</CardTitle>
-            <Description>{mock.description}</Description>
+            <Description>{problem.description}</Description>
           </Card>
 
           <Card>
             <CardTitle>입출력 예제</CardTitle>
-            {mock.samples.map((sample, idx) => (
+            {problem.samples.map((sample, idx) => (
               <SampleBox key={idx}>
                 <SampleRow>
                   <SampleLabel>입력:</SampleLabel>
@@ -58,7 +57,7 @@ const ProblemDetailPage: React.FC = () => {
           <Card>
             <CardTitle>제약 조건</CardTitle>
             <ConstraintList>
-              {mock.constraints.map(item => (
+              {problem.constraints.map(item => (
                 <li key={item}>{item}</li>
               ))}
             </ConstraintList>
@@ -70,15 +69,15 @@ const ProblemDetailPage: React.FC = () => {
             <CardTitle>문제 통계</CardTitle>
             <StatRow>
               <span>정답률</span>
-              <Highlight>{mock.stats.accuracy}</Highlight>
+              <Highlight>{problem.stats.accuracy}</Highlight>
             </StatRow>
             <StatRow>
               <span>해결 인원</span>
-              <span>{mock.stats.solved}명</span>
+              <span>{problem.stats.solved}명</span>
             </StatRow>
             <StatRow>
               <span>평균 시도</span>
-              <span>{mock.stats.attempts}회</span>
+              <span>{problem.stats.attempts}회</span>
             </StatRow>
           </StatsCard>
 
@@ -100,6 +99,7 @@ const Page = styled.div`
   background: #f3f4f6;
   align-items: center;
   box-sizing: border-box;
+  padding-bottom: 2.5rem;
 `;
 
 const Title = styled.h1`
@@ -109,6 +109,17 @@ const Title = styled.h1`
   font-size: 1.8rem;
   font-weight: 800;
   padding: 1.5rem 0.5rem 0.5rem;
+`;
+
+const EmptyCard = styled.div`
+  width: 92%;
+  max-width: 1280px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+  font-weight: 700;
 `;
 
 const ContentGrid = styled.div`
