@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import type { ProblemDifficulty, ProgrammingLanguage } from "@/types/problem";
 
 interface ProblemItemProps {
+  id: number;
   title: string;
   language: ProgrammingLanguage;
   correctRate: number;
@@ -20,34 +22,54 @@ const displayDifficulty = (diff: ProblemDifficulty): string => {
 
 const getDifficultyColor = (diff: ProblemDifficulty): string => {
   switch (diff) {
-    case "EASY": return "#10b981"; // Green
-    case "MEDIUM": return "#f59e0b"; // Yellow
-    case "HARD": return "#ef4444"; // Red
+    case "EASY": return "#69b469"; 
+    case "MEDIUM": return "#f59e0b"; 
+    case "HARD": return "#ef4444"; 
     default: return "#6b7280";
   }
 };
 
+const displayLanguage = (diff: ProgrammingLanguage): string => {
+  switch (diff) {
+    case "PYTHON": return "Python";
+    case "JAVA": return "Java";
+    case "CPP": return "C++";
+    default: return "";
+  }
+};
+
 const ProblemItem: React.FC<ProblemItemProps> = ({
+  id,
   title,
   language,
   correctRate,
   difficulty,
 }) => {
+  const navigate = useNavigate();
+
+  const handleDetail = () => {
+    navigate(`/problem//detail${id}`);
+  };
+
+  const handleSolve = () => {
+    navigate(`/problem/${id}`);
+  };
+
   return (
     <ItemContainer>
       <InfoSection>
         <ProblemTitle>{title}</ProblemTitle>
         <SubInfo>
-          {language} / 정답률 {correctRate}%
+          {displayLanguage(language)} / 정답률 {correctRate}%
         </SubInfo>
       </InfoSection>
-      <ActionGroup> {/* 수정: 태그와 버튼 그룹을 묶는 컨테이너 */}
+      <ActionGroup> 
         <DifficultyTag $difficulty={difficulty}>
           {displayDifficulty(difficulty)}
         </DifficultyTag>
-        <ButtonWrapper> {/* 버튼들을 묶는 새로운 컨테이너 */}
-          <ActionButton>상세</ActionButton>
-          <ActionButton $primary>풀기</ActionButton>
+        <ButtonWrapper>
+          <ActionButton onClick={handleDetail}>상세</ActionButton>
+          <ActionButton $primary onClick={handleSolve}>풀기</ActionButton>
         </ButtonWrapper>
       </ActionGroup>
     </ItemContainer>
@@ -86,7 +108,6 @@ const SubInfo = styled.div`
   margin-top: 0.25rem;
 `;
 
-// 새로운 그룹 컨테이너: 태그와 버튼 그룹을 세로로 정렬
 const ActionGroup = styled.div`
   display: flex;
   flex-direction: column;  
@@ -94,7 +115,6 @@ const ActionGroup = styled.div`
   gap: 0.5rem; 
 `;
 
-// 버튼들을 묶는 컨테이너: 가로로 정렬
 const ButtonWrapper = styled.div`
   display: flex;
   gap: 0.5rem;

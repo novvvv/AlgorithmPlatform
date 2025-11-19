@@ -1,6 +1,6 @@
 import React from "react";
 import ProblemItem from "@/components/side/ProblemItem";
-import mockProblems from "@/mocks/mockProblems";
+import { mockProblems } from "@/mocks/mockProblems";
 import {
   ListContainer,
   FilterBar,
@@ -32,19 +32,20 @@ const ProblemList: React.FC = () => {
 
       {/* 목록 */}
       <ListWrapper>
-        {mockProblems.map((problem, index: number) => (
+        {mockProblems.map((problem) => (
           <ProblemItem
-            key={index}
+            key={problem.problem_id}
+            id={problem.problem_id}
             title={problem.title}
             language={problem.language}
-            correctRate={problem.correctRate}
+            correctRate={problem.correctRate ?? 0}
             difficulty={problem.difficulty}
           />
         ))}
       </ListWrapper>
 
       {/* 하단 버튼 */}
-      <FixedButton>추가하기</FixedButton>
+      <FixedButton onClick={() => window.location.href = '/problem-create'}>추가하기</FixedButton>
     </ListContainer>
   );
 };

@@ -1,33 +1,57 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import type { IGroupMembership } from "@/types/studyGroup";
 
 interface StudyGroupItemProps {
+  id: number;
   group_name: string;
   is_public: boolean;
   current_members?: IGroupMembership[]; 
   max_members: number;
+  currentUserId: number; 
 }
 
 const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
+  id,
   group_name,
   current_members,
   max_members,
   is_public,
+  currentUserId,
 }) => {
-  // 실제 멤버 수를 계산
+  const navigate = useNavigate();
+
   const membersCount = current_members ? current_members.length : 0;
+  const isJoined = current_members?.some(member => member && member.user_id === currentUserId);
+
+  const handleJoin = () => {
+    navigate(`/studygroup/join/${id}`);
+  };
+
+  const handleGoToDetail = () => {
+    navigate(`/studygroup/${id}`);
+  };
   
+  const ActionButton = () => {
+    if (isJoined) {
+      // 이미 가입된 경우
+      return <JoinedButton onClick={handleGoToDetail}>그룹보기</JoinedButton>;
+    } else {
+      // 가입하지 않은 경우
+      return <JoinButton onClick={handleJoin}>가입하기</JoinButton>;
+    }
+  };
+
   return (
     <ItemContainer>
       <InfoSection>
-        {/* group_name 사용 */}
         <GroupName>{group_name}</GroupName>
         <MemberCount>{membersCount} / {max_members}명</MemberCount>
       </InfoSection>
       <ActionGroup> 
         <Tag $isPublic={is_public}>{is_public ? "공개" : "비공개"}</Tag>
-        <JoinButton>가입하기</JoinButton>
+        <ActionButton />
       </ActionGroup>
     </ItemContainer>
   );
@@ -92,5 +116,20 @@ const JoinButton = styled.button`
   white-space: nowrap; 
   &:hover {
     background-color: #2563eb;
+  }
+`;
+
+const JoinedButton = styled.button`
+  background-color: #f3f4f6; /* 회색 배경 */
+  color: #3b82f6; /* 파란색 텍스트 */
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap; 
+  &:hover {
+    background-color: #e5e7eb;
   }
 `;

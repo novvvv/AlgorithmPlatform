@@ -24,6 +24,6 @@ const MainContainer = styled.main`
   flex: 1;
   background-color: #ffffff;
   overflow-y: auto;
-  padding: 2rem var(--content-padding);
   box-sizing: border-box;
+  min-height: 100vh-var(--nav-height);
 `;
