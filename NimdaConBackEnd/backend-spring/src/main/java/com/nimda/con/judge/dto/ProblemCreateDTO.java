@@ -54,5 +54,7 @@ public class ProblemCreateDTO {
 
         @NotBlank(message = "테스트 케이스 출력을 입력해주세요")
         private String output;
+
+        private Boolean isPublic; // 프론트엔드에 공개 여부 (true: 공개, false: 백엔드 전용, null이면 기본값 false)
     }
 }
