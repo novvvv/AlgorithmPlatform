@@ -30,9 +30,13 @@ INSERT IGNORE INTO authority (authority_name) VALUES
 -- 기본 관리자 계정 생성 (비밀번호: password)
 -- 참고: 아래 해시는 BCrypt로 암호화된 "password" 비밀번호입니다.
 -- 모든 개발자가 동일한 비밀번호로 테스트할 수 있도록 공통 해시를 사용합니다.
+
+-- 기존 잘못된 nickname 값 수정 (2자 -> 4자)
+UPDATE users SET nickname = '익명사용자' WHERE nickname = '익명' AND user_id = 'anonymous';
+
 INSERT IGNORE INTO users (user_id, nickname, password, email) VALUES 
 ('admin', 'admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com'),
-('anonymous', '익명', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'anonymous@nimda.com'),
+('anonymous', '익명사용자', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'anonymous@nimda.com'),
 ('seoyun', 'seoyun', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'seoyun@example.com');
 
 -- 관리자에게 권한 부여

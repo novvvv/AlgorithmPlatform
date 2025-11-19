@@ -60,14 +60,26 @@ public class JudgeService {
             User user = userRepository.findByNickname(nickname).orElse(null);
             if (user == null) {
                 logger.warn("사용자를 찾을 수 없음: {}", nickname);
-                // 익명 사용자 조회 또는 생성
-                user = userRepository.findByNickname("익명").orElseGet(() -> {
-                    // 익명 사용자가 없으면 생성
-                    String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
-                    User anonymousUser = new User("anonymous", "익명", encodedPassword, "anonymous@nimda.com");
-                    return userRepository.save(anonymousUser);
-                });
-                nickname = "익명";
+                // 익명 사용자는 user_id가 "anonymous"로 고정되어 있으므로 user_id로 조회
+                user = userRepository.findByUserId("anonymous")
+                    .orElseGet(() -> {
+                        // user_id로 찾지 못하면 이메일로 조회 시도
+                        return userRepository.findByEmail("anonymous@nimda.com")
+                            .orElseGet(() -> {
+                                // 이메일로도 찾지 못하면 생성
+                                String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
+                                User anonymousUser = new User("anonymous", "익명사용자", encodedPassword, "anonymous@nimda.com");
+                                try {
+                                    return userRepository.save(anonymousUser);
+                                } catch (Exception e) {
+                                    // 이미 존재하는 경우 이메일로 다시 조회
+                                    logger.warn("익명 사용자 생성 실패, 이메일로 재조회: {}", e.getMessage());
+                                    return userRepository.findByEmail("anonymous@nimda.com")
+                                        .orElseThrow(() -> new RuntimeException("익명 사용자를 찾거나 생성할 수 없습니다."));
+                                }
+                            });
+                    });
+                nickname = user.getNickname(); // 실제 DB에 저장된 닉네임 사용
             }
 
             // 2. 문제 조회 (SubmissionDTO에서 problemId 가져오기)
