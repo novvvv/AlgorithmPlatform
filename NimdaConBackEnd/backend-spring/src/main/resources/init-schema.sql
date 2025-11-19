@@ -40,3 +40,5 @@ ALTER TABLE users ADD COLUMN grade VARCHAR(20) AFTER department;
 -- username 컬럼을 NULL 허용으로 변경 (기존 데이터 호환성 유지)
 ALTER TABLE users MODIFY COLUMN username VARCHAR(20) NULL;
 
+
+
