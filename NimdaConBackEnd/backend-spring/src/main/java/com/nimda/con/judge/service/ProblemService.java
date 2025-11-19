@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProblemService {
@@ -57,6 +58,8 @@ public class ProblemService {
                 testCase.setProblem(problem);
                 testCase.setInput(testCaseDTO.getInput());
                 testCase.setOutput(testCaseDTO.getOutput());
+                // isPublic 설정 (null이면 기본값 false)
+                testCase.setIsPublic(testCaseDTO.getIsPublic() != null ? testCaseDTO.getIsPublic() : false);
                 testCaseRepository.save(testCase);
             }
         }
@@ -65,7 +68,7 @@ public class ProblemService {
     }
 
     /**
-     * 모든 문제 조회
+     * ID로 문제 조회 (공개된 테스트케이스만 포함)
      */
     @Transactional(readOnly = true)
     public List<Problem> getAllProblems() {

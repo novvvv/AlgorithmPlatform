@@ -2,6 +2,8 @@ package com.nimda.con.judge.controller;
 
 import com.nimda.con.judge.dto.ProblemCreateDTO;
 import com.nimda.con.judge.entity.Problem;
+import com.nimda.con.judge.entity.TestCase;
+import com.nimda.con.judge.repository.TestCaseRepository;
 import com.nimda.con.judge.service.ProblemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/problems")
@@ -20,6 +23,8 @@ public class ProblemController {
 
     @Autowired
     private ProblemService problemService;
+    @Autowired
+    private TestCaseRepository testCaseRepository;
 
     /**
      * 문제 생성
@@ -72,16 +77,30 @@ public class ProblemController {
     }
 
     /**
-     * ID로 문제 조회
+     * ID로 문제 조회 (공개된 테스트 케이스만 포함한다.)
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getProblemById(@PathVariable Long id) {
         try {
             Problem problem = problemService.getProblemById(id);
+            // 공개된 테스트케이스만 조회 (프론트엔드용)
+            List<TestCase> publicTestCases = testCaseRepository.findByProblemIdAndIsPublicTrue(id);
+
+            // 테스트케이스를 Map으로 변환 (isPublic 필드는 제외)
+            List<Map<String, Object>> testCaseList = publicTestCases.stream()
+                    .map(tc -> {
+                        Map<String, Object> tcMap = new HashMap<>();
+                        tcMap.put("id", tc.getId());
+                        tcMap.put("input", tc.getInput());
+                        tcMap.put("output", tc.getOutput());
+                        return tcMap;
+                    })
+                    .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("problem", problem);
+            response.put("testCases", testCaseList); // 공개된 테스트케이스만 포함
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

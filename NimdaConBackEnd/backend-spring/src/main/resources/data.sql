@@ -50,11 +50,11 @@ INSERT IGNORE INTO problems (id, title, description, time_limit, memory_limit, d
 
 -- 기본 테스트케이스 데이터 삽입
 -- A + B 문제용 (ID: 1)
-INSERT IGNORE INTO test_cases (problem_id, input, output, created_at, updated_at) VALUES 
-(1, '1 2', '3', NOW(), NOW()),           -- A + B 테스트케이스 1
-(1, '5 7', '12', NOW(), NOW()),          -- A + B 테스트케이스 2
-(1, '100 200', '300', NOW(), NOW()),     -- A + B 테스트케이스 3
-(1, '0 0', '0', NOW(), NOW()),           -- A + B 테스트케이스 4
+INSERT IGNORE INTO test_cases (problem_id, input, output, is_public, created_at, updated_at) VALUES 
+(1, '1 2', '3', false, NOW(), NOW()),           -- A + B 테스트케이스 1
+(1, '5 7', '12', false, NOW(), NOW()),          -- A + B 테스트케이스 2
+(1, '100 200', '300', false, NOW(), NOW()),     -- A + B 테스트케이스 3
+(1, '0 0', '0', false, NOW(), NOW()),           -- A + B 테스트케이스 4
 
 -- Hello World 문제용 (ID: 2)
-(2, '', 'Hello World', NOW(), NOW());    -- Hello World 테스트케이스 (입력 없음)
+(2, '', 'Hello World', false, NOW(), NOW());    -- Hello World 테스트케이스 (입력 없음)
