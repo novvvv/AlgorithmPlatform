@@ -7,7 +7,6 @@ import type { IStudyGroup } from "@/types/studyGroup";
 import type { IGroupJoinRequest } from "@/types/studyGroup";
 
 import mockStudyGroups from "@/mocks/mockStudyGroups";
-import { mockStudyGroupDetail } from "@/mocks/mockStudyGroupDetail";
 import { mockProblems } from "@/mocks/mockProblems";
 
 import {
@@ -86,41 +85,53 @@ const getActivityPeriod = (createdAt: string) => {
 const CURRENT_USER_ID = 101;
 const CURRENT_USER_ROLE = "MEMBER";
 
-export default function StudyGroupContent({
+export default function StudyGroupCommon({
   groupId,
   isDetailPage,
   onHeaderButtonClick,
 }: StudyGroupContentProps) {
   const navigate = useNavigate();
   
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+
   const initialGroupData = useMemo(() => 
-    mockStudyGroups.find(g => g.group_id === groupId) || mockStudyGroupDetail, 
-    [groupId]
-  );
-  const groupData: IStudyGroup = initialGroupData;
+    mockStudyGroups.find(g => g.group_id === groupId), 
+    [groupId]
+  );
 
-  const [problems, setProblems] = useState(() => 
-    mockProblems.filter(p => p.group_id === groupData.group_id)
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const groupData: IStudyGroup | undefined = initialGroupData;
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await getProblemsByGroupAPI(groupId);
-        if (!mounted) return;
-        if (res.success && Array.isArray(res.problems)) {
-          setProblems(res.problems);
-        } else {
-          setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-        }
-      } catch (e) {
-        setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-      }
-    })();
-    return () => { mounted = false; };
-  }, [groupId, groupData.group_id]);
+  const [problems, setProblems] = useState(() => 
+    mockProblems.filter(p => p.group_id === (groupData?.group_id || -1))
+  );
+
+  if (!groupData) {
+    return (
+      <PageContainer>
+        <Header>
+          <Title>스터디 그룹을 찾을 수 없습니다.</Title>
+        </Header>
+      </PageContainer>
+    );
+  }
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await getProblemsByGroupAPI(groupId);
+        if (!mounted) return;
+        if (res.success && Array.isArray(res.problems)) {
+          setProblems(res.problems);
+        } else {
+          setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
+        }
+      } catch (e) {
+        setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
+      }
+    })();
+    return () => { mounted = false; };
+  }, [groupId, groupData.group_id]);
 
   const handleDetail = (id: number | string) => {
     navigate(`/problem/${id}/detail`);
@@ -131,7 +142,6 @@ export default function StudyGroupContent({
   };
 
   const handlePublicJoin = async () => {
-    // ⚠️ 가입 코드가 없는 경우 빈 문자열을 전달
     await attemptJoinGroup("");
   };
 
@@ -154,8 +164,8 @@ export default function StudyGroupContent({
       navigate(`/studygroup/${groupId}`);
       
     } catch (error) {
-      console.error("가입 처리 실패:", error);
-      alert(`가입 실패: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
+      alert(`가입 실패: ${errorMessage}`);
     }
   };
 
@@ -273,18 +283,15 @@ export default function StudyGroupContent({
 
             return (
                 <ProblemItem key={problem.problem_id}>
-                    {/* 1. 제목 및 문제 설명 (ProblemHeader 역할 대체) */}
                     <ProblemHeader>
                         <ProblemTitle>{problem.title}</ProblemTitle>
                         <ProgressText>{problem.description}</ProgressText> {/* 문제 설명 */}
                     </ProblemHeader>
 
-                    {/* 2. 난이도 태그 */}
                     <DifficultyBadge $difficulty={problem.difficulty}>
                         {getDifficultyText(problem.difficulty)}
                     </DifficultyBadge>
                     
-                    {/* 3. 진행바 및 해결 인원 */}
                     <ProgressGroup>
                         <ProgressBar>
                             <ProgressFill style={{ width: `${completionRate}%` }} />
@@ -294,7 +301,6 @@ export default function StudyGroupContent({
                         </ProgressLabel>
                     </ProgressGroup>
 
-                    {/* 4. 액션 버튼 (상세, 풀기) */}
                     <ActionGroup>
                         <DetailButton onClick={() => handleDetail(problem.problem_id)}>상세</DetailButton>
                         <SolveButton onClick={() => handleSolve(problem.problem_id)}>풀기</SolveButton>

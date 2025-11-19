@@ -167,8 +167,11 @@ export default function ProblemCreatePage() {
 
 const PageWrapper = styled.div`
   width: 100%;
+  min-height: 100%;
   display: flex;
   justify-content: center;
+  background-color: #f5f5f5;
+  box-sizing: border-box;
 `;
 
 const Card = styled.div`
@@ -180,8 +183,8 @@ const Card = styled.div`
 
 const FormHeader = styled.h1`
   text-align: center;
-  font-size: 1.7rem;
-  font-weight: 700;
+  font-size: 1.9rem;
+  font-weight: 800;
   margin: 0 0 1.25rem;
 `;
 

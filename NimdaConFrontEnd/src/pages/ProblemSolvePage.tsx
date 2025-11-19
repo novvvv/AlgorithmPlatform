@@ -151,7 +151,7 @@ const Page = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 0.8rem;
-  background: #f3f4f6;
+  background: #f5f5f5;
   box-sizing: border-box;
 `;
 

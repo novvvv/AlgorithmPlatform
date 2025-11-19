@@ -1,4 +1,3 @@
-// StudyGroupDetailPage.tsx (수정 완료)
 import { useParams, useNavigate } from "react-router-dom";
 import StudyGroupCommon from "@/components/common/StudyGroupCommon";
 
