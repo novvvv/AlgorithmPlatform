@@ -113,11 +113,13 @@
   "testCases": [
     {
       "input": "1 2",
-      "output": "3"
+      "output": "3",
+      "isPublic": false
     },
     {
       "input": "5 7",
-      "output": "12"
+      "output": "12",
+      "isPublic": true
     }
   ]
 }
@@ -125,6 +127,12 @@
 - **필수 필드**: `title`, `description`, `timeLimit`, `memoryLimit`, `difficulty`, `language`
 - **선택 필드**: `groupId`, `testCases`
 - **난이도**: `EASY`, `MEDIUM`, `HARD`
+- **테스트케이스 필드**:
+  - `input`: 테스트케이스 입력 (필수)
+  - `output`: 테스트케이스 출력 (필수)
+  - `isPublic`: 프론트엔드 공개 여부 (선택, 기본값: `false`)
+    - `true`: 프론트엔드에 공개 (사용자가 볼 수 있음)
+    - `false`: 백엔드 전용 (채점용, 사용자에게 숨김)
 
 ---
 
@@ -140,7 +148,29 @@
 - **URL**: `http://localhost:8080/api/problems/{id}`
 - **Path Variables**: `id` (Long) - 예: `1`
 - **Headers**: 없음
-- **응답**: 공개된 테스트케이스(`isPublic=true`)만 포함
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "problem": {
+    "id": 1,
+    "title": "A + B",
+    "description": "...",
+    "timeLimit": 5000,
+    "memoryLimit": 262144,
+    "difficulty": "EASY",
+    "language": "Java"
+  },
+  "testCases": [
+    {
+      "id": 1,
+      "input": "1 2",
+      "output": "3"
+    }
+  ]
+}
+```
+- **참고**: 공개된 테스트케이스(`isPublic=true`)만 `testCases` 배열에 포함됨
 
 ---
 

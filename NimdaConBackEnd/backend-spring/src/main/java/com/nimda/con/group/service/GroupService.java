@@ -91,12 +91,17 @@ public class GroupService {
                 GroupMembership membership = new GroupMembership(user, group, request.getRole());
                 GroupMembership saved = groupMembershipRepository.save(membership); // DB 저장
 
+                // * ID를 미리 가져와서 Lazy loading 문제 방지 *
+                Long savedGroupId = group.getId();
+                Long userId = user.getId();
+                String nickname = user.getNickname();
+
                 // * [Response] GroupMemberResponse - 그룹 멤버십 응답 객체 생성 *
                 return GroupMemberResponse.builder()
                                 .membershipId(saved.getId())
-                                .groupId(group.getId())
-                                .userId(user.getId())
-                                .nickname(user.getNickname())
+                                .groupId(savedGroupId)
+                                .userId(userId)
+                                .nickname(nickname)
                                 .role(saved.getRole())
                                 .active(saved.isActive())
                                 .joinedAt(saved.getJoinedAt())
