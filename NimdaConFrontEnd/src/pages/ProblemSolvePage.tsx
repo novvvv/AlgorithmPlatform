@@ -3,14 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
+import { mockProblemDetails } from "@/mocks/mockProblemDetails";
+import { mockProblemResults } from "@/mocks/mockProblemResults";
+import type { SubmissionStatus } from "@/types/problem";
 
 const languageOptions = [
-  { label: "python", value: "PYTHON" },
-  { label: "java", value: "JAVA" },
-  { label: "c++", value: "CPP" },
+  { label: "Python", value: "PYTHON" },
+  { label: "Java", value: "JAVA" },
+  { label: "C++", value: "CPP" },
 ];
 
-type TestStatus = "AC" | "WA";
+type TestStatus = SubmissionStatus;
 
 interface TestResult {
   name: string;
@@ -23,16 +26,15 @@ const ProblemSolvePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // 실제 연동 전 임시 데이터
-  const mock = useMemo(
-    () => ({
-      title: "문제 이름",
-      description: "배열에서 두 수를 더해 target을 만드는 인덱스를 반환하세요.",
-      samples: [{ input: "", output: "" }],
-      constraints: ["시간 제한: 2초", "메모리 제한: 256MB"],
-    }),
-    [],
-  );
+  const problem = useMemo(() => {
+    if (!id) return undefined;
+    return mockProblemDetails.find(p => p.problem_id === Number(id));
+  }, [id]);
+
+  const resultMock = useMemo(() => {
+    if (!id) return undefined;
+    return mockProblemResults.find(r => r.problem_id === Number(id));
+  }, [id]);
 
   const [language, setLanguage] = useState(languageOptions[0].value);
   const [code, setCode] = useState(`def solution(nums, target) :
@@ -41,33 +43,50 @@ const ProblemSolvePage: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
 
   const handleRun = () => {
-    // 실제 채점 결과를 연동하기 전까지는 샘플 데이터를 사용합니다.
-    setTestResults([
-      { name: "테스트 케이스 1", status: "AC", time: "42ms", memory: "5.1MB" },
-      { name: "테스트 케이스 2", status: "AC", time: "38ms", memory: "5.0MB" },
-      { name: "테스트 케이스 3", status: "WA", time: "44ms", memory: "5.2MB" },
-    ]);
-    setResultMessage("실행 결과가 업데이트되었습니다.");
+    // 실제 채점 결과를 연동하기 전까지는 목업 데이터를 사용합니다.
+    if (resultMock) {
+      setTestResults(
+        resultMock.testCases.map(tc => ({
+          name: tc.name,
+          status: tc.result,
+          time: tc.time,
+          memory: tc.memory,
+        })),
+      );
+      setResultMessage("실행 결과가 업데이트되었습니다.");
+    } else {
+      setTestResults([]);
+      setResultMessage("실행 결과를 불러오지 못했습니다.");
+    }
   };
 
   const handleSubmit = () => {
     setResultMessage("제출이 완료되었습니다. (모의 상태)");
-    navigate("/problem-result");
+    navigate(id ? `/problem/result/${id}` : "/problem/result");
   };
+
+  if (!problem) {
+    return (
+      <Page>
+        <Title>문제 풀이</Title>
+        <EmptyCard>문제 목록에서 문제를 선택해주세요.</EmptyCard>
+      </Page>
+    );
+  }
 
   return (
     <Page>
-      <Title>{mock.title}{id ? ` (#${id})` : ""}</Title>
+      <Title>{problem.title}{id ? ` (#${id})` : ""}</Title>
       <ContentGrid>
         <LeftColumn>
           <Card>
             <CardTitle>문제 설명</CardTitle>
-            <Description>{mock.description}</Description>
+            <Description>{problem.description}</Description>
           </Card>
 
           <Card>
             <CardTitle>입출력 예제</CardTitle>
-            {mock.samples.map((sample, idx) => (
+            {problem.samples.map((sample, idx) => (
               <SampleBox key={idx}>
                 <SampleRow>
                   <SampleLabel>입력:</SampleLabel>
@@ -84,7 +103,7 @@ const ProblemSolvePage: React.FC = () => {
           <Card>
             <CardTitle>제약 조건</CardTitle>
             <ConstraintList>
-              {mock.constraints.map(item => (
+              {problem.constraints.map(item => (
                 <li key={item}>{item}</li>
               ))}
             </ConstraintList>
@@ -123,11 +142,11 @@ const ProblemSolvePage: React.FC = () => {
                     <TestRowLeft>
                       <TestIcon
                         src={result.status === "AC" ? CorrectSmall : FailureSmall}
-                        alt={result.status === "AC" ? "통과" : "오답"}
+                        alt={result.status === "AC" ? "통과" : "불통과"}
                       />
                       <TestName>{result.name}</TestName>
                       <TestResultText status={result.status}>
-                        {result.status === "AC" ? "통과" : "오답"}
+                        {result.status === "AC" ? "통과" : "불통과"}
                       </TestResultText>
                     </TestRowLeft>
                     <TestMeta>{result.time} / {result.memory}</TestMeta>
@@ -151,22 +170,34 @@ const Page = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 0.8rem;
-  background: #f5f5f5;
+  background: #f3f4f6;
   box-sizing: border-box;
+  padding-bottom: 2.5rem;
 `;
 
 const Title = styled.h1`
   margin: 0;
   width: 92%;
-  max-width: 1120px;
+  max-width: 1280px;
   font-size: 1.8rem;
   font-weight: 800;
   padding: 1.5rem 0.5rem 0.5rem;
 `;
 
+const EmptyCard = styled.div`
+  width: 92%;
+  max-width: 1280px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+  font-weight: 700;
+`;
+
 const ContentGrid = styled.div`
   width: 92%;
-  max-width: 1120px;
+  max-width: 1280px;
   display: grid;
   grid-template-columns: 1.2fr 1.8fr;
   gap: 1rem;

@@ -46,7 +46,7 @@ export default function MyPage() {
    const navigate = useNavigate();
 
   const handleDetail = (id: number | string) => {
-    navigate(`/problem/${id}/detail`);
+    navigate(`/problem/detail/${id}`);
   };
 
   const handleSolve = (id: number | string) => {
