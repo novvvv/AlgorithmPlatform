@@ -26,7 +26,7 @@ const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
   const isJoined = current_members?.some(member => member && member.user_id === currentUserId);
 
   const handleJoin = () => {
-    navigate(`/studygroup/${id}/join`);
+    navigate(`/studygroup/join/${id}`);
   };
 
   const handleGoToDetail = () => {

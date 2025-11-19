@@ -29,6 +29,15 @@ const getDifficultyColor = (diff: ProblemDifficulty): string => {
   }
 };
 
+const displayLanguage = (diff: ProgrammingLanguage): string => {
+  switch (diff) {
+    case "PYTHON": return "Python";
+    case "JAVA": return "Java";
+    case "CPP": return "C++";
+    default: return "";
+  }
+};
+
 const ProblemItem: React.FC<ProblemItemProps> = ({
   id,
   title,
@@ -39,7 +48,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   const navigate = useNavigate();
 
   const handleDetail = () => {
-    navigate(`/problem/${id}/detail`);
+    navigate(`/problem//detail${id}`);
   };
 
   const handleSolve = () => {
@@ -51,7 +60,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <InfoSection>
         <ProblemTitle>{title}</ProblemTitle>
         <SubInfo>
-          {language} / 정답률 {correctRate}%
+          {displayLanguage(language)} / 정답률 {correctRate}%
         </SubInfo>
       </InfoSection>
       <ActionGroup> 
