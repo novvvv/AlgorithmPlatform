@@ -14,6 +14,7 @@ import com.nimda.con.judge.repository.JudgeResultRepository;
 import com.nimda.con.judge.repository.TestCaseRepository;
 import com.nimda.con.user.entity.User;
 import com.nimda.con.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class JudgeService {
     private UserRepository userRepository;
     @Autowired
     private TestCaseRepository testCaseRepository; // 테스트 케이스 레포지토리
+    @Autowired
+    private PasswordEncoder passwordEncoder; // 비밀번호 암호화
 
     private static final long TIME_LIMIT_MS = 5000; // 5초
     private static final long MEMORY_LIMIT_MB = 256; // 256MB
@@ -60,7 +63,8 @@ public class JudgeService {
                 // 익명 사용자 조회 또는 생성
                 user = userRepository.findByNickname("익명").orElseGet(() -> {
                     // 익명 사용자가 없으면 생성
-                    User anonymousUser = new User("anonymous", "익명", "anonymous", "anonymous@nimda.com");
+                    String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
+                    User anonymousUser = new User("anonymous", "익명", encodedPassword, "anonymous@nimda.com");
                     return userRepository.save(anonymousUser);
                 });
                 nickname = "익명";
