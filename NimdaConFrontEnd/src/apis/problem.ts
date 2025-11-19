@@ -130,3 +130,63 @@ export const getProblemByIdAPI = async (id: number | string): Promise<{ success:
   }
 };
 
+/**
+ * 그룹별 문제 조회 API
+ * GET /api/problems/group/{groupId}
+ */
+export const getProblemsByGroupAPI = async (groupId: number | string): Promise<{ success: boolean; problems?: IProblem[]; message?: string; status?: number }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/problems/group/${groupId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
+
+    const result = await parseJsonSafe(response);
+    if (response.ok) {
+      return result ?? { success: true, problems: [] };
+    }
+
+    return {
+      success: false,
+      status: response.status,
+      message: (result && result.message) || "그룹의 문제 목록을 불러올 수 없습니다.",
+    };
+  } catch (error) {
+    console.error("그룹별 문제 조회 API 오류:", error);
+    return { success: false, message: "그룹의 문제 목록을 불러올 수 없습니다." };
+  }
+};
+
+/**
+ * 글로벌(전체) 문제 조회 API
+ * GET /api/problems/global
+ */
+export const getGlobalProblemsAPI = async (): Promise<{ success: boolean; problems?: IProblem[]; message?: string; status?: number }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/problems/global`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
+
+    const result = await parseJsonSafe(response);
+    if (response.ok) {
+      return result ?? { success: true, problems: [] };
+    }
+
+    return {
+      success: false,
+      status: response.status,
+      message: (result && result.message) || "글로벌 문제 목록을 불러올 수 없습니다.",
+    };
+  } catch (error) {
+    console.error("글로벌 문제 조회 API 오류:", error);
+    return { success: false, message: "글로벌 문제 목록을 불러올 수 없습니다." };
+  }
+};
+
