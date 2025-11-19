@@ -21,11 +21,11 @@ export default function LoginPage() {
 }
 
 const PageContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
   width: 100%;
+  min-height: 100%;
+  padding: 2rem;
+  background-color: #f5f5f5;
+  box-sizing: border-box;
 `;
 
 const PageTitle = styled.h1`

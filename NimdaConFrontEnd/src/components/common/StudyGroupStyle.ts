@@ -229,11 +229,6 @@ export const ProblemList = styled.div`
   gap: 1rem;
 `;
 
-// 📌 StudyGroupCommon.tsx (Problems 섹션 수정)
-
-// Problems
-// ... (ProblemList는 변경 없음)
-
 export const ProblemItem = styled.div`
   border: 1px solid #e5e7eb;
   border-radius: 8px;
