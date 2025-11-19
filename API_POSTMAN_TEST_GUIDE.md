@@ -320,7 +320,9 @@
 ```
 - **필수 필드**: `userId`
 - **선택 필드**: `role` (기본값: `MEMBER`), `participationCode`
-- **역할**: `MEMBER`, `ADMIN`
+- **역할**: `LEADER`, `MEMBER`
+  - `LEADER`: 그룹 리더 (그룹 생성자가 자동으로 LEADER 역할)
+  - `MEMBER`: 일반 멤버
 
 ---
 
@@ -389,7 +391,16 @@ Authorization: Bearer {{token}}
 4. **코드 제출** → `POST /api/judge/submit`
 5. **제출 목록 확인** → `GET /api/judge/submissions`
 
-### 4. 주의사항
+### 4. 그룹 API 테스트 팁
+- **기본 그룹 데이터**: 서버 시작 시 자동으로 3개의 기본 그룹이 생성됩니다:
+  - 그룹 1: "알고리즘 기초 스터디" (참여 코드: `ALGO2024`)
+  - 그룹 2: "자료구조 심화 스터디" (참여 코드: `DS2024`)
+  - 그룹 3: "코딩 테스트 준비반" (참여 코드: `CT2024`, 공개 그룹)
+- **그룹 멤버 추가 테스트**: 
+  - 기본 사용자 ID: `1` (admin), `2` (anonymous), `3` (seoyun)
+  - 예: `POST /api/groups/1/members` - 그룹 1에 사용자 2 추가
+
+### 5. 주의사항
 - `userId`와 `nickname`은 고유값 (중복 불가)
 - 패스워드: 4-100자
 - 로그인 시 `userId` 사용 (닉네임 아님)
@@ -433,5 +444,5 @@ Authorization: Bearer {{token}}
 
 ---
 
-**마지막 업데이트**: 2024-11-19
+**마지막 업데이트**: 2024-11-20
 
