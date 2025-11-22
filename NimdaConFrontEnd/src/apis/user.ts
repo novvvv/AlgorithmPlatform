@@ -1,116 +1,86 @@
-import type { IUser } from "@/types/user";
+import type { 
+  GetAllUsersResponse, 
+  GetUserByIdResponse,
+  DeleteUserResponse, 
+  UpdateUserRoleResponse 
+} from "@/types/user";
+import { apiClient, getErrorMessage } from "./utils";
 
-const API_BASE_URL = "/api";
-
-const parseJsonSafe = async (response: Response): Promise<any> => {
+/**
+ * 모든 사용자 조회 API
+ * GET /api/users
+ */
+export const getAllUsersAPI = async (): Promise<GetAllUsersResponse> => {
   try {
-    const text = await response.text();
-    if (!text) return null;
-    return JSON.parse(text);
-  } catch {
-    return null;
+    const response = await apiClient.get<GetAllUsersResponse>("/users");
+    return response.data;
+  } catch (error: unknown) {
+    console.error("사용자 목록 조회 오류:", error);
+    throw new Error(getErrorMessage(error));
   }
 };
 
 /**
- * 모든 사용자 조회 API
+ * 사용자 ID로 조회 API
+ * GET /api/users/{userId}
  */
-export const getAllUsersAPI = async (): Promise<{ success: boolean; users?: IUser[]; message?: string; status?: number }> => {
+export const getUserByIdAPI = async (
+  userId: number | string
+): Promise<GetUserByIdResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
+    const response = await apiClient.get<GetUserByIdResponse>(`/users/${userId}`);
+    return response.data;
+  } catch (error: unknown) {
+    console.error("사용자 조회 오류:", error);
+    throw new Error(getErrorMessage(error));
+  }
+};
 
-    const result = await parseJsonSafe(response);
-
-    if (response.ok) {
-      return result ?? { success: true, users: [] };
-    }
-
-    return {
-      success: false,
-      status: response.status,
-      message:
-        (result && result.message) ||
-        (response.status === 403
-          ? "권한이 없습니다. 관리자 계정으로 로그인하세요."
-          : "사용자 목록을 불러올 수 없습니다."),
-    };
-  } catch (error) {
-    console.error("사용자 목록 조회 API 오류:", error);
-    return { success: false, message: "사용자 목록을 불러올 수 없습니다." };
+/**
+ * 닉네임으로 조회 API
+ * GET /api/users/nickname/{nickname}
+ */
+export const getUserByNicknameAPI = async (
+  nickname: string
+): Promise<GetUserByIdResponse> => {
+  try {
+    const response = await apiClient.get<GetUserByIdResponse>(`/users/nickname/${encodeURIComponent(nickname)}`);
+    return response.data;
+  } catch (error: unknown) {
+    console.error("닉네임으로 사용자 조회 오류:", error);
+    throw new Error(getErrorMessage(error));
   }
 };
 
 /**
  * 사용자 삭제 API
+ * DELETE /api/users/{userId}
  */
-export const deleteUserAPI = async (userId: number): Promise<{ success: boolean; message?: string; status?: number }> => {
+export const deleteUserAPI = async (
+  userId: number
+): Promise<DeleteUserResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
-
-    const result = await parseJsonSafe(response);
-    if (response.ok) {
-      return result ?? { success: true };
-    }
-    return {
-      success: false,
-      status: response.status,
-      message:
-        (result && result.message) ||
-        (response.status === 403
-          ? "권한이 없습니다. 관리자 계정으로 로그인하세요."
-          : "사용자 삭제 중 오류가 발생했습니다."),
-    };
-  } catch (error) {
+    const response = await apiClient.delete<DeleteUserResponse>(`/users/${userId}`);
+    return response.data;
+  } catch (error: unknown) {
     console.error("사용자 삭제 API 오류:", error);
-    return { success: false, message: "사용자 삭제 중 오류가 발생했습니다." };
+    throw new Error(getErrorMessage(error));
   }
 };
 
 /**
  * 사용자 권한 변경 API
+ * PUT /api/users/{userId}/role
  */
-export const updateUserRoleAPI = async (userId: number, role: string): Promise<{ success: boolean; message?: string; status?: number }> => {
+export const updateUserRoleAPI = async (
+  userId: number,
+  role: string
+): Promise<UpdateUserRoleResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-      body: JSON.stringify({ role }),
-    });
-
-    const result = await parseJsonSafe(response);
-    if (response.ok) {
-      return result ?? { success: true };
-    }
-    return {
-      success: false,
-      status: response.status,
-      message:
-        (result && result.message) ||
-        (response.status === 403
-          ? "권한이 없습니다. 관리자 계정으로 로그인하세요."
-          : "사용자 권한 변경 중 오류가 발생했습니다."),
-    };
-  } catch (error) {
+    const response = await apiClient.put<UpdateUserRoleResponse>(`/users/${userId}/role`, { role });
+    return response.data;
+  } catch (error: unknown) {
     console.error("사용자 권한 변경 API 오류:", error);
-    return {
-      success: false,
-      message: "사용자 권한 변경 중 오류가 발생했습니다.",
-    };
+    throw new Error(getErrorMessage(error));
   }
 };
-

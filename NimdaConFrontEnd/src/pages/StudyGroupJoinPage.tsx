@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import StudyGroupCommon from "@/components/common/StudyGroupCommon";
 import mockStudyGroups from "@/mocks/mockStudyGroups";
-import type { IStudyGroup } from "@/types/studyGroup";
+import type { IStudyGroup } from "@/types/group";
 
 export default function StudyGroupJoinPage() {
   const params = useParams();

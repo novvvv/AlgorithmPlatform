@@ -1,29 +1,55 @@
-// types/submission.ts
+import type { ProgrammingLanguage } from "./problem";
+
 export interface ISubmissionRequest {
-  // DB 스키마 기반의 'Submission' 인터페이스와 이름 충돌을 피하기 위해 'Request'를 붙입니다.
-  // 이 타입의 속성은 DB 모델 Submission과 다를 수 있습니다.
-  title: string;
+  problemId: number;
+  language: ProgrammingLanguage;
   code: string;
-  language: string;
-  description?: string;
-  flag?: string;
-  hints?: string;
-  points?: number;
+}
+
+export interface ITestCaseResult {
+  input: string;
+  expectedOutput: string;
+  actualOutput: string;
+  passed: boolean;
+  executionTime?: number;
+  memoryUsage?: number;
+}
+
+export interface IJudgeResult {
+  status: "Accepted" | "Wrong Answer" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "Runtime Error" | "Compile Error";
+  totalTestCases: number;
+  passedTestCases: number;
+  testCaseResults?: ITestCaseResult[];
+  errorMessage?: string;
 }
 
 export interface IJudgeResponse {
   success: boolean;
   message: string;
-  // JudgeResult DB 스키마와 유사하게 구조화하는 것을 고려할 수 있습니다.
-  result?: {
-    status: string;
-    message?: string;
-    output?: string;
-    errorOutput?: string;
-    executionTime?: number;
-    memoryUsage?: number;
-    score?: number;
-  };
-  submittedBy?: string; // 제출자 정보 (IUser의 일부 또는 string)
-  submissionId?: number; // 채점된 제출 ID
+  result?: IJudgeResult;
+  submittedBy?: string;
+  submissionId?: number;
+}
+
+export interface ISubmission {
+  id: number;
+  problemId: number;
+  userId: number;
+  language: ProgrammingLanguage;
+  code: string;
+  status: string;
+  submittedAt: string;
+}
+
+export interface GetSupportedLanguagesResponse {
+  success: boolean;
+  languages?: ProgrammingLanguage[];
+  message?: string;
+}
+
+export interface GetAllSubmissionsResponse {
+  success: boolean;
+  submissions: ISubmission[];
+  totalCount: number;
+  message?: string;
 }

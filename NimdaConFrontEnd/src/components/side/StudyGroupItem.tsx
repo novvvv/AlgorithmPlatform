@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import type { IGroupMembership } from "@/types/studyGroup";
+import type { IGroupMembership } from "@/types/group";
 
 interface StudyGroupItemProps {
   id: number;

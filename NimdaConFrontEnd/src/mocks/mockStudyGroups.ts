@@ -1,4 +1,4 @@
-import type { IStudyGroup } from "@/types/studyGroup";
+import type { IStudyGroup } from "@/types/group";
 
 const mockStudyGroups: IStudyGroup[] = [
   {

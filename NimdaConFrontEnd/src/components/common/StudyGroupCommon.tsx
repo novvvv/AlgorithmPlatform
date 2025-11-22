@@ -1,11 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
-import { getProblemsByGroupAPI } from "@/apis/problem";
-import { joinGroupAPI } from "@/apis/studyGroup";
-import type { IStudyGroup } from "@/types/studyGroup";
-import type { IGroupJoinRequest } from "@/types/studyGroup";
+import type { IStudyGroup, IGroupMembership, GroupRole } from "@/types/group";
+import {
+  getAllGroupsAPI,
+  getGroupMembersAPI,
+  // addGroupMemberAPI 사용하지 않음!
+} from "@/apis/group";
 
+//임시
+const CURRENT_USER_ID = 101;
+const CURRENT_USER_ROLE = "MEMBER";
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 import { mockProblems } from "@/mocks/mockProblems";
 
@@ -58,7 +63,6 @@ interface StudyGroupContentProps {
   onHeaderButtonClick: () => void; // 헤더 버튼 클릭 시 실행할 함수
 }
 
-// 그룹 데이터의 문제를 필터링하는 헬퍼 함수 (두 페이지에서 공통)
 const getDifficultyText = (difficulty: string) => {
     switch(difficulty) {
       case 'EASY': return '하';
@@ -80,10 +84,6 @@ const getActivityPeriod = (createdAt: string) => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return `${diffDays}일`;
 };
-
-//임시
-const CURRENT_USER_ID = 101;
-const CURRENT_USER_ROLE = "MEMBER";
 
 export default function StudyGroupCommon({
   groupId,

@@ -1,101 +1,51 @@
-import type { ISubmissionRequest, IJudgeResponse } from "@/types/judge";
-
-const API_BASE_URL = "/api";
+import type {
+  ISubmissionRequest,
+  IJudgeResponse,
+  GetSupportedLanguagesResponse,
+  GetAllSubmissionsResponse,
+} from "@/types/judge";
+import { apiClient, getErrorMessage } from "./utils";
 
 /**
  * 코드 제출 및 채점 API 호출
+ * POST /api/judge/submit
  */
 export const submitCodeAPI = async (
   submissionData: ISubmissionRequest
 ): Promise<IJudgeResponse> => {
   try {
-    // localStorage에서 토큰 가져오기
-    const token = localStorage.getItem("authToken");
-
-    // 헤더 구성
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    // 토큰이 있으면 Authorization 헤더 추가
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/judge/submit`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(submissionData),
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: result.message || "채점이 완료되었습니다.",
-        result: result.result,
-        submittedBy: result.submittedBy,
-        submissionId: result.submissionId,
-      };
-    } else {
-      return {
-        success: false,
-        message: result.message || "채점에 실패했습니다.",
-      };
-    }
-  } catch (error) {
+    const response = await apiClient.post<IJudgeResponse>("/judge/submit", submissionData);
+    return response.data;
+  } catch (error: unknown) {
     console.error("채점 API 오류:", error);
-    return {
-      success: false,
-      message: "채점 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
-    };
+    throw new Error(getErrorMessage(error));
   }
 };
 
 /**
  * 지원하는 언어 목록 조회
+ * GET /api/judge/languages
  */
-export const getSupportedLanguagesAPI = async () => {
+export const getSupportedLanguagesAPI = async (): Promise<GetSupportedLanguagesResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/judge/languages`);
-    return await response.json();
-  } catch (error) {
+    const response = await apiClient.get<GetSupportedLanguagesResponse>("/judge/languages");
+    return response.data;
+  } catch (error: unknown) {
     console.error("언어 목록 조회 오류:", error);
-    return { success: false, message: "언어 목록을 가져올 수 없습니다." };
+    throw new Error(getErrorMessage(error));
   }
 };
 
 /**
  * 모든 제출 목록 조회 API
- * backend API 주소 : api/judge/submissions
+ * GET /api/judge/submissions
  */
-export const getAllSubmissionsAPI = async () => {
+export const getAllSubmissionsAPI = async (): Promise<GetAllSubmissionsResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/judge/submissions`);
-    const result = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        submissions: result.submissions || [],
-        totalCount: result.totalCount || 0,
-        message: result.message,
-      };
-    } else {
-      return {
-        success: false,
-        message: result.message || "제출 목록을 가져올 수 없습니다.",
-      };
-    }
-  } catch (error) {
+    const response = await apiClient.get<GetAllSubmissionsResponse>("/judge/submissions");
+    return response.data;
+  } catch (error: unknown) {
     console.error("제출 목록 조회 오류:", error);
-    return {
-      success: false,
-      message: "서버에 연결할 수 없습니다.",
-      submissions: [],
-      totalCount: 0,
-    };
+    throw new Error(getErrorMessage(error));
   }
 };
-
