@@ -3,9 +3,9 @@ import styled from "styled-components";
 // Layout
 export const PageContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
-  background: #f3f4f6;
+  min-height: 100%;
   padding: 2rem;
+  background-color: #f5f5f5;
   box-sizing: border-box;
 `;
 
@@ -26,13 +26,14 @@ export const Title = styled.h1`
 export const Subtitle = styled.p`
   color: #666;
   font-size: 0.95rem;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 0.2rem 0;
 `;
 
 export const ContentWrapper = styled.div`
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 1.5rem;
+  margin-top: 1.0rem;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;

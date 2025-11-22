@@ -28,12 +28,12 @@ const ProblemSolvePage: React.FC = () => {
 
   const problem = useMemo(() => {
     if (!id) return undefined;
-    return mockProblemDetails.find(p => p.problem_id === Number(id));
+    return mockProblemDetails.find(p => p.id === Number(id));
   }, [id]);
 
   const resultMock = useMemo(() => {
     if (!id) return undefined;
-    return mockProblemResults.find(r => r.problem_id === Number(id));
+    return mockProblemResults.find(r => r.id === Number(id));
   }, [id]);
 
   const [language, setLanguage] = useState(languageOptions[0].value);

@@ -1,7 +1,7 @@
 export interface User {
   id: number;
   userId: string;
-  nickname: string;
+  userName: string;
   email: string;
   universityName?: string | null;
   department?: string | null;
@@ -19,14 +19,14 @@ export interface LoginResponse {
   user: {
     id: number;
     userId: string;
-    nickname: string;
+    userName: string;
     email: string;
   };
 }
 
 export interface RegisterRequest {
   userId: string;         
-  nickname: string;         
+  userName: string;         
   password: string;
   email: string;
   universityName: string;   
@@ -37,7 +37,7 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   id: number;
   userId: string;
-  nickname: string;
+  userName: string;
   password: null; 
   email: string;
   universityName: string | null;

@@ -24,17 +24,18 @@ const StudyGroupList: React.FC = () => {
       <ListWrapper>
         {mockStudyGroups.map((group) => (
           <StudyGroupItem 
-            id={group.group_id}
-            group_name={group.group_name}
-            current_members={group.current_members}
-            max_members={group.max_members}
-            is_public={group.is_public}
+            key={group.groupId}
+            id={group.groupId}
+            groupName={group.groupName}
+            currentMembers={group.currentMembers}
+            maxMembers={group.maxMembers}
+            isPublic={group.isPublic}
             currentUserId={CURRENT_USER_ID}
           />
         ))}
       </ListWrapper>
 
-      <FixedButton onClick={() => window.location.href = '/studygroup-create'}>추가하기</FixedButton>
+      <FixedButton onClick={() => window.location.href = '/studygroup/create'}>추가하기</FixedButton>
     </ListContainer>
   );
 };

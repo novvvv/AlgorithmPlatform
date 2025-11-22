@@ -1,16 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
-import type { IStudyGroup, IGroupMembership, GroupRole } from "@/types/group";
-import {
-  getAllGroupsAPI,
-  getGroupMembersAPI,
-  // addGroupMemberAPI 사용하지 않음!
-} from "@/apis/group";
+import type { IStudyGroup, IGroupMembership } from "@/types/group";
 
-//임시
-const CURRENT_USER_ID = 101;
-const CURRENT_USER_ROLE = "MEMBER";
+// import { getAllGroupsAPI, getGroupMembersAPI, } from "@/apis/group";
+// import type { IProblem } from "@/types/problem";
+// import { getProblemsByGroupIdAPI } from "@/apis/problem";
+
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 import { mockProblems } from "@/mocks/mockProblems";
 
@@ -95,98 +91,37 @@ export default function StudyGroupCommon({
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const initialGroupData = useMemo(
-  () => mockStudyGroups.find(g => g.group_id === groupId),
+  () => mockStudyGroups.find(g => g.groupId === groupId),
   [groupId]
 );
 
 const groupData: IStudyGroup | undefined = initialGroupData;
 
-const [problems, setProblems] = useState<IProblem[]>([]);
-
-useEffect(() => {
-  let mounted = true;
-
-  (async () => {
-    if (!groupData) return; 
-      
-      try {
-        const res = await getProblemsByGroupAPI(groupId);
-
-        if (!mounted) return;
-
-        if (res.success && Array.isArray(res.problems)) {
-          setProblems(res.problems);
-        } else {
-          // API 호출은 성공했으나, 데이터 로드 실패 시 Mock 데이터 사용
-          console.error("API에서 문제 목록 로드 실패:", res.message);
-          setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-        }
-      } catch (e) {
-        // [수정] 에러 로깅 추가 (no-unused-vars 오류 해결)
-        console.error("문제 목록 로딩 중 오류 발생:", e);
-        // 네트워크 오류 시 Mock 데이터 사용
-        setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-      }
-    })();
-
-  return () => {
-    mounted = false;
-  };
-}, [groupId]);
+const problems = useMemo(() => mockProblems.filter(p => p.group === groupData?.groupId), [groupData]);
 
 if (!groupData) {
   return (
     <PageContainer>
       <Header>
-        <Title>스터디 그룹을 찾을 수 없습니다.</Title>
+        <Title>스터디 그룹을 선택해주세요.</Title>
       </Header>
     </PageContainer>
   );
 }
 
   const handleDetail = (id: number | string) => {
-    navigate(`/problem/${id}/detail`);
+    navigate(`/problem/detail/${id}`);
   };
 
   const handleSolve = (id: number | string) => {
     navigate(`/problem/${id}`);
   };
 
-  const handlePublicJoin = async () => {
-    await attemptJoinGroup("");
-  };
-
-  const handleCodeSubmit = async (code: string) => {
+  const handleCodeSubmit = (code: string) => {
+    console.log("참여코드 제출:", code);
     setIsModalOpen(false);
-    await attemptJoinGroup(code);
-  };
-
-  const attemptJoinGroup = async (participationCode: string) => {
-    try {
-      const requestData: IGroupJoinRequest = {
-        userId: CURRENT_USER_ID,
-        role: CURRENT_USER_ROLE,
-        participationCode: participationCode,
-      };
-      
-      const res = await joinGroupAPI(groupId, requestData); 
-
-      // API 응답에 따른 분기 처리 (성공 시에만 네비게이트)
-      if (res.success) {
-        alert(`${groupData.group_name} 그룹에 성공적으로 가입했습니다!`);
-        navigate(`/studygroup/${groupId}`);
-      } else {
-        throw new Error(res.message || "가입 처리 중 알 수 없는 오류가 발생했습니다.");
-      }
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
-      alert(`가입 실패: ${errorMessage}`);
-      // 가입 실패 시 모달을 다시 열거나 상태를 유지할 수 있음
-      if (!groupData.is_public) {
-          setIsModalOpen(true);
-      }
-    }
+    // 실제 서버 연동 후 navigate가 필요
+    navigate(`/studygroup/${groupData.groupId}`);
   };
 
   const HeaderButton = () => {
@@ -196,10 +131,10 @@ if (!groupData) {
       return (
         <JoinButton 
           onClick={() => {
-            if (!groupData.is_public) {
+            if (!groupData.isPublic) {
               setIsModalOpen(true);
             } else {
-              handlePublicJoin();
+              alert("공개 그룹: 가입 완료");
             }
           }}
         >
@@ -212,10 +147,11 @@ if (!groupData) {
   return (
     <PageContainer>
       <Header>
-        <Title>{groupData.group_name}</Title>
+        <Title>{groupData.groupName}</Title>
         <HeaderButton /> 
       </Header>
       <Subtitle>{groupData.description}</Subtitle>
+      <Subtitle>목표: {groupData.goal}</Subtitle>
 
       <ContentWrapper>
         <LeftSection>
@@ -225,23 +161,26 @@ if (!groupData) {
             <InfoGrid>
               <InfoItem>
                 <InfoLabel>그룹장</InfoLabel>
-                <InfoValue>{groupData.creator?.user_name || '알 수 없음'}</InfoValue>
+                <InfoValue>{ groupData?.currentMembers?.find(m => m.role === 'LEADER')?.userName ||
+                             groupData?.currentMembers?.find(m => m.role === 'LEADER')?.user?.userName ||
+                             '알 수 없음'}
+                </InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>멤버 수</InfoLabel>
-                <InfoValue>{groupData.current_members?.length || 0}/{groupData.max_members} 명</InfoValue>
+                <InfoValue>{groupData.currentMembers?.length || 0}/{groupData.maxMembers} 명</InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>공개 설정</InfoLabel>
-                <InfoValue>{groupData.is_public ? '공개' : '비공개'}</InfoValue>
+                <InfoValue>{groupData.isPublic ? '공개' : '비공개'}</InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>생성일</InfoLabel>
-                <InfoValue>{formatDate(groupData.created_at)}</InfoValue>
+                <InfoValue>{formatDate(groupData.createdAt)}</InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>활동 기간</InfoLabel>
-                <InfoValue>{getActivityPeriod(groupData.created_at)}</InfoValue>
+                <InfoValue>{getActivityPeriod(groupData.createdAt)}</InfoValue>
               </InfoItem>
             </InfoGrid>
           </Card>
@@ -250,14 +189,14 @@ if (!groupData) {
           <Card>
             <CardTitle>멤버 목록</CardTitle>
             <MembersList>
-              {groupData.current_members?.map((member, idx) => {
+              {groupData.currentMembers?.map((member: IGroupMembership, idx: number) => {
                 if (!member) return null;
-                const solvedCount = problems.filter(p => p.group_id === groupData.group_id && p.solved_by?.includes(member.user_id)).length;
+                const solvedCount = problems.filter(p => p.group === groupData.groupId && p.solvedBy?.includes(member.userId)).length;
                 return (
-                  <MemberItem key={member.membership_id ?? idx}>
+                  <MemberItem key={member.membershipId ?? idx}>
                     <MemberName>
-                      {member?.user?.user_name || '알 수 없음'}
-                      {member?.role === 'LEADER' && ' (리더)'}
+                      {member.userName || '알 수 없음'}
+                      {member.role === 'LEADER' && ' (리더)'}
                     </MemberName>
                     <MemberGoal>{solvedCount}문제 해결</MemberGoal>
                   </MemberItem>
@@ -267,24 +206,22 @@ if (!groupData) {
           </Card>
           
           {/* 초대하기 카드 (DetailPage 전용) */}
-          {isDetailPage && groupData.participation_code && (
+          {isDetailPage && groupData.participationCode && (
             <Card>
               <CardTitle>초대하기</CardTitle>
               <InviteSection>
                 <InviteLabel>초대코드</InviteLabel>
-                <InviteCode>{groupData.participation_code}</InviteCode>
+                <InviteCode>{groupData.participationCode}</InviteCode>
               </InviteSection>
             </Card>
           )}
-
         </LeftSection>
-
         <RightSection>
           {/* 그룹 문제 카드 */}
           <Card>
             <CardHeader>
               <CardTitle>그룹 문제</CardTitle>
-              <AddButton onClick={() => window.location.href = '/problem-create'}>+ 문제 추가</AddButton>
+              <AddButton onClick={() => window.location.href = '/problem/create'}>+ 문제 추가</AddButton>
             </CardHeader>
             <TabBar>
               <Tab $active>전체</Tab>
@@ -294,53 +231,46 @@ if (!groupData) {
             </TabBar>
             <ProblemList>
             {problems
-            .filter(p => p.group_id === groupData.group_id)
-            .map((problem) => {
-            const groupMemberIds = groupData.current_members?.filter(Boolean).map(m => m.user_id) || [];
-            const completionCount = (problem.solved_by || []).filter(uid => groupMemberIds.includes(uid)).length;
-            const totalMembers = groupMemberIds.length;
-            const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
-
-            return (
-                <ProblemItem key={problem.problem_id}>
+              .filter(p => p.group === groupData.groupId)
+              .map((problem) => {
+                const groupMemberIds = groupData.currentMembers?.filter(Boolean).map(m => m.userId) || [];
+                const completionCount = (problem.solvedBy || []).filter(uid => groupMemberIds.includes(uid)).length;
+                const totalMembers = groupMemberIds.length;
+                const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
+                return (
+                  <ProblemItem key={problem.id}>
                     <ProblemHeader>
-                        <ProblemTitle>{problem.title}</ProblemTitle>
-                        <ProgressText>{problem.description}</ProgressText> {/* 문제 설명 */}
+                      <ProblemTitle>{problem.title}</ProblemTitle>
+                      <ProgressText>{problem.description}</ProgressText>
                     </ProblemHeader>
-
                     <DifficultyBadge $difficulty={problem.difficulty}>
-                        {getDifficultyText(problem.difficulty)}
+                      {getDifficultyText(problem.difficulty)}
                     </DifficultyBadge>
-                    
                     <ProgressGroup>
-                        <ProgressBar>
-                            <ProgressFill style={{ width: `${completionRate}%` }} />
-                        </ProgressBar>
-                        <ProgressLabel>
-                            {completionCount}/{totalMembers} 명 해결
-                        </ProgressLabel>
+                      <ProgressBar>
+                        <ProgressFill style={{ width: `${completionRate}%` }} />
+                      </ProgressBar>
+                      <ProgressLabel>
+                        {completionCount}/{totalMembers} 명 해결
+                      </ProgressLabel>
                     </ProgressGroup>
-
                     <ActionGroup>
-                        <DetailButton onClick={() => handleDetail(problem.problem_id)}>상세</DetailButton>
-                        <SolveButton onClick={() => handleSolve(problem.problem_id)}>풀기</SolveButton>
+                      <DetailButton onClick={() => handleDetail(problem.id)}>상세</DetailButton>
+                      <SolveButton onClick={() => handleSolve(problem.id)}>풀기</SolveButton>
                     </ActionGroup>
-
-                    </ProblemItem>
-                    );
-                })}
+                  </ProblemItem>
+                );
+              })}
             </ProblemList>
           </Card>
         </RightSection>
       </ContentWrapper>
-      
-      {/* 가입 모달 (JoinPage에서만 표시) */}
       {!isDetailPage && (
         <ParticipationCodeModal 
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCodeSubmit}
-          groupName={groupData.group_name}
+          groupName={groupData.groupName}
         />
       )}
     </PageContainer>

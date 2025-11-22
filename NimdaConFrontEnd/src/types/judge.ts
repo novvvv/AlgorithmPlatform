@@ -1,9 +1,12 @@
-import type { ProgrammingLanguage } from "./problem";
+import type { SubmissionStatus, ProgrammingLanguage } from "./problem";
+export type JudgeStatus = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
+
 
 export interface ISubmissionRequest {
   problemId: number;
   language: ProgrammingLanguage;
   code: string;
+  status: SubmissionStatus;
 }
 
 export interface ITestCaseResult {
@@ -16,7 +19,7 @@ export interface ITestCaseResult {
 }
 
 export interface IJudgeResult {
-  status: "Accepted" | "Wrong Answer" | "Time Limit Exceeded" | "Memory Limit Exceeded" | "Runtime Error" | "Compile Error";
+  status: JudgeStatus;
   totalTestCases: number;
   passedTestCases: number;
   testCaseResults?: ITestCaseResult[];
@@ -37,8 +40,8 @@ export interface ISubmission {
   userId: number;
   language: ProgrammingLanguage;
   code: string;
-  status: string;
-  submittedAt: string;
+  status: SubmissionStatus;
+  submittedAt?: string;
 }
 
 export interface GetSupportedLanguagesResponse {

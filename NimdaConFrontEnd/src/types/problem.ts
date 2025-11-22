@@ -1,5 +1,16 @@
 export type ProblemDifficulty = "EASY" | "MEDIUM" | "HARD" ;
 export type ProgrammingLanguage = "JAVA" | "PYTHON" | "CPP" ;
+export type SubmissionStatus = 'PENDING' | 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
+
+export interface ISubmission {
+  submissionId: number;
+  userId: number; // FK
+  problemId: number; // FK
+  code: string;
+  language: ProgrammingLanguage;
+  status: SubmissionStatus;
+  submittedAt: string;
+}
 
 export interface ITestCase {
   input: string;
@@ -26,7 +37,7 @@ export interface CreateProblemRequest {
   memoryLimit: number;
   difficulty: ProblemDifficulty;
   language: ProgrammingLanguage;
-  is_public: string;        // "true" 또는 "false" 문자열
+  isPublic: string;        // "true" 또는 "false" 문자열
   groupId: number | null;    
   testCases: ITestCase[];
 }

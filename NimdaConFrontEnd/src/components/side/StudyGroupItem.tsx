@@ -5,25 +5,25 @@ import type { IGroupMembership } from "@/types/group";
 
 interface StudyGroupItemProps {
   id: number;
-  group_name: string;
-  is_public: boolean;
-  current_members?: IGroupMembership[]; 
-  max_members: number;
+  groupName: string;
+  isPublic: boolean;
+  currentMembers?: IGroupMembership[]; 
+  maxMembers: number;
   currentUserId: number; 
 }
 
 const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
   id,
-  group_name,
-  current_members,
-  max_members,
-  is_public,
+  groupName,
+  currentMembers,
+  maxMembers,
+  isPublic,
   currentUserId,
 }) => {
   const navigate = useNavigate();
 
-  const membersCount = current_members ? current_members.length : 0;
-  const isJoined = current_members?.some(member => member && member.user_id === currentUserId);
+  const membersCount = currentMembers ? currentMembers.length : 0;
+  const isJoined = currentMembers?.some(member => member && member.userId === currentUserId);
 
   const handleJoin = () => {
     navigate(`/studygroup/join/${id}`);
@@ -46,11 +46,11 @@ const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
   return (
     <ItemContainer>
       <InfoSection>
-        <GroupName>{group_name}</GroupName>
-        <MemberCount>{membersCount} / {max_members}명</MemberCount>
+        <GroupName>{groupName}</GroupName>
+        <MemberCount>{membersCount} / {maxMembers}명</MemberCount>
       </InfoSection>
       <ActionGroup> 
-        <Tag $isPublic={is_public}>{is_public ? "공개" : "비공개"}</Tag>
+        <Tag $isPublic={isPublic}>{isPublic ? "공개" : "비공개"}</Tag>
         <ActionButton />
       </ActionGroup>
     </ItemContainer>

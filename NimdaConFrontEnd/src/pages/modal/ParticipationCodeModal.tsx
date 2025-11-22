@@ -55,7 +55,6 @@ export const ParticipationCodeModal: React.FC<ParticipationCodeModalProps> = ({
   );
 };
 
-// Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;

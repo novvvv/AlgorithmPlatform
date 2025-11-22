@@ -66,27 +66,24 @@ export default function MyPage() {
     }
   };
 
-  // Mock 데이터에서 현재 사용자가 해결한 문제들만 필터링
   const userSolvedProblems = useMemo(() => {
-    return mockProblems.filter(p => p.solved_by?.includes(CURRENT_USER_ID));
+    return mockProblems.filter(p => p.solvedBy?.includes(CURRENT_USER_ID));
   }, []);
 
-  // 통계 계산
   const stats: UserStats = useMemo(() => {
     const totalRate = mockProblems.length > 0 
       ? Math.round((userSolvedProblems.length / mockProblems.length) * 100)
       : 0;
     
-    // 가장 많이 사용한 언어 계산
-    const languages = userSolvedProblems.map(p => p.language);
+    const languages = userSolvedProblems.map(p => p.language ?? "UNKNOWN");
     const languageCount: Record<string, number> = {};
     languages.forEach(lang => {
       languageCount[lang] = (languageCount[lang] || 0) + 1;
     });
 
     const rawMostUsedLang = languages.length > 0
-      ? Object.entries(languageCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "Python"
-      : "Python";
+      ? Object.entries(languageCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "PYTHON"
+      : "PYTHON";
     const mostUsedLangDisplay = (function (langCode: string) {
       switch (langCode) {
         case "PYTHON": return "Python";
@@ -158,7 +155,7 @@ export default function MyPage() {
                   {userSolvedProblems.map((problem) => {
                     const testcaseRate = problem.completionRate ?? 0;
                     return (
-                      <ProblemItem key={problem.problem_id}>
+                      <ProblemItem key={problem.id}>
                         <ProblemHeader>
                           <ProblemTitle>{problem.title}</ProblemTitle>
                           <ProgressText>{problem.description}</ProgressText> {/* 문제 설명 */}
@@ -176,8 +173,8 @@ export default function MyPage() {
                         </ProgressGroup>  
 
                         <ActionGroup>
-                          <DetailButton onClick={() => handleDetail(problem.problem_id)}>상세</DetailButton>
-                          <SolveButton onClick={() => handleSolve(problem.problem_id)}>풀기</SolveButton>
+                          <DetailButton onClick={() => handleDetail(problem.id)}>상세</DetailButton>
+                          <SolveButton onClick={() => handleSolve(problem.id)}>풀기</SolveButton>
                         </ActionGroup>
                         
                       </ProblemItem>

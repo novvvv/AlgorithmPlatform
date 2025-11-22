@@ -1,25 +1,31 @@
 export type GroupRole = 'LEADER' | 'MEMBER';
 
+import type { IUser } from "./user";
+
 export interface IStudyGroup {
   groupId: number;
   groupName: string;
+  description?: string | null;
+  goal?: string | null;
   maxMembers: number;
-  isPublic: boolean;
   participationCode: string | null;
-  creatorUserId: number;
+  isPublic: boolean;
+  creatorUserId?: number;
   createdAt: string;
   updatedAt: string;
+  currentMembers?: IGroupMembership[];
 }
 
 export interface IGroupMembership {
   membershipId: number;
   groupId: number;
   userId: number;
-  nickname: string;
+  userName?: string;
   role: GroupRole;
   active: boolean;
   joinedAt: string;
   leftAt: string | null;
+  user?: IUser;
 }
 
 export interface AddGroupMemberRequest {
