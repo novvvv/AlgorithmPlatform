@@ -92,46 +92,57 @@ export default function StudyGroupCommon({
 }: StudyGroupContentProps) {
   const navigate = useNavigate();
   
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
-  const initialGroupData = useMemo(() => 
-    mockStudyGroups.find(g => g.group_id === groupId), 
-    [groupId]
-  );
+  const initialGroupData = useMemo(
+  () => mockStudyGroups.find(g => g.group_id === groupId),
+  [groupId]
+);
 
-  const groupData: IStudyGroup | undefined = initialGroupData;
+const groupData: IStudyGroup | undefined = initialGroupData;
 
-  const [problems, setProblems] = useState(() => 
-    mockProblems.filter(p => p.group_id === (groupData?.group_id || -1))
-  );
+const [problems, setProblems] = useState<IProblem[]>([]);
 
-  if (!groupData) {
-    return (
-      <PageContainer>
-        <Header>
-          <Title>스터디 그룹을 찾을 수 없습니다.</Title>
-        </Header>
-      </PageContainer>
-    );
-  }
+useEffect(() => {
+  let mounted = true;
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await getProblemsByGroupAPI(groupId);
-        if (!mounted) return;
-        if (res.success && Array.isArray(res.problems)) {
-          setProblems(res.problems);
-        } else {
-          setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-        }
-      } catch (e) {
-        setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
-      }
-    })();
-    return () => { mounted = false; };
-  }, [groupId, groupData.group_id]);
+  (async () => {
+    if (!groupData) return; 
+      
+      try {
+        const res = await getProblemsByGroupAPI(groupId);
+
+        if (!mounted) return;
+
+        if (res.success && Array.isArray(res.problems)) {
+          setProblems(res.problems);
+        } else {
+          // API 호출은 성공했으나, 데이터 로드 실패 시 Mock 데이터 사용
+          console.error("API에서 문제 목록 로드 실패:", res.message);
+          setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
+        }
+      } catch (e) {
+        // [수정] 에러 로깅 추가 (no-unused-vars 오류 해결)
+        console.error("문제 목록 로딩 중 오류 발생:", e);
+        // 네트워크 오류 시 Mock 데이터 사용
+        setProblems(mockProblems.filter(p => p.group_id === groupData.group_id));
+      }
+    })();
+
+  return () => {
+    mounted = false;
+  };
+}, [groupId]);
+
+if (!groupData) {
+  return (
+    <PageContainer>
+      <Header>
+        <Title>스터디 그룹을 찾을 수 없습니다.</Title>
+      </Header>
+    </PageContainer>
+  );
+}
 
   const handleDetail = (id: number | string) => {
     navigate(`/problem/${id}/detail`);
@@ -158,14 +169,23 @@ export default function StudyGroupCommon({
         participationCode: participationCode,
       };
       
-      await joinGroupAPI(groupId, requestData); 
+      const res = await joinGroupAPI(groupId, requestData); 
 
-      alert(`${groupData.group_name} 그룹에 성공적으로 가입했습니다!`);
-      navigate(`/studygroup/${groupId}`);
+      // API 응답에 따른 분기 처리 (성공 시에만 네비게이트)
+      if (res.success) {
+        alert(`${groupData.group_name} 그룹에 성공적으로 가입했습니다!`);
+        navigate(`/studygroup/${groupId}`);
+      } else {
+        throw new Error(res.message || "가입 처리 중 알 수 없는 오류가 발생했습니다.");
+      }
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
       alert(`가입 실패: ${errorMessage}`);
+      // 가입 실패 시 모달을 다시 열거나 상태를 유지할 수 있음
+      if (!groupData.is_public) {
+          setIsModalOpen(true);
+      }
     }
   };
 
