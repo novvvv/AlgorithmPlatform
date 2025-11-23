@@ -25,15 +25,15 @@ public class JwtUtil {
     /**
      * JWT 토큰 생성
      * 
-     * @param nickname 닉네임
+     * @param userName 사용자명
      * @param userId   사용자 ID
      * @return JWT 토큰
      */
-    public String generateToken(String nickname, Long userId) {
+    public String generateToken(String userName, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userId);
-        claims.put("nickname", nickname);
-        return createToken(claims, nickname);
+        claims.put("userName", userName);
+        return createToken(claims, userName);
     }
 
     /**
@@ -54,25 +54,37 @@ public class JwtUtil {
     }
 
     /**
-     * 토큰에서 닉네임 추출
+     * 토큰에서 사용자명 추출
      * 
      * @param token JWT 토큰
-     * @return 닉네임
+     * @return 사용자명
      */
-    public String extractNickname(String token) {
+    public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * 토큰에서 닉네임 추출 (하위 호환성 유지)
+     * 
+     * @param token JWT 토큰
+     * @return 사용자명
+     * @deprecated extractUserName() 사용 권장
+     */
+    @Deprecated
+    public String extractNickname(String token) {
+        return extractUserName(token);
     }
 
     /**
      * 토큰에서 사용자명 추출 (하위 호환성 유지)
      * 
      * @param token JWT 토큰
-     * @return 닉네임
-     * @deprecated extractNickname() 사용 권장
+     * @return 사용자명
+     * @deprecated extractUserName() 사용 권장
      */
     @Deprecated
     public String extractUsername(String token) {
-        return extractNickname(token);
+        return extractUserName(token);
     }
 
     /**
@@ -135,21 +147,34 @@ public class JwtUtil {
      * 토큰 유효성 검증
      * 
      * @param token    JWT 토큰
-     * @param nickname 닉네임
+     * @param userName 사용자명
      * @return 유효성 여부
      */
-    public Boolean validateToken(String token, String nickname) {
-        final String extractedNickname = extractNickname(token);
-        return (extractedNickname.equals(nickname) && !isTokenExpired(token));
+    public Boolean validateToken(String token, String userName) {
+        final String extractedUserName = extractUserName(token);
+        return (extractedUserName.equals(userName) && !isTokenExpired(token));
     }
 
     /**
      * 토큰 유효성 검증 (하위 호환성 유지)
      * 
      * @param token    JWT 토큰
-     * @param username 닉네임
+     * @param nickname 닉네임
      * @return 유효성 여부
-     * @deprecated validateToken(String token, String nickname) 사용 권장
+     * @deprecated validateToken(String token, String userName) 사용 권장
+     */
+    @Deprecated
+    public Boolean validateTokenWithNickname(String token, String nickname) {
+        return validateToken(token, nickname);
+    }
+
+    /**
+     * 토큰 유효성 검증 (하위 호환성 유지)
+     * 
+     * @param token    JWT 토큰
+     * @param username 사용자명
+     * @return 유효성 여부
+     * @deprecated validateToken(String token, String userName) 사용 권장
      */
     @Deprecated
     public Boolean validateTokenWithUsername(String token, String username) {

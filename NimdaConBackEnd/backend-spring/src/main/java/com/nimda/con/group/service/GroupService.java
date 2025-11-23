@@ -94,14 +94,14 @@ public class GroupService {
                 // * ID를 미리 가져와서 Lazy loading 문제 방지 *
                 Long savedGroupId = group.getId();
                 Long userId = user.getId();
-                String nickname = user.getNickname();
+                String userName = user.getUserName();
 
                 // * [Response] GroupMemberResponse - 그룹 멤버십 응답 객체 생성 *
                 return GroupMemberResponse.builder()
                                 .membershipId(saved.getId())
                                 .groupId(savedGroupId)
                                 .userId(userId)
-                                .nickname(nickname)
+                                .userName(userName)
                                 .role(saved.getRole())
                                 .active(saved.isActive())
                                 .joinedAt(saved.getJoinedAt())
@@ -144,7 +144,7 @@ public class GroupService {
                                                 .membershipId(membership.getId())
                                                 .groupId(group.getId())
                                                 .userId(membership.getUser().getId())
-                                                .nickname(membership.getUser().getNickname())
+                                                .userName(membership.getUser().getUserName())
                                                 .role(membership.getRole())
                                                 .active(membership.isActive())
                                                 .joinedAt(membership.getJoinedAt())

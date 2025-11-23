@@ -11,7 +11,7 @@ export interface IUser {
   user_id: number;
   email: string;
   password?: string; // 보안상 프론트엔드에서 받지 않거나, 옵셔널로 처리
-  user_name: string;
+  userName: string;
   university_name: string | null; // VARCHAR(100)
   department: string | null;     // VARCHAR(100)
   grade: number | null;

@@ -10,9 +10,9 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * 닉네임으로 사용자 찾기
+     * 사용자명으로 사용자 찾기
      */
-    Optional<User> findByNickname(String nickname);
+    Optional<User> findByUserName(String userName);
 
     /**
      * user_id로 사용자 찾기
@@ -25,9 +25,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     /**
-     * 닉네임이 존재하는지 확인
+     * 사용자명이 존재하는지 확인
      */
-    boolean existsByNickname(String nickname);
+    boolean existsByUserName(String userName);
 
     /**
      * user_id가 존재하는지 확인

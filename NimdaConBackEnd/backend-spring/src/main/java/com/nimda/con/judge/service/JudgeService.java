@@ -52,14 +52,14 @@ public class JudgeService {
     private static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + "/nimda-judge/";
 
     /**
-     * 코드를 채점하는 메인 메서드 (닉네임 포함)
+     * 코드를 채점하는 메인 메서드 (사용자명 포함)
      */
-    public JudgeResultDTO judgeCode(SubmissionDTO submissionDTO, String nickname) {
+    public JudgeResultDTO judgeCode(SubmissionDTO submissionDTO, String userName) {
         try {
             // 1. 사용자 조회 (없으면 익명 사용자 생성 또는 조회)
-            User user = userRepository.findByNickname(nickname).orElse(null);
+            User user = userRepository.findByUserName(userName).orElse(null);
             if (user == null) {
-                logger.warn("사용자를 찾을 수 없음: {}", nickname);
+                logger.warn("사용자를 찾을 수 없음: {}", userName);
                 // 익명 사용자는 user_id가 "anonymous"로 고정되어 있으므로 user_id로 조회
                 user = userRepository.findByUserId("anonymous")
                     .orElseGet(() -> {
@@ -79,7 +79,7 @@ public class JudgeService {
                                 }
                             });
                     });
-                nickname = user.getNickname(); // 실제 DB에 저장된 닉네임 사용
+                userName = user.getUserName(); // 실제 DB에 저장된 사용자명 사용
             }
 
             // 2. 문제 조회 (SubmissionDTO에서 problemId 가져오기)
@@ -96,7 +96,7 @@ public class JudgeService {
             submission.setStatus(JudgeStatus.JUDGING);
 
             submission = submissionRepository.save(submission); // DB 저장
-            logger.info("제출 기록 저장 완료 - ID: {}, 사용자: {}", submission.getId(), nickname);
+            logger.info("제출 기록 저장 완료 - ID: {}, 사용자: {}", submission.getId(), userName);
 
             // 4. 실제 채점 수행
             createTempDirectory();
@@ -362,11 +362,11 @@ public class JudgeService {
     /**
      * 특정 사용자의 제출 목록 조회
      */
-    public List<Submission> getSubmissionsByUser(String nickname) {
-        logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", nickname);
-        User user = userRepository.findByNickname(nickname).orElse(null);
+    public List<Submission> getSubmissionsByUser(String userName) {
+        logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", userName);
+        User user = userRepository.findByUserName(userName).orElse(null);
         if (user == null) {
-            logger.warn("사용자를 찾을 수 없음: {}", nickname);
+            logger.warn("사용자를 찾을 수 없음: {}", userName);
             return List.of();
         }
         return submissionRepository.findByUserOrderBySubmittedAtDesc(user);

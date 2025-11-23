@@ -27,7 +27,7 @@
 ```json
 {
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "password": "password1234",
   "email": "test@example.com",
   "universityName": "서울대학교",
@@ -38,7 +38,7 @@
 
 **필수 필드:**
 - `userId`: 로그인 아이디 (3-20자, 고유값)
-- `nickname`: 닉네임 (3-20자, 고유값)
+- `userName`: 사용자명 (3-20자, 고유값)
 - `password`: 비밀번호 (4-100자)
 - `email`: 이메일 (유효한 이메일 형식, 고유값)
 
@@ -52,7 +52,7 @@
 {
   "id": 1,
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "email": "test@example.com",
   "universityName": "서울대학교",
   "department": "컴퓨터공학부",
@@ -91,7 +91,7 @@
   "user": {
     "id": 1,
     "userId": "testuser",
-    "nickname": "테스트유저",
+    "userName": "테스트유저",
     "email": "test@example.com"
   }
 }
@@ -123,7 +123,7 @@
     {
       "id": 1,
       "userId": "testuser",
-      "nickname": "테스트유저",
+      "userName": "테스트유저",
       "email": "test@example.com",
       "universityName": "서울대학교",
       "department": "컴퓨터공학부",
@@ -146,7 +146,7 @@
 {
   "id": 1,
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "email": "test@example.com",
   "universityName": "서울대학교",
   "department": "컴퓨터공학부",
@@ -174,7 +174,7 @@
 {
   "id": 1,
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "email": "test@example.com"
 }
 ```
@@ -183,16 +183,16 @@
 
 ### 2.4 닉네임으로 조회
 - **Method**: `GET`
-- **URL**: `http://localhost:8080/api/users/nickname/{nickname}`
+- **URL**: `http://localhost:8080/api/users/userName/{userName}`
 - **Path Variables**: 
-  - `nickname`: 닉네임 (예: `테스트유저`)
+  - `userName`: 사용자명 (예: `테스트유저`)
 
 **성공 응답** (200 OK):
 ```json
 {
   "id": 1,
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "email": "test@example.com"
 }
 ```
@@ -221,11 +221,13 @@
   "testCases": [
     {
       "input": "1 2",
-      "output": "3"
+      "output": "3",
+      "isPublic": false
     },
     {
       "input": "5 7",
-      "output": "12"
+      "output": "12",
+      "isPublic": true
     }
   ]
 }
@@ -242,6 +244,11 @@
 **선택 필드:**
 - `groupId`: 스터디 그룹 ID (null이면 전역 문제)
 - `testCases`: 테스트 케이스 목록
+  - `input`: 테스트케이스 입력 (필수)
+  - `output`: 테스트케이스 출력 (필수)
+  - `isPublic`: 프론트엔드 공개 여부 (선택, 기본값: `false`)
+    - `true`: 프론트엔드에 공개 (사용자가 볼 수 있음)
+    - `false`: 백엔드 전용 (채점용, 사용자에게 숨김)
 
 **성공 응답** (201 Created):
 ```json
@@ -472,7 +479,7 @@
       "submittedAt": "2024-01-01T00:00:00",
       "problemId": 1,
       "problemTitle": "A + B",
-      "nickname": "테스트유저",
+      "userName": "테스트유저",
       "executionTime": 100,
       "memoryUsage": 1024,
       "score": 100
@@ -486,9 +493,9 @@
 
 ### 4.5 사용자별 제출 목록 조회
 - **Method**: `GET`
-- **URL**: `http://localhost:8080/api/judge/submissions/user/{nickname}`
+- **URL**: `http://localhost:8080/api/judge/submissions/user/{userName}`
 - **Path Variables**: 
-  - `nickname`: 사용자 닉네임 (예: `테스트유저`)
+  - `userName`: 사용자명 (예: `테스트유저`)
 
 **성공 응답** (200 OK):
 ```json
@@ -737,7 +744,7 @@ Authorization: Bearer {{token}}
 5. **제출 목록 확인** (`GET /api/judge/submissions`)
 
 ### 4. 주의사항
-- `userId`와 `nickname`은 모두 고유값이므로 중복 불가
+- `userId`와 `userName`은 모두 고유값이므로 중복 불가
 - 패스워드는 최소 4자 이상, 최대 100자 이하여야 함
 - 로그인 시 `userId`를 사용 (닉네임이 아님)
 - 난이도는 `EASY`, `MEDIUM`, `HARD` 중 하나
@@ -788,7 +795,7 @@ NimdaCon API
 
 ### 자주 발생하는 문제
 1. **토큰 만료**: 로그인을 다시 수행하여 새로운 토큰을 받으세요
-2. **중복된 userId/nickname**: 다른 값을 사용하세요
+2. **중복된 userId/userName**: 다른 값을 사용하세요
 3. **유효성 검사 실패**: 필수 필드와 형식을 확인하세요
 
 ---

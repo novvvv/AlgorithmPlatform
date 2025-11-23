@@ -1,6 +1,6 @@
 // types/auth.ts
 export interface ILoginRequest {
-  username: string;
+  userId: string;
   password: string;
 }
 
@@ -10,13 +10,15 @@ export interface ILoginResponse {
   token?: string;
   user?: {
     id: number;
-    username: string;
+    userId: string;
+    userName: string;
     email: string;
   };
 }
 
 export interface IRegisterRequest {
-  username: string;
+  userId: string;
+  userName: string;
   password: string;
   email: string;
 }

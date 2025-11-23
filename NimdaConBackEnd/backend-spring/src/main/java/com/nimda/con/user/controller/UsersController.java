@@ -99,15 +99,15 @@ public class UsersController {
     }
 
     /**
-     * 닉네임으로 사용자 조회
+     * 사용자명으로 사용자 조회
      * 
-     * @param nickname 닉네임
+     * @param userName 사용자명
      * @return 사용자 정보
      */
-    @GetMapping("/nickname/{nickname}")
-    public ResponseEntity<?> getUserByNickname(@PathVariable String nickname) {
+    @GetMapping("/userName/{userName}")
+    public ResponseEntity<?> getUserByUserName(@PathVariable String userName) {
         try {
-            Optional<User> userOpt = userService.findByNickname(nickname);
+            Optional<User> userOpt = userService.findByUserName(userName);
 
             if (userOpt.isPresent()) {
                 return ResponseEntity.ok(userOpt.get());
