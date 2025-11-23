@@ -67,10 +67,10 @@ public class JudgeService {
                         return userRepository.findByEmail("anonymous@nimda.com")
                             .orElseGet(() -> {
                                 // 이메일로도 찾지 못하면 생성
-                                String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
+                    String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
                                 User anonymousUser = new User("anonymous", "익명사용자", encodedPassword, "anonymous@nimda.com");
                                 try {
-                                    return userRepository.save(anonymousUser);
+                    return userRepository.save(anonymousUser);
                                 } catch (Exception e) {
                                     // 이미 존재하는 경우 이메일로 다시 조회
                                     logger.warn("익명 사용자 생성 실패, 이메일로 재조회: {}", e.getMessage());

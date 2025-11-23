@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.security.SecureRandom;
 
 @Service
 public class GroupService {
@@ -35,17 +36,22 @@ public class GroupService {
                 User creator = userService.findById(request.getCreatorUserId())
                                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-                // * [Exception] 참여 코드가 이미 사용 중인지 체크 *
-                if (StringUtils.hasText(request.getParticipationCode())
-                                && studyGroupRepository.existsByParticipationCode(request.getParticipationCode())) {
-                        throw new IllegalStateException("이미 사용 중인 참여 코드입니다.");
+                // * [Logic] 참여 코드 자동 생성 (중복 체크 포함) *
+                String participationCode = request.getParticipationCode();
+                if (!StringUtils.hasText(participationCode)) {
+                        participationCode = generateUniqueParticipationCode();
+                } else {
+                        // 사용자가 직접 입력한 경우 중복 체크
+                        if (studyGroupRepository.existsByParticipationCode(participationCode)) {
+                                throw new IllegalStateException("이미 사용 중인 참여 코드입니다.");
+                        }
                 }
 
                 // * [Entity] StudyGroup - 스터디 그룹 엔터티 생성 *
                 StudyGroup group = new StudyGroup(
                                 request.getGroupName(),
                                 request.getMaxMembers(),
-                                request.getParticipationCode(),
+                                participationCode,
                                 Boolean.TRUE.equals(request.getIsPublic()),
                                 creator);
 
@@ -151,5 +157,28 @@ public class GroupService {
                                                 .leftAt(membership.getLeftAt())
                                                 .build())
                                 .collect(Collectors.toList());
+        }
+
+        // * 참여 코드 생성 (대문자 + 숫자 8자리) *
+        private String generateUniqueParticipationCode() {
+                String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                SecureRandom random = new SecureRandom();
+                StringBuilder code = new StringBuilder(8);
+
+                // 최대 5번 재시도 (혹시 모를 중복 방지)
+                for (int retry = 0; retry < 5; retry++) {
+                        code.setLength(0); // 초기화
+                        for (int i = 0; i < 8; i++) {
+                                int index = random.nextInt(characters.length());
+                                code.append(characters.charAt(index));
+                        }
+                        String generatedCode = code.toString();
+
+                        if (!studyGroupRepository.existsByParticipationCode(generatedCode)) {
+                                return generatedCode;
+                        }
+                }
+
+                throw new IllegalStateException("참여 코드 생성에 실패했습니다. 다시 시도해주세요.");
         }
 }
