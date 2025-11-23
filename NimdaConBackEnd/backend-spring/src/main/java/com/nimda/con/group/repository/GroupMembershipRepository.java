@@ -15,4 +15,6 @@ public interface GroupMembershipRepository extends JpaRepository<GroupMembership
     Optional<GroupMembership> findByGroupAndUserAndLeftAtIsNull(StudyGroup group, User user); // 활성된 멤버십을 조회한다.
 
     List<GroupMembership> findAllByGroupAndLeftAtIsNull(StudyGroup group); // 그룹의 활성 멤버 전체를 조회한다.
+
+    Optional<GroupMembership> findByGroupAndUser(StudyGroup group, User user); // 그룹과 사용자로 멤버십 조회 (탈퇴 여부 상관없이)
 }

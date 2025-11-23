@@ -181,4 +181,27 @@ public class GroupService {
 
                 throw new IllegalStateException("참여 코드 생성에 실패했습니다. 다시 시도해주세요.");
         }
+
+        // * 그룹 탈퇴 API *
+        // * 그룹장이 탈퇴하면 그룹 삭제, 일반 멤버는 Soft Delete *
+        @Transactional
+        public void leaveGroup(Long groupId, Long userId) {
+                StudyGroup group = studyGroupRepository.findById(groupId)
+                                .orElseThrow(() -> new IllegalArgumentException("스터디 그룹을 찾을 수 없습니다."));
+
+                User user = userService.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+                // 그룹장인지 확인
+                if (group.getCreatedBy().getId().equals(userId)) {
+                        // 그룹장이면 그룹 삭제 (Cascade로 멤버십도 삭제됨)
+                        studyGroupRepository.delete(group);
+                } else {
+                        // 일반 멤버면 멤버십 조회 후 탈퇴 처리 (Soft Delete)
+                        GroupMembership membership = groupMembershipRepository.findByGroupAndUser(group, user)
+                                        .orElseThrow(() -> new IllegalArgumentException("그룹 멤버가 아닙니다."));
+
+                        membership.leave();
+                }
+        }
 }
