@@ -526,6 +526,82 @@
 
 ---
 
+### 4.7 그룹별 최근 제출 조회
+- **Method**: `GET`
+- **URL**: `http://localhost:8080/api/groups/{groupId}/submissions/recent`
+- **Path Variables**:
+  - `groupId`: 그룹 ID (예: `1`)
+- **Query Parameters**:
+  - `page`: 페이지 번호 (0부터 시작, 기본값: 0)
+  - `size`: 페이지 크기 (기본값: 20)
+
+**성공 응답** (200 OK):
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "userId": 1,
+      "userName": "테스트유저",
+      "problemId": 1,
+      "problemTitle": "A + B",
+      "code": "...",
+      "language": "JAVA",
+      "status": "ACCEPTED",
+      "submittedAt": "2024-01-01T00:00:00",
+      "executionTime": "120ms",
+      "memoryUsage": "15MB"
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 20
+  },
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+---
+
+### 4.8 유저별 최근 제출 조회 (페이징)
+- **Method**: `GET`
+- **URL**: `http://localhost:8080/api/users/{userId}/submissions/recent`
+- **Path Variables**:
+  - `userId`: 사용자 ID (예: `1`)
+- **Query Parameters**:
+  - `page`: 페이지 번호 (0부터 시작, 기본값: 0)
+  - `size`: 페이지 크기 (기본값: 20)
+
+**성공 응답** (200 OK):
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "userId": 1,
+      "userName": "테스트유저",
+      "problemId": 1,
+      "problemTitle": "A + B",
+      "code": "...",
+      "language": "JAVA",
+      "status": "ACCEPTED",
+      "submittedAt": "2024-01-01T00:00:00",
+      "executionTime": "120ms",
+      "memoryUsage": "15MB"
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 20
+  },
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+---
+
 ## 5. 스터디 그룹 API (`/api/groups`)
 
 ### 5.1 스터디 그룹 생성
@@ -798,7 +874,9 @@ NimdaCon API
 │   ├── 시스템 상태 확인
 │   ├── 모든 제출 목록
 │   ├── 사용자별 제출 목록
-│   └── 테스트 채점
+│   ├── 테스트 채점
+│   ├── 그룹별 최근 제출 조회
+│   └── 유저별 최근 제출 조회
 └── 스터디 그룹
     ├── 그룹 생성
     ├── 모든 그룹 조회

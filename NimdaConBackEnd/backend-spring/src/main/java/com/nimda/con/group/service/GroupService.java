@@ -85,7 +85,8 @@ public class GroupService {
                         throw new IllegalStateException("그룹 정원이 가득 찼습니다.");
                 }
 
-                // * [Exception] existsByGroupAndUserAndLeftAtIsNull() - 이미 그룹에 가입된 사용자인지 테스트 *
+                // * [Exception] existsByGroupAndUserAndLeftAtIsNull() - 이미 그룹에 가입된 사용자인지 테스트
+                // *
                 boolean alreadyMember = groupMembershipRepository.existsByGroupAndUserAndLeftAtIsNull(group, user);
                 if (alreadyMember) {
                         throw new IllegalStateException("이미 그룹에 가입된 사용자입니다.");
