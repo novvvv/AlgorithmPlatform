@@ -52,14 +52,14 @@ public class JudgeService {
     private static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + "/nimda-judge/";
 
     /**
-     * 코드를 채점하는 메인 메서드 (닉네임 포함)
+     * 코드를 채점하는 메인 메서드 (사용자명 포함)
      */
-    public JudgeResultDTO judgeCode(SubmissionDTO submissionDTO, String nickname) {
+    public JudgeResultDTO judgeCode(SubmissionDTO submissionDTO, String userName) {
         try {
             // 1. 사용자 조회 (없으면 익명 사용자 생성 또는 조회)
-            User user = userRepository.findByNickname(nickname).orElse(null);
+            User user = userRepository.findByUserName(userName).orElse(null);
             if (user == null) {
-                logger.warn("사용자를 찾을 수 없음: {}", nickname);
+                logger.warn("사용자를 찾을 수 없음: {}", userName);
                 // 익명 사용자는 user_id가 "anonymous"로 고정되어 있으므로 user_id로 조회
                 user = userRepository.findByUserId("anonymous")
                     .orElseGet(() -> {
@@ -67,10 +67,10 @@ public class JudgeService {
                         return userRepository.findByEmail("anonymous@nimda.com")
                             .orElseGet(() -> {
                                 // 이메일로도 찾지 못하면 생성
-                                String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
+                    String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
                                 User anonymousUser = new User("anonymous", "익명사용자", encodedPassword, "anonymous@nimda.com");
                                 try {
-                                    return userRepository.save(anonymousUser);
+                    return userRepository.save(anonymousUser);
                                 } catch (Exception e) {
                                     // 이미 존재하는 경우 이메일로 다시 조회
                                     logger.warn("익명 사용자 생성 실패, 이메일로 재조회: {}", e.getMessage());
@@ -79,7 +79,7 @@ public class JudgeService {
                                 }
                             });
                     });
-                nickname = user.getNickname(); // 실제 DB에 저장된 닉네임 사용
+                userName = user.getUserName(); // 실제 DB에 저장된 사용자명 사용
             }
 
             // 2. 문제 조회 (SubmissionDTO에서 problemId 가져오기)
@@ -96,7 +96,7 @@ public class JudgeService {
             submission.setStatus(JudgeStatus.JUDGING);
 
             submission = submissionRepository.save(submission); // DB 저장
-            logger.info("제출 기록 저장 완료 - ID: {}, 사용자: {}", submission.getId(), nickname);
+            logger.info("제출 기록 저장 완료 - ID: {}, 사용자: {}", submission.getId(), userName);
 
             // 4. 실제 채점 수행
             createTempDirectory();
@@ -362,11 +362,11 @@ public class JudgeService {
     /**
      * 특정 사용자의 제출 목록 조회
      */
-    public List<Submission> getSubmissionsByUser(String nickname) {
-        logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", nickname);
-        User user = userRepository.findByNickname(nickname).orElse(null);
+    public List<Submission> getSubmissionsByUser(String userName) {
+        logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", userName);
+        User user = userRepository.findByUserName(userName).orElse(null);
         if (user == null) {
-            logger.warn("사용자를 찾을 수 없음: {}", nickname);
+            logger.warn("사용자를 찾을 수 없음: {}", userName);
             return List.of();
         }
         return submissionRepository.findByUserOrderBySubmittedAtDesc(user);

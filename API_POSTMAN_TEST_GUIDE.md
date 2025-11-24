@@ -27,7 +27,7 @@
 ```json
 {
   "userId": "testuser",
-  "nickname": "테스트유저",
+  "userName": "테스트유저",
   "password": "password1234",
   "email": "test@example.com",
   "universityName": "서울대학교",
@@ -35,7 +35,7 @@
   "grade": "3학년"
 }
 ```
-- **필수 필드**: `userId`, `nickname`, `password`, `email`
+- **필수 필드**: `userId`, `userName`, `password`, `email`
 - **선택 필드**: `universityName`, `department`, `grade`
 
 ---
@@ -83,10 +83,10 @@
 
 ---
 
-### 2.4 닉네임으로 조회
+### 2.4 사용자명으로 조회
 - **Method**: `GET`
-- **URL**: `http://localhost:8080/api/users/nickname/{nickname}`
-- **Path Variables**: `nickname` (String) - 예: `테스트유저`
+- **URL**: `http://localhost:8080/api/users/userName/{userName}`
+- **Path Variables**: `userName` (String) - 예: `테스트유저`
 - **Headers**: 없음
 
 ---
@@ -246,8 +246,8 @@
 
 ### 4.5 사용자별 제출 목록 조회
 - **Method**: `GET`
-- **URL**: `http://localhost:8080/api/judge/submissions/user/{nickname}`
-- **Path Variables**: `nickname` (String) - 예: `테스트유저`
+- **URL**: `http://localhost:8080/api/judge/submissions/user/{userName}`
+- **Path Variables**: `userName` (String) - 예: `테스트유저`
 - **Headers**: 없음
 
 ---
@@ -401,7 +401,7 @@ Authorization: Bearer {{token}}
   - 예: `POST /api/groups/1/members` - 그룹 1에 사용자 2 추가
 
 ### 5. 주의사항
-- `userId`와 `nickname`은 고유값 (중복 불가)
+- `userId`와 `userName`은 고유값 (중복 불가)
 - 패스워드: 4-100자
 - 로그인 시 `userId` 사용 (닉네임 아님)
 - 난이도: `EASY`, `MEDIUM`, `HARD` 중 하나
@@ -418,7 +418,7 @@ Authorization: Bearer {{token}}
 | **사용자** | GET | `/api/users` | 모든 사용자 조회 |
 | | GET | `/api/users/{id}` | 사용자 ID로 조회 |
 | | GET | `/api/users/user-id/{userId}` | User ID로 조회 |
-| | GET | `/api/users/nickname/{nickname}` | 닉네임으로 조회 |
+| | GET | `/api/users/userName/{userName}` | 사용자명으로 조회 |
 | **문제** | POST | `/api/problems` | 문제 생성 |
 | | GET | `/api/problems` | 모든 문제 조회 |
 | | GET | `/api/problems/{id}` | 문제 ID로 조회 |
@@ -429,7 +429,7 @@ Authorization: Bearer {{token}}
 | | GET | `/api/judge/languages` | 지원 언어 조회 |
 | | GET | `/api/judge/status` | 시스템 상태 확인 |
 | | GET | `/api/judge/submissions` | 모든 제출 목록 |
-| | GET | `/api/judge/submissions/user/{nickname}` | 사용자별 제출 목록 |
+| | GET | `/api/judge/submissions/user/{userName}` | 사용자별 제출 목록 |
 | | GET | `/api/judge/submissions/user/{userId}/problem/{problemId}` | 사용자+문제별 제출 목록 |
 | | POST | `/api/judge/test` | 테스트 채점 |
 | **그룹** | POST | `/api/groups` | 그룹 생성 |

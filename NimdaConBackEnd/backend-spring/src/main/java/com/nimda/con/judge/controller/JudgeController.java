@@ -41,17 +41,17 @@ public class JudgeController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @Valid @RequestBody SubmissionDTO submission) {
         try {
-            String nickname = "익명"; // 기본값
+            String userName = "익명"; // 기본값
 
             // Authorization 헤더가 있으면 토큰에서 사용자 추출
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7); // "Bearer " 제거
 
                 try {
-                    // JwtUtil로 닉네임 추출
-                    String tokenNickname = jwtUtil.extractNickname(token);
-                    if (tokenNickname != null && !jwtUtil.isTokenExpired(token)) {
-                        nickname = tokenNickname;
+                    // JwtUtil로 사용자명 추출
+                    String tokenUserName = jwtUtil.extractUserName(token);
+                    if (tokenUserName != null && !jwtUtil.isTokenExpired(token)) {
+                        userName = tokenUserName;
                     } else {
                         logger.warn("만료된 토큰으로 제출 시도");
                     }
@@ -60,18 +60,18 @@ public class JudgeController {
                 }
             }
 
-            logger.info("코드 제출 요청 - 사용자: {}, 언어: {}, 제목: {}", nickname, submission.getLanguage(),
+            logger.info("코드 제출 요청 - 사용자: {}, 언어: {}, 제목: {}", userName, submission.getLanguage(),
                     submission.getTitle());
 
-            // 코드 채점 실행 (닉네임 포함)
-            JudgeResultDTO result = judgeService.judgeCode(submission, nickname);
+            // 코드 채점 실행 (사용자명 포함)
+            JudgeResultDTO result = judgeService.judgeCode(submission, userName);
 
             // 응답 데이터 구성
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "채점이 완료되었습니다.");
             response.put("result", result);
-            response.put("submittedBy", nickname); // 제출자 정보 포함
+            response.put("submittedBy", userName); // 제출자 정보 포함
 
             // 제출 ID 추출 (메시지에서 파싱)
             String submissionIdStr = result.getMessage();
@@ -80,7 +80,7 @@ public class JudgeController {
                 response.put("submissionId", Long.parseLong(id));
             }
 
-            logger.info("채점 완료 - 사용자: {}, 상태: {}, 점수: {}", nickname, result.getStatus(), result.getScore());
+            logger.info("채점 완료 - 사용자: {}, 상태: {}, 점수: {}", userName, result.getStatus(), result.getScore());
 
             return ResponseEntity.ok(response);
 
@@ -182,9 +182,9 @@ public class JudgeController {
 
                         // * 사용자 정보 검증 *
                         if (submission.getUser() != null) {
-                            submissionData.put("nickname", submission.getUser().getNickname());
+                            submissionData.put("userName", submission.getUser().getUserName());
                         } else {
-                            submissionData.put("nickname", "익명");
+                            submissionData.put("userName", "익명");
                         }
 
                         // JudgeResult 정보 추가
@@ -226,15 +226,15 @@ public class JudgeController {
     /**
      * 특정 사용자의 제출 목록 조회 API
      * 
-     * @param username 사용자명
+     * @param userName 사용자명
      * @return 사용자의 제출 목록
      */
-    @GetMapping("/submissions/user/{nickname}")
-    public ResponseEntity<Map<String, Object>> getSubmissionsByUser(@PathVariable String nickname) {
+    @GetMapping("/submissions/user/{userName}")
+    public ResponseEntity<Map<String, Object>> getSubmissionsByUser(@PathVariable String userName) {
         try {
-            logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", nickname);
+            logger.info("사용자별 제출 목록 조회 요청 - 사용자: {}", userName);
 
-            List<Map<String, Object>> submissions = judgeService.getSubmissionsByUser(nickname).stream()
+            List<Map<String, Object>> submissions = judgeService.getSubmissionsByUser(userName).stream()
                     .map(submission -> {
                         Map<String, Object> submissionData = new HashMap<>();
                         submissionData.put("id", submission.getId());
@@ -262,11 +262,11 @@ public class JudgeController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "사용자 '" + nickname + "'의 제출 목록을 성공적으로 조회했습니다.");
+            response.put("message", "사용자 '" + userName + "'의 제출 목록을 성공적으로 조회했습니다.");
             response.put("submissions", submissions);
             response.put("totalCount", submissions.size());
 
-            logger.info("사용자별 제출 목록 조회 완료 - 사용자: {}, 총 {}개", nickname, submissions.size());
+            logger.info("사용자별 제출 목록 조회 완료 - 사용자: {}, 총 {}개", userName, submissions.size());
 
             return ResponseEntity.ok(response);
 
@@ -313,10 +313,10 @@ public class JudgeController {
                         // * 사용자 정보 추가 *
                         if (submission.getUser() != null) {
                             submissionData.put("userId", submission.getUser().getId());
-                            submissionData.put("nickname", submission.getUser().getNickname());
+                            submissionData.put("userName", submission.getUser().getUserName());
                         } else {
                             submissionData.put("userId", null);
-                            submissionData.put("nickname", "익명");
+                            submissionData.put("userName", "익명");
                         }
 
                         // * JudgeResult 정보 추가 *

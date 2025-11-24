@@ -49,8 +49,8 @@ public class User {
     @NotBlank
     @Size(min = 3, max = 20)
     @Column(name = "nickname", unique = true, nullable = false)
-    private String nickname;
-    // 닉네임 (변경 가능, 표시용)
+    private String userName;
+    // 사용자명 (변경 가능, 표시용)
 
     @NotBlank
     @Size(min = 4, max = 100)
@@ -76,18 +76,18 @@ public class User {
     }
 
     // 필요한 생성자 추가 (기존 호환성 유지)
-    public User(String userId, String nickname, String password, String email) {
+    public User(String userId, String userName, String password, String email) {
         this.userId = userId;
-        this.nickname = nickname;
+        this.userName = userName;
         this.password = password;
         this.email = email;
     }
 
     // 전체 필드 생성자
-    public User(String userId, String nickname, String password, String email,
+    public User(String userId, String userName, String password, String email,
             String universityName, String department, String grade) {
         this.userId = userId;
-        this.nickname = nickname;
+        this.userName = userName;
         this.password = password;
         this.email = email;
         this.universityName = universityName;

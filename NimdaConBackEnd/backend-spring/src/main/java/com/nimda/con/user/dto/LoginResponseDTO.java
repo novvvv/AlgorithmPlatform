@@ -24,7 +24,7 @@ public class LoginResponseDTO {
     public static class UserInfo {
         private Long id;
         private String userId;
-        private String nickname;
+        private String userName;
         private String email;
     }
 }

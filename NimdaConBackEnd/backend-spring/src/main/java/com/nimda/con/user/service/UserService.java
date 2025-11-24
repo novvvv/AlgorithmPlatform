@@ -23,24 +23,24 @@ public class UserService {
      * CreateUser : 회원 가입
      */
     @Transactional
-    public User createUser(String userId, String nickname, String password, String email,
+    public User createUser(String userId, String userName, String password, String email,
             String universityName, String department, String grade) {
-        validateUserUniqueness(userId, nickname, email);
+        validateUserUniqueness(userId, userName, email);
         String encodedPassword = passwordEncoder.encode(password);
-        User user = new User(userId, nickname, encodedPassword, email,
+        User user = new User(userId, userName, encodedPassword, email,
                 universityName, department, grade);
         return userRepository.save(user);
     }
 
     // 사용자 중복 확인
-    private void validateUserUniqueness(String userId, String nickname, String email) {
+    private void validateUserUniqueness(String userId, String userName, String email) {
 
         if (existsByUserId(userId)) {
             throw new RuntimeException("User ID already exists");
         }
 
-        if (existsByNickname(nickname)) {
-            throw new RuntimeException("Nickname already exists");
+        if (existsByUserName(userName)) {
+            throw new RuntimeException("User name already exists");
         }
 
         if (existsByEmail(email)) {
@@ -61,10 +61,10 @@ public class UserService {
         return userRepository.findByUserId(userId);
     }
 
-    // 닉네임으로 사용자 찾기
+    // 사용자명으로 사용자 찾기
     @Transactional(readOnly = true)
-    public Optional<User> findByNickname(String nickname) {
-        return userRepository.findByNickname(nickname);
+    public Optional<User> findByUserName(String userName) {
+        return userRepository.findByUserName(userName);
     }
 
     // user_id 중복 확인
@@ -73,10 +73,10 @@ public class UserService {
         return userRepository.existsByUserId(userId);
     }
 
-    // 닉네임 중복 확인
+    // 사용자명 중복 확인
     @Transactional(readOnly = true)
-    public boolean existsByNickname(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public boolean existsByUserName(String userName) {
+        return userRepository.existsByUserName(userName);
     }
 
     /// 이메일 중복 확인

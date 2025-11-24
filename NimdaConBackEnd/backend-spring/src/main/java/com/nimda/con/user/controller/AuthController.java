@@ -67,7 +67,7 @@ public class AuthController {
 
             User user = authService.register(
                     registerRequest.getUserId(),
-                    registerRequest.getNickname(),
+                    registerRequest.getUserName(),
                     registerRequest.getPassword(),
                     registerRequest.getEmail(),
                     registerRequest.getUniversityName(),
