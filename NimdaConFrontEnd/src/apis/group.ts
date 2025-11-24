@@ -3,6 +3,7 @@ import type {
   GetAllGroupsResponse,
   AddGroupMemberResponse,
   GetGroupMembersResponse,
+  RemoveGroupMemberResponse 
 } from "@/types/group";
 import { apiClient, getErrorMessage } from "./utils";
 
@@ -21,24 +22,30 @@ export const getAllGroupsAPI = async (): Promise<GetAllGroupsResponse> => {
 };
 
 /**
- * 스터디그룹 멤버 초대 API
+ * 스터디그룹 가입 API
  * POST /api/groups/{groupId}/members
  */
-export const addGroupMemberAPI = async (
+export async function joinGroupAPI(
   groupId: number,
-  memberData: AddGroupMemberRequest
-): Promise<AddGroupMemberResponse> => {
-  try {
-    const response = await apiClient.post<AddGroupMemberResponse>(
-      `/groups/${groupId}/members`,
-      memberData
-    );
-    return response.data;
-  } catch (error: unknown) {
-    console.error("멤버 초대 API 오류:", error);
-    throw new Error(getErrorMessage(error));
-  }
-};
+  data: AddGroupMemberRequest
+): Promise<AddGroupMemberResponse> {
+  const response = await apiClient.post<AddGroupMemberResponse>(
+    `/groups/${groupId}/members`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * 스터디그룹 탈퇴 API
+ * DELETE /api/groups/{groupId}/members/{memberId}
+ */
+export async function leaveGroupAPI(
+  groupId: number,
+  memberId: number
+): Promise<RemoveGroupMemberResponse> {
+  await apiClient.delete(`/groups/${groupId}/members/${memberId}`);
+}
 
 /**
  * 그룹 멤버 조회 API
@@ -57,3 +64,4 @@ export const getGroupMembersAPI = async (
     throw new Error(getErrorMessage(error));
   }
 };
+

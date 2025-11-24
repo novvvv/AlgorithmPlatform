@@ -42,7 +42,7 @@ export const getAllProblemsAPI = async (): Promise<GetAllProblemsResponse> => {
  * GET /api/problems/{id}
  */
 export const getProblemByIdAPI = async (
-  id: number | string
+  id: number
 ): Promise<GetProblemByIdResponse> => {
   try {
     const response = await apiClient.get<GetProblemByIdResponse>(`/problems/${id}`);
@@ -57,7 +57,7 @@ export const getProblemByIdAPI = async (
  * GET /api/problems/group/{groupId}
  */
 export const getProblemsByGroupIdAPI = async (
-  groupId: number | string
+  groupId: number
 ): Promise<GetProblemsByGroupIdResponse> => {
   try {
     const response = await apiClient.get<GetProblemsByGroupIdResponse>(`/problems/group/${groupId}`);

@@ -1,61 +1,34 @@
 export type ProblemDifficulty = "EASY" | "MEDIUM" | "HARD" ;
 export type ProgrammingLanguage = "JAVA" | "PYTHON" | "CPP" ;
-export type SubmissionStatus = 'PENDING' | 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
-
-export interface ISubmission {
-  submissionId: number;
-  userId: number; // FK
-  problemId: number; // FK
-  code: string;
-  language: ProgrammingLanguage;
-  status: SubmissionStatus;
-  submittedAt: string;
-}
-
-export interface ITestCase {
-  input: string;
-  output: string;
-}
 
 export interface IProblem {
-  id: number;
+  id?: number;
   title: string;
   description: string;
   timeLimit: number;        // 밀리초 단위
   memoryLimit: number;      // KB 단위
   difficulty: ProblemDifficulty;
-  language: ProgrammingLanguage | null;   
-  group: number | null;         
-  createdAt: string;
-  updatedAt: string;
+  language?: ProgrammingLanguage;   
+  groupId?: number; 
+  group?: string;        
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+export interface ITestCase {
+  input: string;
+  output: string;
+  isPublic: boolean;  
+}
 export interface CreateProblemRequest {
-  title: string;
-  description: string;
-  timeLimit: number;
-  memoryLimit: number;
-  difficulty: ProblemDifficulty;
-  language: ProgrammingLanguage;
-  isPublic: string;        // "true" 또는 "false" 문자열
-  groupId: number | null;    
+  problem: IProblem;
   testCases: ITestCase[];
 }
 
 export interface CreateProblemResponse {
+  problem: IProblem;
   success: boolean;
-  message: string;
-  problem?: {
-    id: number;
-    title: string;
-    description: string;
-    timeLimit: number;
-    memoryLimit: number;
-    difficulty: ProblemDifficulty;
-    language: ProgrammingLanguage;
-    createdAt: string;
-    updatedAt: string;
-  };
+  message?: string;
 }
 
 export interface GetAllProblemsResponse {

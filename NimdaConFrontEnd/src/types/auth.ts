@@ -1,13 +1,4 @@
-export interface User {
-  id: number;
-  userId: string;
-  userName: string;
-  email: string;
-  universityName?: string | null;
-  department?: string | null;
-  grade?: string | null;
-  role?: string;
-}
+import type { IUser } from './user';
 
 export interface LoginRequest {
   userId: string;
@@ -34,13 +25,4 @@ export interface RegisterRequest {
   grade: string;            
 }
 
-export interface RegisterResponse {
-  id: number;
-  userId: string;
-  userName: string;
-  password: null; 
-  email: string;
-  universityName: string | null;
-  department: string | null;
-  grade: string | null;
-}
+export type RegisterResponse = IUser;

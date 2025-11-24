@@ -1,12 +1,15 @@
-import type { SubmissionStatus, ProgrammingLanguage } from "./problem";
+import type { ProgrammingLanguage } from "./problem";
+export type SubmissionStatus = 'PENDING' | 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
 export type JudgeStatus = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
 
-
-export interface ISubmissionRequest {
-  problemId: number;
-  language: ProgrammingLanguage;
+export interface ISubmission {
+  submissionId: number;
+  userId: number; // FK
+  problemId: number; // FK
   code: string;
+  language: ProgrammingLanguage;
   status: SubmissionStatus;
+  submittedAt?: string;
 }
 
 export interface ITestCaseResult {
@@ -20,39 +23,103 @@ export interface ITestCaseResult {
 
 export interface IJudgeResult {
   status: JudgeStatus;
-  totalTestCases: number;
-  passedTestCases: number;
-  testCaseResults?: ITestCaseResult[];
-  errorMessage?: string;
+  message: string;
+  output?: string;
+  errorOutput: string;
+  executionTime: number;
+  memoryUsage: number;
+  score: number;
 }
 
-export interface IJudgeResponse {
+export interface SubmissionRequest {
+  title: string;
+  code: string;
+  language: ProgrammingLanguage;
+  problemId: number;
+}
+
+export interface JudgeResponse {
+  result: IJudgeResult;
+  submittedBy: string;
+  submissionId: number;
   success: boolean;
   message: string;
-  result?: IJudgeResult;
-  submittedBy?: string;
-  submissionId?: number;
-}
-
-export interface ISubmission {
-  id: number;
-  problemId: number;
-  userId: number;
-  language: ProgrammingLanguage;
-  code: string;
-  status: SubmissionStatus;
-  submittedAt?: string;
-}
-
-export interface GetSupportedLanguagesResponse {
-  success: boolean;
-  languages?: ProgrammingLanguage[];
-  message?: string;
 }
 
 export interface GetAllSubmissionsResponse {
   success: boolean;
   submissions: ISubmission[];
   totalCount: number;
-  message?: string;
+  message: string;
+}
+
+export interface GetUserSubmissionsResponse {
+  success: boolean;
+  submissions: ISubmission[];
+  totalCount: number;
+  message: string;
+}
+
+export interface GetUserProblemSubmissionsResponse {
+  success: boolean;
+  submissions: ISubmission[];
+  totalCount: number;
+  message: string;
+}
+
+export interface IRecentSubmission {
+  id: number;
+  userId: number;
+  userName: string;
+  problemId: number;
+  problemTitle: string;
+  code: string;
+  language: string;
+  status: string;
+  submittedAt: string;
+  executionTime: string;
+  memoryUsage: string;
+}
+
+export interface ISortInfo {
+  sorted: boolean;
+  unsorted: boolean;
+  empty: boolean;
+}
+
+export interface IPageableInfo {
+  pageNumber: number;
+  pageSize: number;
+  sort: ISortInfo;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+export interface GetUserRecentSubmissionsResponse {
+  content: IRecentSubmission[];
+  pageable: IPageableInfo;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: ISortInfo;
+  empty: boolean;
+}
+
+export interface GetGroupRecentSubmissionsResponse {
+  content: IRecentSubmission[];
+  pageable: IPageableInfo;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: ISortInfo;
+  empty: boolean;
 }

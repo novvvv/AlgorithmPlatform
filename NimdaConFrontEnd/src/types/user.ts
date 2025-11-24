@@ -9,14 +9,22 @@ export interface IUser {
   id: number;
   userId: number;
   userName: string;
-  password?: string;  // 보안상 응답에 포함되지 않을 수 있음
+  password?: string;  
   email: string;
-  universityName: string | null;
-  department: string | null;
-  grade: string | null;
-  createdAt: string;
-  updatedAt: string;
-  authorities?: IAuthority[]; 
+  universityName?: string;
+  department?: string;
+  grade?: string;
+}
+
+export interface IUserDetail {
+  id: number;
+  userId: number;
+  userName: string;
+  password?: string;  
+  email: string;
+  universityName: string;
+  department: string;
+  grade: string;
 }
 
 export interface GetAllUsersResponse {
@@ -29,6 +37,20 @@ export interface GetAllUsersResponse {
 export interface GetUserByIdResponse {
   success: boolean;
   user: IUser;
+  status?: number;
+  message?: string;
+}
+
+export interface GetUserByUserIdResponse {
+  success: boolean;
+  user: IUserDetail;
+  status?: number;
+  message?: string;
+}
+
+export interface GetUserByUserNameResponse {
+  success: boolean;
+  user: IUserDetail;
   status?: number;
   message?: string;
 }

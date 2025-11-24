@@ -1,6 +1,8 @@
 import type { 
   GetAllUsersResponse, 
   GetUserByIdResponse,
+  GetUserByUserIdResponse,
+  GetUserByUserNameResponse,
   DeleteUserResponse, 
   UpdateUserRoleResponse 
 } from "@/types/user";
@@ -37,14 +39,30 @@ export const getUserByIdAPI = async (
 };
 
 /**
- * 닉네임으로 조회 API
- * GET /api/users/nickname/{nickname}
+ * 유저 ID로 조회 API
+ * GET /api/users/{userId}/{userName}
  */
-export const getUserByNicknameAPI = async (
-  nickname: string
-): Promise<GetUserByIdResponse> => {
+export const getUserByUserIdAPI = async (
+  userId: number | string
+): Promise<GetUserByUserIdResponse> => {
   try {
-    const response = await apiClient.get<GetUserByIdResponse>(`/users/nickname/${encodeURIComponent(nickname)}`);
+    const response = await apiClient.get<GetUserByUserIdResponse>(`/users/${userId}`);
+    return response.data;
+  } catch (error: unknown) {
+    console.error("사용자 조회 오류:", error);
+    throw new Error(getErrorMessage(error));
+  }
+};
+
+/**
+ * 사용자명으로 조회 API
+ * GET /api/users/userName/{userName}
+ */
+export const getUserByUserNameAPI = async (
+  userName: string
+): Promise<GetUserByUserNameResponse> => {
+  try {
+    const response = await apiClient.get<GetUserByUserNameResponse>(`/users/userName/${encodeURIComponent(userName)}`);
     return response.data;
   } catch (error: unknown) {
     console.error("닉네임으로 사용자 조회 오류:", error);
