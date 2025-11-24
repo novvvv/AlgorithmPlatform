@@ -26,17 +26,17 @@ const HomePage: React.FC = () => {
             <ItemsWrapper>
               {recentStudyGroups.map((group) => (
                 <StudyGroupItem
-                  key={group.group_id}
-                  id={group.group_id}
-                  group_name={group.group_name}
-                  current_members={group.current_members}
-                  max_members={group.max_members}
-                  is_public={group.is_public}
+                  key={group.groupId}
+                  id={group.groupId}
+                  groupName={group.groupName}
+                  currentMembers={group.currentMembers}
+                  maxMembers={group.maxMembers}
+                  isPublic={group.isPublic}
                   currentUserId={CURRENT_USER_ID}
                 />
               ))}
             </ItemsWrapper>
-            <AddButton onClick={() => window.location.href = '/studygroup-create'}>
+            <AddButton onClick={() => window.location.href = '/studygroup/create'}>
               그룹 추가
             </AddButton>
           </CardContainer>
@@ -49,16 +49,16 @@ const HomePage: React.FC = () => {
             <ItemsWrapper>
               {recentProblems.map((problem) => (
                 <ProblemItem
-                  key={problem.problem_id}
-                  id={problem.problem_id}
+                  key={problem.id}
+                  id={problem.id}
                   title={problem.title}
-                  language={problem.language}
+                  language={problem.language ?? "PYTHON"}
                   correctRate={problem.correctRate ?? 0}
                   difficulty={problem.difficulty}
                 />
               ))}
             </ItemsWrapper>
-            <AddButton onClick={() => window.location.href = '/problem-create'}>
+            <AddButton onClick={() => window.location.href = '/problem/create'}>
               문제 추가
             </AddButton>
           </CardContainer>

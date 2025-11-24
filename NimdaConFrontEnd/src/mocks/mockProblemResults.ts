@@ -8,7 +8,7 @@ export interface IProblemTestCaseResult {
 }
 
 export interface IProblemResultMock {
-  problem_id: number;
+  id: number;
   status: "정답" | "오답";
   runTime: string;
   memory: string;
@@ -28,7 +28,7 @@ export interface IProblemResultMock {
 
 export const mockProblemResults: IProblemResultMock[] = [
   {
-    problem_id: 1,
+    id: 1,
     status: "정답",
     runTime: "124ms",
     memory: "15.2MB",
@@ -51,7 +51,7 @@ export const mockProblemResults: IProblemResultMock[] = [
     },
   },
   {
-    problem_id: 2,
+    id: 2,
     status: "오답",
     runTime: "215ms",
     memory: "18.4MB",
@@ -73,7 +73,7 @@ export const mockProblemResults: IProblemResultMock[] = [
     },
   },
   {
-    problem_id: 3,
+    id: 3,
     status: "오답",
     runTime: "95ms",
     memory: "10.5MB",

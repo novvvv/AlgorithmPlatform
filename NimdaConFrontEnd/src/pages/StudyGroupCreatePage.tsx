@@ -20,7 +20,7 @@ export default function StudyGroupCreatePage() {
     event.preventDefault();
     
     // TODO: API 연동
-    console.log("Study group create:", { groupName, description, goal, maxMembers, is_public: isPublic });
+    console.log("Study group create:", { groupName, description, goal, maxMembers, isPublic });
     alert("스터디 그룹이 생성되었습니다. (UI 동작 확인용)");
   };
 

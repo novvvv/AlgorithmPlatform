@@ -14,7 +14,7 @@ const ProblemResultPage: React.FC = () => {
   // 실제 연동 전 임시 데이터
   const mock = useMemo(() => {
     if (!id) return mockProblemResults[0];
-    return mockProblemResults.find(r => r.problem_id === Number(id));
+    return mockProblemResults.find(r => r.id === Number(id));
   }, [id]);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<string[]>([]);

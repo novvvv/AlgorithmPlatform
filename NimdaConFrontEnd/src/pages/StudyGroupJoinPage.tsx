@@ -1,14 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
 import StudyGroupCommon from "@/components/common/StudyGroupCommon";
 import mockStudyGroups from "@/mocks/mockStudyGroups";
-import type { IStudyGroup } from "@/types/studyGroup";
+import type { IStudyGroup } from "@/types/group";
 
 export default function StudyGroupJoinPage() {
   const params = useParams();
   const navigate = useNavigate();
   const groupId = Number(params.id || params['id']);
 
-  const groupData: IStudyGroup | undefined = mockStudyGroups.find(g => g.group_id === groupId);
+  const groupData: IStudyGroup | undefined = mockStudyGroups.find(g => g.groupId === groupId);
 
   if (!groupData) {
     navigate('/', { replace: true });
@@ -16,7 +16,7 @@ export default function StudyGroupJoinPage() {
   }
 
   const handleJoinAction = () => {
-    navigate(`/studygroup/${groupData.group_id}`);
+    navigate(`/studygroup/${groupData.groupId}`);
   };
 
   return (

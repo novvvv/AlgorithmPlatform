@@ -9,7 +9,7 @@ const ProblemDetailPage: React.FC = () => {
 
   const problem = useMemo(() => {
     if (!id) return undefined;
-    return mockProblemDetails.find(p => p.problem_id === Number(id));
+    return mockProblemDetails.find(p => p.id === Number(id));
   }, [id]);
 
   const handleSolve = () => {

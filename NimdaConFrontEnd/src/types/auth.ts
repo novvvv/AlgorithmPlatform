@@ -1,14 +1,13 @@
-// types/auth.ts
-export interface ILoginRequest {
+import type { IUser } from './user';
+
+export interface LoginRequest {
   userId: string;
   password: string;
 }
 
-export interface ILoginResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: {
+export interface LoginResponse {
+  accessToken: string;  
+  user: {
     id: number;
     userId: string;
     userName: string;
@@ -16,9 +15,14 @@ export interface ILoginResponse {
   };
 }
 
-export interface IRegisterRequest {
-  userId: string;
-  userName: string;
+export interface RegisterRequest {
+  userId: string;         
+  userName: string;         
   password: string;
   email: string;
+  universityName: string;   
+  department: string;      
+  grade: string;            
 }
+
+export type RegisterResponse = IUser;

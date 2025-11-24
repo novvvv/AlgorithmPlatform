@@ -34,10 +34,10 @@ const ProblemList: React.FC = () => {
       <ListWrapper>
         {mockProblems.map((problem) => (
           <ProblemItem
-            key={problem.problem_id}
-            id={problem.problem_id}
+            key={problem.id}
+            id={problem.id}
             title={problem.title}
-            language={problem.language}
+            language={problem.language ?? "PYTHON"}
             correctRate={problem.correctRate ?? 0}
             difficulty={problem.difficulty}
           />
@@ -45,7 +45,7 @@ const ProblemList: React.FC = () => {
       </ListWrapper>
 
       {/* 하단 버튼 */}
-      <FixedButton onClick={() => window.location.href = '/problem-create'}>추가하기</FixedButton>
+      <FixedButton onClick={() => window.location.href = '/problem/create'}>추가하기</FixedButton>
     </ListContainer>
   );
 };
