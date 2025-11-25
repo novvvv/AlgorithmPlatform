@@ -5,7 +5,7 @@ import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
 import { mockProblemDetails } from "@/mocks/mockProblemDetails";
 import { mockProblemResults } from "@/mocks/mockProblemResults";
-import type { SubmissionStatus } from "@/types/problem";
+import type { SubmissionStatus } from "@/types/judge";
 
 const languageOptions = [
   { label: "Python", value: "PYTHON" },
@@ -33,7 +33,7 @@ const ProblemSolvePage: React.FC = () => {
 
   const resultMock = useMemo(() => {
     if (!id) return undefined;
-    return mockProblemResults.find(r => r.id === Number(id));
+    return mockProblemResults.find(r => r.problemId === Number(id));
   }, [id]);
 
   const [language, setLanguage] = useState(languageOptions[0].value);
@@ -69,7 +69,7 @@ const ProblemSolvePage: React.FC = () => {
     return (
       <Page>
         <Title>문제 풀이</Title>
-        <EmptyCard>문제 목록에서 문제를 선택해주세요.</EmptyCard>
+        <EmptyCard>문제 목록에서 문제를 추가해주세요.</EmptyCard>
       </Page>
     );
   }

@@ -22,7 +22,7 @@ const ProblemDetailPage: React.FC = () => {
     return (
       <Page>
         <Title>문제 상세</Title>
-        <EmptyCard>문제 목록에서 문제를 선택해주세요.</EmptyCard>
+        <EmptyCard>문제 목록에서 문제를 추가해주세요.</EmptyCard>
       </Page>
     );
   }

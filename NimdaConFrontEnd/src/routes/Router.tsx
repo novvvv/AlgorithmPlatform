@@ -12,6 +12,7 @@ import ProblemCreatePage from "@/pages/ProblemCreatePage";
 import ProblemDetailPage from "@/pages/ProblemDetailPage";
 import ProblemSolvePage from "@/pages/ProblemSolvePage";
 import ProblemResultPage from "@/pages/ProblemResultPage";
+import ProblemGroupResultsPage from "@/pages/ProblemGroupResultsPage";
 
 const Router = () => {
   return (
@@ -29,6 +30,7 @@ const Router = () => {
         <Route path="/problem/detail/:id?" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
         <Route path="/problem/:id?" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
         <Route path="/problem/result/:id?" element={<LayoutWrapper><ProblemResultPage /></LayoutWrapper>} />
+        <Route path="/studygroup/:groupId/problem/results/:id" element={<LayoutWrapper><ProblemGroupResultsPage /></LayoutWrapper>} />
       </Routes>
     </BrowserRouter>
   );
