@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
 import CorrectCircle from "@/assets/icons/correctCircle.png";
 import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureCircle from "@/assets/icons/failureCircle.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
-import { mockProblemResults } from "@/mocks/mockProblemResults";
+import { mockProblemGroupResults } from "@/mocks/mockProblemGroupResults";
 import {
   BackButton,
   Card,
@@ -47,19 +48,38 @@ type Comment = {
 
 const COMMENT_AUTHOR = "김그룹";
 
-const ProblemResultPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const ProblemGroupResultsPage: React.FC = () => {
+  const { groupId, id } = useParams<{ groupId: string; id: string }>();
   const navigate = useNavigate();
 
-  const mock = useMemo(() => {
-    if (!id) return undefined;
-    return mockProblemResults.find(r => r.problemId === Number(id));
+  const resultsForProblem = useMemo(() => {
+    if (!id) return [];
+    return mockProblemGroupResults.filter(r => r.problemId === Number(id));
+  }, [id]);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  useEffect(() => {
+    setActiveIndex(0);
   }, [id]);
 
   const [commentInput, setCommentInput] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const submitterNames = useMemo(
+    () => new Set(resultsForProblem.map(result => result.userName)),
+    [resultsForProblem],
+  );
 
-  if (!mock) {
+  useEffect(() => {
+    const initial: Record<string, Comment[]> = {};
+    resultsForProblem.forEach(result => {
+      initial[result.userName] = [];
+    });
+    setComments(initial);
+  }, [resultsForProblem]);
+
+  const activeResult = resultsForProblem[activeIndex];
+
+  if (!groupId || !id || !activeResult) {
     return (
       <Page>
         <Title>채점 결과</Title>
@@ -68,17 +88,10 @@ const ProblemResultPage: React.FC = () => {
     );
   }
 
-  const isCorrect = mock.status === "정답";
+  const isCorrect = activeResult.status === "정답";
 
   const handleBack = () => {
-    navigate(id ? `/problem/${id}` : "/problem");
-  };
-
-  const handleAddComment = () => {
-    const next = commentInput.trim();
-    if (!next) return;
-    setComments(prev => [...prev, { author: COMMENT_AUTHOR, content: next }]);
-    setCommentInput("");
+    navigate(`/studygroup/${groupId}`);
   };
 
   const isPassResult = (value: string) => {
@@ -91,37 +104,70 @@ const ProblemResultPage: React.FC = () => {
   const getTestIcon = (result: string) =>
     isPassResult(result) ? CorrectSmall : FailureSmall;
 
+  const handleAddComment = () => {
+    const next = commentInput.trim();
+    if (!next) return;
+    setComments(prev => ({
+      ...prev,
+      [activeResult.userName]: [
+        ...(prev[activeResult.userName] ?? []),
+        { author: COMMENT_AUTHOR, content: next },
+      ],
+    }));
+    setCommentInput("");
+  };
+
+  const currentComments = comments[activeResult.userName] ?? [];
+  const commentCount = currentComments.length;
+
+  const formatCommentAuthor = (author: string) =>
+    submitterNames.has(author) ? `${author} (제출자)` : author;
+
   return (
     <Page>
       <Title>채점 결과</Title>
+
+      {resultsForProblem.length > 1 && (
+        <UserTabBar>
+              {resultsForProblem.map((result, index) => (
+                <UserTab
+                  key={result.submissionId}
+                  $active={index === activeIndex}
+                  onClick={() => setActiveIndex(index)}
+                >
+                  {result.userName}
+                </UserTab>
+              ))}
+        </UserTabBar>
+      )}
 
       <ContentGrid>
         <LeftColumn>
           <Card>
             <ResultHeader>
-              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={mock.status} />
+              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={activeResult.status} />
               <ResultText>
-                <ResultStatus $correct={isCorrect}>{mock.status}</ResultStatus>
+                <ResultStatus $correct={isCorrect}>{activeResult.status}</ResultStatus>
               </ResultText>
             </ResultHeader>
             <ResultStats>
               <ResultPill tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{mock.runTime}</ResultPillValue>
+                <ResultPillValue tone="time">{activeResult.runTime}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{mock.memory}</ResultPillValue>
+                <ResultPillValue tone="memory">{activeResult.memory}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
-                <ResultPillValue tone="language">{mock.language}</ResultPillValue>
+                <ResultPillValue tone="language">{activeResult.language}</ResultPillValue>
               </ResultPill>
             </ResultStats>
             <Divider />
             <SectionLabel>테스트 케이스 결과</SectionLabel>
             <TestList>
-              {mock.testCases.map(tc => {
+              {activeResult.testCases.map(tc => {
                 const displayResult = getDisplayResult(tc.result);
                 return (
                   <TestRow key={tc.name}>
@@ -139,22 +185,22 @@ const ProblemResultPage: React.FC = () => {
 
           <Card>
             <SectionLabel>제출한 코드</SectionLabel>
-            <CodeBlock spellCheck={false} readOnly value={mock.submittedCode} />
+            <CodeBlock spellCheck={false} readOnly value={activeResult.submittedCode} />
           </Card>
 
           <Card>
-            <SectionLabel>댓글 ({comments.length})</SectionLabel>
+            <SectionLabel>댓글 ({commentCount})</SectionLabel>
             <CommentInput
               placeholder="댓글을 입력하세요."
               value={commentInput}
               onChange={e => setCommentInput(e.target.value)}
             />
             <CommentButton type="button" onClick={handleAddComment}>댓글 작성</CommentButton>
-            {comments.length > 0 && (
+            {currentComments.length > 0 && (
               <CommentList>
-                {comments.map((comment, idx) => (
+                {currentComments.map((comment, idx) => (
                   <CommentItem key={`${comment.content}-${idx}`}>
-                    <strong>{comment.author}</strong>: {comment.content}
+                    <strong>{formatCommentAuthor(comment.author)}</strong>: {comment.content}
                   </CommentItem>
                 ))}
               </CommentList>
@@ -167,11 +213,11 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>제출 정보</SectionLabel>
             <InfoRow>
               <span>제출 시간</span>
-              <span>{mock.submissionInfo.time}</span>
+              <span>{activeResult.submissionInfo.time}</span>
             </InfoRow>
             <InfoRow>
               <span>시도 횟수</span>
-              <span>{mock.submissionInfo.attempts}</span>
+              <span>{activeResult.submissionInfo.attempts}</span>
             </InfoRow>
           </Card>
 
@@ -179,15 +225,15 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>문제 통계</SectionLabel>
             <InfoRow>
               <span>정답률</span>
-              <Highlight>{mock.stats.accuracy}</Highlight>
+              <Highlight>{activeResult.stats.accuracy}</Highlight>
             </InfoRow>
             <InfoRow>
               <span>해결 인원</span>
-              <span>{mock.stats.solved}</span>
+              <span>{activeResult.stats.solved}</span>
             </InfoRow>
             <InfoRow>
               <span>평균 시도</span>
-              <span>{mock.stats.attempts}</span>
+              <span>{activeResult.stats.attempts}</span>
             </InfoRow>
           </Card>
 
@@ -198,4 +244,26 @@ const ProblemResultPage: React.FC = () => {
   );
 };
 
-export default ProblemResultPage;
+export default ProblemGroupResultsPage;
+
+const UserTabBar = styled.div`
+  width: 92%;
+  max-width: 1280px;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+`;
+
+const UserTab = styled.button<{ $active: boolean }>`
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  background-color: ${({ $active }) => ($active ? "#2563eb" : "#e5e7eb")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#374151")};
+
+  &:hover {
+    background-color: ${({ $active }) => ($active ? "#1d4ed8" : "#d1d5db")};
+  }
+`;
