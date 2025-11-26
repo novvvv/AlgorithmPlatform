@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmissionResponseDto {
+    
     private Long id;
     private Long userId;
     private String userName;
@@ -24,10 +25,8 @@ public class SubmissionResponseDto {
     private Language language;
     private JudgeStatus status;
     private LocalDateTime submittedAt;
-
-    // JudgeResult 정보도 필요하다면 추가
-    private String executionTime; // 예: "120ms"
-    private String memoryUsage; // 예: "12MB"
+    private String executionTime; 
+    private String memoryUsage; 
 
     public static SubmissionResponseDto from(Submission submission) {
         return SubmissionResponseDto.builder()
