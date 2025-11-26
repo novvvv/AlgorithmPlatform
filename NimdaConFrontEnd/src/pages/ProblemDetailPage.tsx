@@ -1,15 +1,61 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { mockProblemDetails } from "@/mocks/mockProblemDetails";
+import type { IProblem, ITestCase } from "@/types/problem";
+import { getProblemByIdAPI } from "@/apis/problem";
 
 const ProblemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const problem = useMemo(() => {
+  const [problem, setProblem] = useState<IProblem | null>(null);
+  const [testCases, setTestCases] = useState<ITestCase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fallbackDetail = useMemo(() => {
     if (!id) return undefined;
     return mockProblemDetails.find(p => p.id === Number(id));
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!id) {
+      setProblem(null);
+      setTestCases([]);
+      setIsLoading(false);
+      setError("문제 ID를 확인할 수 없습니다.");
+      return;
+    }
+
+    const fetchProblem = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getProblemByIdAPI(Number(id));
+        if (cancelled) return;
+        setProblem(response.problem ?? null);
+        setTestCases(response.testCases ?? []);
+      } catch (err) {
+        if (cancelled) return;
+        setProblem(null);
+        setTestCases([]);
+        setError(
+          err instanceof Error ? err.message : "문제 정보를 불러오지 못했습니다."
+        );
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchProblem();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleSolve = () => {
@@ -18,7 +64,16 @@ const ProblemDetailPage: React.FC = () => {
     }
   };
 
-  if (!problem) {
+  if (isLoading) {
+    return (
+      <Page>
+        <Title>문제 상세</Title>
+        <EmptyCard>문제 정보를 불러오는 중입니다...</EmptyCard>
+      </Page>
+    );
+  }
+
+  if (!problem && !fallbackDetail) {
     return (
       <Page>
         <Title>문제 상세</Title>
@@ -27,40 +82,68 @@ const ProblemDetailPage: React.FC = () => {
     );
   }
 
+  const displayTitle = problem?.title ?? fallbackDetail?.title ?? "";
+  const description = problem?.description ?? fallbackDetail?.description ?? "";
+  const sampleData =
+    (testCases.length > 0
+      ? testCases.map(tc => ({ input: tc.input, output: tc.output }))
+      : fallbackDetail?.samples) ?? [];
+
+  const constraintItems = useMemo(() => {
+    const items: string[] = [];
+    if (problem?.timeLimit) items.push(`시간 제한: ${problem.timeLimit}ms`);
+    if (problem?.memoryLimit) items.push(`메모리 제한: ${problem.memoryLimit}KB`);
+    if (problem?.difficulty) items.push(`난이도: ${problem.difficulty}`);
+    if (problem?.language) items.push(`언어: ${problem.language}`);
+    if (fallbackDetail?.constraints?.length) {
+      items.push(...fallbackDetail.constraints);
+    }
+    return items;
+  }, [problem, fallbackDetail]);
+
+  const stats = fallbackDetail?.stats ?? { accuracy: "-", solved: 0, attempts: 0 };
+
   return (
     <Page>
-      <Title>{problem.title}{id ? ` (#${id})` : ""}</Title>
+      <Title>{displayTitle}{id ? ` (#${id})` : ""}</Title>
 
       <ContentGrid>
         <LeftColumn>
           <Card>
             <CardTitle>문제 설명</CardTitle>
-            <Description>{problem.description}</Description>
+            <Description>{description}</Description>
           </Card>
 
           <Card>
             <CardTitle>입출력 예제</CardTitle>
-            {problem.samples.map((sample, idx) => (
-              <SampleBox key={idx}>
-                <SampleRow>
-                  <SampleLabel>입력:</SampleLabel>
-                  <SampleValue>{sample.input || "\u00A0"}</SampleValue>
-                </SampleRow>
-                <SampleRow>
-                  <SampleLabel>출력:</SampleLabel>
-                  <SampleValue>{sample.output || "\u00A0"}</SampleValue>
-                </SampleRow>
-              </SampleBox>
-            ))}
+            {sampleData.length > 0 ? (
+              sampleData.map((sample, idx) => (
+                <SampleBox key={idx}>
+                  <SampleRow>
+                    <SampleLabel>입력:</SampleLabel>
+                    <SampleValue>{sample.input || "\u00A0"}</SampleValue>
+                  </SampleRow>
+                  <SampleRow>
+                    <SampleLabel>출력:</SampleLabel>
+                    <SampleValue>{sample.output || "\u00A0"}</SampleValue>
+                  </SampleRow>
+                </SampleBox>
+              ))
+            ) : (
+              <Description>입출력 예제가 없습니다.</Description>
+            )}
           </Card>
 
           <Card>
             <CardTitle>제약 조건</CardTitle>
             <ConstraintList>
-              {problem.constraints.map(item => (
-                <li key={item}>{item}</li>
-              ))}
+              {constraintItems.length > 0 ? (
+                constraintItems.map(item => <li key={item}>{item}</li>)
+              ) : (
+                <li>등록된 제약 조건이 없습니다.</li>
+              )}
             </ConstraintList>
+            {error && <ErrorText>※ {error}</ErrorText>}
           </Card>
         </LeftColumn>
 
@@ -69,15 +152,15 @@ const ProblemDetailPage: React.FC = () => {
             <CardTitle>문제 통계</CardTitle>
             <StatRow>
               <span>정답률</span>
-              <Highlight>{problem.stats.accuracy}</Highlight>
+              <Highlight>{stats.accuracy}</Highlight>
             </StatRow>
             <StatRow>
               <span>해결 인원</span>
-              <span>{problem.stats.solved}명</span>
+              <span>{stats.solved}명</span>
             </StatRow>
             <StatRow>
               <span>평균 시도</span>
-              <span>{problem.stats.attempts}회</span>
+              <span>{stats.attempts}회</span>
             </StatRow>
           </StatsCard>
 
@@ -202,6 +285,12 @@ const ConstraintList = styled.ul`
   padding-left: 1.1rem;
   color: #4b5563;
   line-height: 1.6;
+`;
+
+const ErrorText = styled.p`
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  color: #dc2626;
 `;
 
 const StatsCard = styled(Card)`

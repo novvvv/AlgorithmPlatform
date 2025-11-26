@@ -1,11 +1,13 @@
 import { useState } from "react";
 import styled from "styled-components";
-import type { ProblemDifficulty, ProgrammingLanguage } from "@/types/problem";
+import type {
+  CreateProblemRequest,
+  ITestCase,
+  ProblemDifficulty,
+  ProgrammingLanguage,
+} from "@/types/problem";
 
-interface TestCase {
-  input: string;
-  output: string;
-}
+type TestCase = ITestCase;
 
 const difficultyOptions: Array<{ label: string; value: ProblemDifficulty }> = [
   { label: "하", value: "EASY" },
@@ -26,12 +28,12 @@ export default function ProblemCreatePage() {
   const [language, setLanguage] = useState<ProgrammingLanguage>("PYTHON");
   const [timeLimit, setTimeLimit] = useState("");
   const [memoryLimit, setMemoryLimit] = useState("");
-  const [testCases, setTestCases] = useState<TestCase[]>([{ input: "", output: "" }]);
+  const [testCases, setTestCases] = useState<TestCase[]>([{ input: "", output: "", isPublic: true }]);
   const [solution, setSolution] = useState(`def solution():
     # 정답코드를 작성하세요`);
 
   const handleAddTestCase = () => {
-    setTestCases(prev => [...prev, { input: "", output: "" }]);
+    setTestCases(prev => [...prev, { input: "", output: "", isPublic: true }]);
   };
 
   const handleChangeTestCase = (index: number, key: keyof TestCase, value: string) => {
@@ -45,16 +47,37 @@ export default function ProblemCreatePage() {
     setLanguage("PYTHON");
     setTimeLimit("");
     setMemoryLimit("");
-    setTestCases([{ input: "", output: "" }]);
+    setTestCases([{ input: "", output: "", isPublic: true }]);
     setSolution(`def solution():
     # 정답코드를 작성하세요`);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
-    // TODO: API 연동
-    alert("문제가 생성되었습니다. (UI 동작 확인용)");
+
+    // API
+    const timeLimitMs = Number(timeLimit) > 0 ? Number(timeLimit) * 1000 : 0;
+    const memoryLimitKb = Number(memoryLimit) > 0 ? Number(memoryLimit) * 1024 : 0;
+
+    const payload: CreateProblemRequest = {
+      problem: {
+        title,
+        description,
+        difficulty,
+        language,
+        timeLimit: timeLimitMs,
+        memoryLimit: memoryLimitKb,
+      },
+      testCases: testCases.map(tc => ({
+        input: tc.input,
+        output: tc.output,
+        isPublic: tc.isPublic,
+      })),
+    };
+
+    console.log("[Mock] 문제 생성 요청", payload);
+    alert("문제가 생성되었습니다. (목업 전송)");
+    handleCancel();
   };
 
   return (

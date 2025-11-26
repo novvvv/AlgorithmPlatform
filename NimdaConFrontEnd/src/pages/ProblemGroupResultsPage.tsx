@@ -6,6 +6,8 @@ import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureCircle from "@/assets/icons/failureCircle.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
 import { mockProblemGroupResults } from "@/mocks/mockProblemGroupResults";
+import type { IGroupProblemResult } from "@/types/problemResult";
+import { getGroupProblemResultsAPI } from "@/apis/problemResult";
 import {
   BackButton,
   Card,
@@ -47,27 +49,65 @@ type Comment = {
 };
 
 const COMMENT_AUTHOR = "김그룹";
+const COMMENT_AUTHOR_MAP: Record<string, string> = {
+  김그룹: "이코딩",
+  이코딩: "박알고",
+  박알고: "김그룹",
+};
 
 const ProblemGroupResultsPage: React.FC = () => {
   const { groupId, id } = useParams<{ groupId: string; id: string }>();
   const navigate = useNavigate();
 
-  const resultsForProblem = useMemo(() => {
+  const fallbackResults = useMemo(() => {
     if (!id) return [];
     return mockProblemGroupResults.filter(r => r.problemId === Number(id));
   }, [id]);
 
+  const [resultsForProblem, setResultsForProblem] = useState<IGroupProblemResult[]>(fallbackResults);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [id]);
-
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const submitterNames = useMemo(
     () => new Set(resultsForProblem.map(result => result.userName)),
     [resultsForProblem],
   );
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [id]);
+
+  useEffect(() => {
+    const fetchGroupResults = async () => {
+      if (!groupId || !id) {
+        setResultsForProblem([]);
+        setIsLoading(false);
+        setError("그룹 또는 문제 정보를 확인할 수 없습니다.");
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getGroupProblemResultsAPI(Number(groupId), Number(id));
+        if (response.results.length > 0) {
+          setResultsForProblem(response.results);
+        } else {
+          setResultsForProblem(fallbackResults);
+          setError(response.message ?? "채점 결과가 아직 없습니다.");
+        }
+      } catch (err) {
+        setResultsForProblem(fallbackResults);
+        setError(err instanceof Error ? err.message : "채점 결과를 불러오지 못했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchGroupResults();
+  }, [groupId, id, fallbackResults]);
 
   useEffect(() => {
     const initial: Record<string, Comment[]> = {};
@@ -78,6 +118,15 @@ const ProblemGroupResultsPage: React.FC = () => {
   }, [resultsForProblem]);
 
   const activeResult = resultsForProblem[activeIndex];
+
+  if (isLoading) {
+    return (
+      <Page>
+        <Title>채점 결과</Title>
+        <EmptyCard>그룹 채점 결과를 불러오는 중입니다...</EmptyCard>
+      </Page>
+    );
+  }
 
   if (!groupId || !id || !activeResult) {
     return (
@@ -107,11 +156,12 @@ const ProblemGroupResultsPage: React.FC = () => {
   const handleAddComment = () => {
     const next = commentInput.trim();
     if (!next) return;
+    const author = COMMENT_AUTHOR_MAP[activeResult.userName] ?? COMMENT_AUTHOR;
     setComments(prev => ({
       ...prev,
       [activeResult.userName]: [
         ...(prev[activeResult.userName] ?? []),
-        { author: COMMENT_AUTHOR, content: next },
+        { author, content: next },
       ],
     }));
     setCommentInput("");
@@ -126,6 +176,7 @@ const ProblemGroupResultsPage: React.FC = () => {
   return (
     <Page>
       <Title>채점 결과</Title>
+      {error && <EmptyCard>{error}</EmptyCard>}
 
       {resultsForProblem.length > 1 && (
         <UserTabBar>

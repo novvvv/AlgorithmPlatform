@@ -1,30 +1,4 @@
-import type { SubmissionStatus } from "@/types/judge";
-
-export interface IProblemResult {
-  problemId: number;
-  submissionId: number;
-  userName: string;
-  status: "정답" | "오답";
-  runTime: string;
-  memory: string;
-  language: string;
-  testCases: Array<{
-    name: string;
-    result: SubmissionStatus;
-    time: string;
-    memory: string;
-  }>;
-  submittedCode: string;
-  submissionInfo: {
-    time: string;
-    attempts: string;
-  };
-  stats: {
-    accuracy: string;
-    solved: string;
-    attempts: string;
-  };
-}
+import type { IProblemResult } from "@/types/problemResult";
 
 export const mockProblemResults: IProblemResult[] = [
   {
