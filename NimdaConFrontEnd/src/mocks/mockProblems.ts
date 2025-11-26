@@ -15,7 +15,8 @@ export const mockProblems: IProblemWithProgress[] = [
     description: "배열에서  두 수 를 더해 target을 만드는 인덱스를 반환하세요.",
     timeLimit: 1000,
     memoryLimit: 256,
-    group: 1,
+    // [변경]: group -> groupId
+    groupId: 1, 
     createdAt: "",
     updatedAt: "",
     language: "PYTHON" as const, // ProgrammingLanguage
@@ -32,7 +33,8 @@ export const mockProblems: IProblemWithProgress[] = [
     description: "...",
     timeLimit: 1000,
     memoryLimit: 256,
-    group: 1,
+    // [변경]: group -> groupId
+    groupId: 1,
     createdAt: "",
     updatedAt: "",
     language: "JAVA" as const,
@@ -49,7 +51,8 @@ export const mockProblems: IProblemWithProgress[] = [
     description: "배열에서  두 수 를 더해 target을 만드는 인덱스를 반환하세요.",
     timeLimit: 1000,
     memoryLimit: 256,
-    group: 2,
+    // [변경]: group -> groupId
+    groupId: 2,
     createdAt: "",
     updatedAt: "",
     language: "CPP" as const,
@@ -61,3 +64,4 @@ export const mockProblems: IProblemWithProgress[] = [
     solvedBy: [101],
   },
 ];
+// export default mockProblems; // 원본에 export default가 없으므로 생략

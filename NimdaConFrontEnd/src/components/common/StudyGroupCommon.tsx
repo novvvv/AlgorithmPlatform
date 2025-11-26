@@ -42,14 +42,15 @@ import {
   ProblemHeader,
   ProblemTitle,
   DifficultyBadge,
+  ProgressGroup, 
   ProgressText,
   ProgressBar,
   ProgressFill,
   ProgressLabel,
-  SolveButton,
   ActionGroup, 
-  ProgressGroup, 
+  SolveButton,
   DetailButton,
+  ResultButton,
 } from "@/components/common/StudyGroupStyle";
 
 // 두 페이지에서 공통으로 사용할 Props 정의
@@ -90,14 +91,16 @@ export default function StudyGroupCommon({
   
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
-  const initialGroupData = useMemo(
-  () => mockStudyGroups.find(g => g.groupId === groupId),
-  [groupId]
-);
+const groupData: IStudyGroup | undefined = useMemo(() => {
+    // API 호출 대신 mockData를 사용합니다.
+    const targetGroup = mockStudyGroups.find(g => g.groupId === groupId); 
+    return targetGroup;
+  }, [groupId]);
 
-const groupData: IStudyGroup | undefined = initialGroupData;
-
-const problems = useMemo(() => mockProblems.filter(p => p.group === groupData?.groupId), [groupData]);
+  const problems = useMemo(() => {
+    // API 호출 대신 mockProblems를 사용합니다.
+    return mockProblems;
+  }, []);
 
 if (!groupData) {
   return (
@@ -115,6 +118,10 @@ if (!groupData) {
 
   const handleSolve = (id: number | string) => {
     navigate(`/problem/${id}`);
+  };
+
+  const handleResult = (id: number | string) => {
+    navigate(`/problem/results/${id}/studygroup/${groupId}`);
   };
 
   const handleCodeSubmit = (code: string) => {
@@ -161,9 +168,9 @@ if (!groupData) {
             <InfoGrid>
               <InfoItem>
                 <InfoLabel>그룹장</InfoLabel>
-                <InfoValue>{ groupData?.currentMembers?.find(m => m.role === 'LEADER')?.userName ||
-                             groupData?.currentMembers?.find(m => m.role === 'LEADER')?.user?.userName ||
-                             '알 수 없음'}
+                <InfoValue>
+                  {groupData?.currentMembers?.find((m) => m.role === 'LEADER')
+                    ?.userName || '알 수 없음'}
                 </InfoValue>
               </InfoItem>
               <InfoItem>
@@ -189,19 +196,27 @@ if (!groupData) {
           <Card>
             <CardTitle>멤버 목록</CardTitle>
             <MembersList>
-              {groupData.currentMembers?.map((member: IGroupMembership, idx: number) => {
-                if (!member) return null;
-                const solvedCount = problems.filter(p => p.group === groupData.groupId && p.solvedBy?.includes(member.userId)).length;
-                return (
-                  <MemberItem key={member.membershipId ?? idx}>
-                    <MemberName>
-                      {member.userName || '알 수 없음'}
-                      {member.role === 'LEADER' && ' (리더)'}
-                    </MemberName>
-                    <MemberGoal>{solvedCount}문제 해결</MemberGoal>
-                  </MemberItem>
-                );
-              })}
+              {groupData.currentMembers
+                ?.filter((member) => member)
+                .map((member: IGroupMembership, idx: number) => {
+                  const key = member.membershipId ?? idx; 
+                  const currentUserId: number = member.userId;
+                  const solvedCount = problems.filter(
+                    (p) =>
+                      p.groupId === groupData.groupId &&
+                      (p.solvedBy as number[])?.includes(currentUserId)
+                  ).length;
+
+                  return (
+                    <MemberItem key={key}>
+                      <MemberName>
+                        {member.userName || '알 수 없음'}
+                        {member.role === 'LEADER' && ' (리더)'}
+                      </MemberName>
+                      <MemberGoal>{solvedCount}문제 해결</MemberGoal>
+                    </MemberItem>
+                  );
+                })}
             </MembersList>
           </Card>
           
@@ -216,6 +231,7 @@ if (!groupData) {
             </Card>
           )}
         </LeftSection>
+
         <RightSection>
           {/* 그룹 문제 카드 */}
           <Card>
@@ -231,14 +247,15 @@ if (!groupData) {
             </TabBar>
             <ProblemList>
             {problems
-              .filter(p => p.group === groupData.groupId)
+              .filter(p => p.id !== undefined && p.groupId === groupData.groupId) 
               .map((problem) => {
-                const groupMemberIds = groupData.currentMembers?.filter(Boolean).map(m => m.userId) || [];
+                const problemId = problem.id as number;
+                const groupMemberIds = groupData?.currentMembers?.filter(Boolean).map(m => m.userId) || [];
                 const completionCount = (problem.solvedBy || []).filter(uid => groupMemberIds.includes(uid)).length;
                 const totalMembers = groupMemberIds.length;
                 const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
                 return (
-                  <ProblemItem key={problem.id}>
+                  <ProblemItem key={problemId}>
                     <ProblemHeader>
                       <ProblemTitle>{problem.title}</ProblemTitle>
                       <ProgressText>{problem.description}</ProgressText>
@@ -254,10 +271,14 @@ if (!groupData) {
                         {completionCount}/{totalMembers} 명 해결
                       </ProgressLabel>
                     </ProgressGroup>
-                    <ActionGroup>
-                      <DetailButton onClick={() => handleDetail(problem.id)}>상세</DetailButton>
-                      <SolveButton onClick={() => handleSolve(problem.id)}>풀기</SolveButton>
-                    </ActionGroup>
+
+                    {isDetailPage && (
+                      <ActionGroup>
+                        <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
+                        <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
+                        <ResultButton onClick={() => handleResult(problemId)}>채점결과</ResultButton>
+                      </ActionGroup>
+                      )}
                   </ProblemItem>
                 );
               })}

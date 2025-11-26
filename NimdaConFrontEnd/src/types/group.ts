@@ -3,10 +3,10 @@ export type GroupRole = 'LEADER' | 'MEMBER';
 export interface IStudyGroup {
   groupId: number;
   groupName: string;
-  description?: string | null;
-  goal?: string | null;
+  description?: string;
+  goal?: string;
   maxMembers: number;
-  participationCode?: string | null;
+  participationCode?: string;
   isPublic: boolean;
   creatorUserId: number;
   createdAt: string;
