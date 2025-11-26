@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
 import { mockProblemDetails } from "@/mocks/mockProblemDetails";
 import { mockProblemResults } from "@/mocks/mockProblemResults";
-import type { SubmissionStatus } from "@/types/judge";
+import { getProblemByIdAPI } from "@/apis/problem";
+import { submitCodeAPI } from "@/apis/judge";
+import type { SubmissionRequest, SubmissionStatus } from "@/types/judge";
+import type { IProblem } from "@/types/problem";
 
 const languageOptions = [
   { label: "Python", value: "PYTHON" },
@@ -26,46 +29,174 @@ const ProblemSolvePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const problem = useMemo(() => {
+  const fallbackProblem = useMemo(() => {
     if (!id) return undefined;
     return mockProblemDetails.find(p => p.id === Number(id));
   }, [id]);
+
+  const [problem, setProblem] = useState<IProblem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState(languageOptions[0].value);
+  const [code, setCode] = useState(`def solution(nums, target):
+    # 코드를 작성하세요`);
+  const [resultMessage, setResultMessage] = useState("코드를 실행하면 결과가 표시됩니다.");
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resultMock = useMemo(() => {
     if (!id) return undefined;
     return mockProblemResults.find(r => r.problemId === Number(id));
   }, [id]);
 
-  const [language, setLanguage] = useState(languageOptions[0].value);
-  const [code, setCode] = useState(`def solution(nums, target) :
-    # 코드를 작성하세요`);
-  const [resultMessage, setResultMessage] = useState("코드를 실행하면 결과가 표시됩니다.");
-  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const hasDetail = problem || fallbackProblem;
+  const sampleList = fallbackProblem?.samples ?? [];
+  const constraintList = fallbackProblem?.constraints ?? [];
+  const displayTitle = problem?.title ?? fallbackProblem?.title ?? "";
+  const displayDescription = problem?.description ?? fallbackProblem?.description ?? "";
+
+  const testCaseCount = useMemo(() => {
+    if (sampleList.length > 0) return sampleList.length;
+    return resultMock?.testCases.length ?? 0;
+  }, [sampleList.length, resultMock?.testCases.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!id) {
+      setProblem(null);
+      setIsLoading(false);
+      setError("문제 ID를 확인할 수 없습니다.");
+      return;
+    }
+
+    const fetchProblem = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getProblemByIdAPI(Number(id));
+        if (cancelled) return;
+        setProblem(response.problem ?? null);
+      } catch (err) {
+        if (cancelled) return;
+        setProblem(null);
+        setError(err instanceof Error ? err.message : "문제 정보를 불러오지 못했습니다.");
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchProblem();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const buildTestResults = (
+    status: SubmissionStatus,
+    executionTime?: number,
+    memoryUsage?: number,
+  ): TestResult[] => {
+    const count = Math.max(testCaseCount || resultMock?.testCases.length || 1, 1);
+    const timeLabel = executionTime !== undefined ? `${executionTime}ms` : "-";
+    const memoryLabel =
+      memoryUsage !== undefined ? `${Math.round(memoryUsage / 1024)}KB` : "-";
+
+    return Array.from({ length: count }, (_, index) => ({
+      name: `테스트 케이스 ${index + 1}`,
+      status,
+      time: timeLabel,
+      memory: memoryLabel,
+    }));
+  };
 
   const handleRun = () => {
-    // 실제 채점 결과를 연동하기 전까지는 목업 데이터를 사용합니다.
-    if (resultMock) {
-      setTestResults(
-        resultMock.testCases.map(tc => ({
-          name: tc.name,
-          status: tc.result,
-          time: tc.time,
-          memory: tc.memory,
-        })),
-      );
-      setResultMessage("실행 결과가 업데이트되었습니다.");
-    } else {
-      setTestResults([]);
-      setResultMessage("실행 결과를 불러오지 못했습니다.");
+    if (!id) {
+      setResultMessage("문제 ID를 확인할 수 없습니다.");
+      return;
     }
+
+    const payload: SubmissionRequest = {
+      title: problem?.title ?? fallbackProblem?.title ?? "",
+      code,
+      language: language as SubmissionRequest["language"],
+      problemId: Number(id),
+    };
+
+    setIsRunning(true);
+    submitCodeAPI(payload)
+      .then(response => {
+        const status = response.result.status;
+        setResultMessage(response.result.message || `실행 결과: ${status}`);
+        setTestResults(
+          buildTestResults(status as SubmissionStatus, response.result.executionTime, response.result.memoryUsage),
+        );
+      })
+      .catch(err => {
+        console.error(err);
+        if (resultMock) {
+          setTestResults(
+            resultMock.testCases.map(tc => ({
+              name: tc.name,
+              status: tc.result,
+              time: tc.time,
+              memory: tc.memory,
+            })),
+          );
+          setResultMessage("API 호출 실패, 목업 데이터로 결과를 표시했습니다.");
+        } else {
+          setTestResults([]);
+          setResultMessage(
+            err instanceof Error ? err.message : "실행 결과를 불러오지 못했습니다."
+          );
+        }
+      })
+      .finally(() => setIsRunning(false));
   };
 
   const handleSubmit = () => {
-    setResultMessage("제출이 완료되었습니다. (모의 상태)");
-    navigate(id ? `/problem/result/${id}` : "/problem/result");
+    if (!id) {
+      setResultMessage("문제 ID를 확인할 수 없습니다.");
+      return;
+    }
+
+    const payload: SubmissionRequest = {
+      title: problem?.title ?? fallbackProblem?.title ?? "",
+      code,
+      language: language as SubmissionRequest["language"],
+      problemId: Number(id),
+    };
+
+    setIsSubmitting(true);
+    submitCodeAPI(payload)
+      .then(response => {
+        setResultMessage(response.result.message || "제출이 완료되었습니다.");
+        navigate(`/problem/result/${id}`);
+      })
+      .catch(err => {
+        console.error(err);
+        setResultMessage(
+          err instanceof Error
+            ? `제출 실패: ${err.message}`
+            : "제출 중 오류가 발생했습니다."
+        );
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
-  if (!problem) {
+  if (isLoading) {
+    return (
+      <Page>
+        <Title>문제 풀이</Title>
+        <EmptyCard>문제 정보를 불러오는 중입니다...</EmptyCard>
+      </Page>
+    );
+  }
+
+  if (!hasDetail) {
     return (
       <Page>
         <Title>문제 풀이</Title>
@@ -76,17 +207,17 @@ const ProblemSolvePage: React.FC = () => {
 
   return (
     <Page>
-      <Title>{problem.title}{id ? ` (#${id})` : ""}</Title>
+      <Title>{displayTitle}{id ? ` (#${id})` : ""}</Title>
       <ContentGrid>
         <LeftColumn>
           <Card>
             <CardTitle>문제 설명</CardTitle>
-            <Description>{problem.description}</Description>
+            <Description>{displayDescription}</Description>
           </Card>
 
           <Card>
             <CardTitle>입출력 예제</CardTitle>
-            {problem.samples.map((sample, idx) => (
+            {sampleList.map((sample, idx) => (
               <SampleBox key={idx}>
                 <SampleRow>
                   <SampleLabel>입력:</SampleLabel>
@@ -103,7 +234,7 @@ const ProblemSolvePage: React.FC = () => {
           <Card>
             <CardTitle>제약 조건</CardTitle>
             <ConstraintList>
-              {problem.constraints.map(item => (
+              {constraintList.map(item => (
                 <li key={item}>{item}</li>
               ))}
             </ConstraintList>
@@ -128,8 +259,12 @@ const ProblemSolvePage: React.FC = () => {
           </EditorCard>
 
           <ActionRow>
-            <RunButton type="button" onClick={handleRun}>실행</RunButton>
-            <SubmitButton type="button" onClick={handleSubmit}>제출</SubmitButton>
+            <RunButton type="button" onClick={handleRun} disabled={isRunning || isSubmitting}>
+              {isRunning ? "실행 중..." : "실행"}
+            </RunButton>
+            <SubmitButton type="button" onClick={handleSubmit} disabled={isSubmitting || isRunning}>
+              {isSubmitting ? "제출 중..." : "제출"}
+            </SubmitButton>
           </ActionRow>
 
           <Card>

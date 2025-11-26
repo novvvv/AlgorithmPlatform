@@ -1,36 +1,8 @@
-import type { SubmissionStatus } from "@/types/judge";
-
-export interface IGroupProblemResult {
-  problemId: number;
-  id: number;
-  submissionId: number;
-  userName: string;
-  status: "정답" | "오답";
-  runTime: string;
-  memory: string;
-  language: string;
-  testCases: Array<{
-    name: string;
-    result: SubmissionStatus;
-    time: string;
-    memory: string;
-  }>;
-  submittedCode: string;
-  submissionInfo: {
-    time: string;
-    attempts: string;
-  };
-  stats: {
-    accuracy: string;
-    solved: string;
-    attempts: string;
-  };
-}
+import type { IGroupProblemResult } from "@/types/problemResult";
 
 export const mockProblemGroupResults: IGroupProblemResult[] = [
   {
     problemId: 1,
-    id: 1,
     submissionId: 1001,
     userName: "김그룹",
     status: "정답",
@@ -56,7 +28,6 @@ export const mockProblemGroupResults: IGroupProblemResult[] = [
   },
   {
     problemId: 1,
-    id: 2,
     submissionId: 1002,
     userName: "이코딩",
     status: "오답",
@@ -82,7 +53,6 @@ export const mockProblemGroupResults: IGroupProblemResult[] = [
   },
   {
     problemId: 1,
-    id: 3,
     submissionId: 1003,
     userName: "박알고",
     status: "오답",
