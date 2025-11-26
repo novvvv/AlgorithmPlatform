@@ -48,13 +48,6 @@ type Comment = {
   content: string;
 };
 
-const COMMENT_AUTHOR = "김그룹";
-const COMMENT_AUTHOR_MAP: Record<string, string> = {
-  김그룹: "이코딩",
-  이코딩: "박알고",
-  박알고: "김그룹",
-};
-
 const ProblemGroupResultsPage: React.FC = () => {
   const { groupId, id } = useParams<{ groupId: string; id: string }>();
   const navigate = useNavigate();
@@ -156,7 +149,7 @@ const ProblemGroupResultsPage: React.FC = () => {
   const handleAddComment = () => {
     const next = commentInput.trim();
     if (!next) return;
-    const author = COMMENT_AUTHOR_MAP[activeResult.userName] ?? COMMENT_AUTHOR;
+    const author = activeResult.userName;
     setComments(prev => ({
       ...prev,
       [activeResult.userName]: [
