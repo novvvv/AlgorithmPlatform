@@ -47,8 +47,6 @@ type Comment = {
   content: string;
 };
 
-const COMMENT_AUTHOR = "김그룹";
-
 const ProblemResultPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -132,7 +130,8 @@ const ProblemResultPage: React.FC = () => {
   const handleAddComment = () => {
     const next = commentInput.trim();
     if (!next) return;
-    setComments(prev => [...prev, { author: COMMENT_AUTHOR, content: next }]);
+    const author = displayResult.userName ?? "제출자";
+    setComments(prev => [...prev, { author, content: next }]);
     setCommentInput("");
   };
 
