@@ -31,7 +31,7 @@ public class JwtUtil {
      */
     public String generateToken(String userName, Long userId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userId);
+        claims.put("userId", userId);
         claims.put("userName", userName);
         return createToken(claims, userName);
     }
@@ -95,25 +95,25 @@ public class JwtUtil {
      */
     public Long extractUserId(String token) {
         try {
-            Object subClaim = extractClaim(token, claims -> claims.get("sub"));
-            if (subClaim == null) {
+            Object userIdClaim = extractClaim(token, claims -> claims.get("userId"));
+            if (userIdClaim == null) {
                 return null;
             }
             // String으로 저장된 경우 Long으로 변환
-            if (subClaim instanceof String) {
+            if (userIdClaim instanceof String) {
                 try {
-                    return Long.parseLong((String) subClaim);
+                    return Long.parseLong((String) userIdClaim);
                 } catch (NumberFormatException e) {
                     return null;
                 }
             }
             // 이미 Long인 경우
-            if (subClaim instanceof Long) {
-                return (Long) subClaim;
+            if (userIdClaim instanceof Long) {
+                return (Long) userIdClaim;
             }
             // Number인 경우
-            if (subClaim instanceof Number) {
-                return ((Number) subClaim).longValue();
+            if (userIdClaim instanceof Number) {
+                return ((Number) userIdClaim).longValue();
             }
             return null;
         } catch (Exception e) {

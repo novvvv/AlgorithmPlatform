@@ -62,23 +62,24 @@ public class JudgeService {
                 logger.warn("사용자를 찾을 수 없음: {}", userName);
                 // 익명 사용자는 user_id가 "anonymous"로 고정되어 있으므로 user_id로 조회
                 user = userRepository.findByUserId("anonymous")
-                    .orElseGet(() -> {
-                        // user_id로 찾지 못하면 이메일로 조회 시도
-                        return userRepository.findByEmail("anonymous@nimda.com")
-                            .orElseGet(() -> {
-                                // 이메일로도 찾지 못하면 생성
-                    String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
-                                User anonymousUser = new User("anonymous", "익명사용자", encodedPassword, "anonymous@nimda.com");
-                                try {
-                    return userRepository.save(anonymousUser);
-                                } catch (Exception e) {
-                                    // 이미 존재하는 경우 이메일로 다시 조회
-                                    logger.warn("익명 사용자 생성 실패, 이메일로 재조회: {}", e.getMessage());
-                                    return userRepository.findByEmail("anonymous@nimda.com")
-                                        .orElseThrow(() -> new RuntimeException("익명 사용자를 찾거나 생성할 수 없습니다."));
-                                }
-                            });
-                    });
+                        .orElseGet(() -> {
+                            // user_id로 찾지 못하면 이메일로 조회 시도
+                            return userRepository.findByEmail("anonymous@nimda.com")
+                                    .orElseGet(() -> {
+                                        // 이메일로도 찾지 못하면 생성
+                                        String encodedPassword = passwordEncoder.encode("anonymous1234"); // 4자 이상 패스워드
+                                        User anonymousUser = new User("anonymous", "익명사용자", encodedPassword,
+                                                "anonymous@nimda.com");
+                                        try {
+                                            return userRepository.save(anonymousUser);
+                                        } catch (Exception e) {
+                                            // 이미 존재하는 경우 이메일로 다시 조회
+                                            logger.warn("익명 사용자 생성 실패, 이메일로 재조회: {}", e.getMessage());
+                                            return userRepository.findByEmail("anonymous@nimda.com")
+                                                    .orElseThrow(() -> new RuntimeException("익명 사용자를 찾거나 생성할 수 없습니다."));
+                                        }
+                                    });
+                        });
                 userName = user.getUserName(); // 실제 DB에 저장된 사용자명 사용
             }
 
@@ -189,8 +190,15 @@ public class JudgeService {
                     "");
         }
 
-        // 각 테스트케이스별로 실행
-        for (TestCase testCase : testCases) {
+        // 모든 테스트케이스 실행 및 통과 개수 카운트
+        int totalTestCases = testCases.size();
+        int passedTestCases = 0;
+        JudgeResultDTO.Status finalStatus = JudgeResultDTO.Status.ACCEPTED;
+        StringBuilder messageBuilder = new StringBuilder();
+        long totalExecutionTime = 0;
+
+        for (int i = 0; i < testCases.size(); i++) {
+            TestCase testCase = testCases.get(i);
             ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", TEMP_DIR, fileName);
             runBuilder.directory(new File(TEMP_DIR));
 
@@ -205,21 +213,28 @@ public class JudgeService {
 
             boolean runFinished = runProcess.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
             long executionTime = System.currentTimeMillis() - startTime;
+            totalExecutionTime += executionTime;
 
             if (!runFinished) {
                 runProcess.destroyForcibly();
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED,
-                        "시간 초과",
-                        "");
+                // 시간 초과는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 시간 초과");
+                continue;
             }
 
             if (runProcess.exitValue() != 0) {
                 String error = readStream(runProcess.getErrorStream());
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.RUNTIME_ERROR,
-                        "런타임 에러",
-                        error);
+                // 런타임 에러는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.RUNTIME_ERROR;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 런타임 에러");
+                continue;
             }
 
             // 출력 결과 확인
@@ -227,22 +242,38 @@ public class JudgeService {
 
             // TestCase 기반 정답 검증
             if (!testCase.isCorrect(output)) {
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.WRONG_ANSWER,
-                        "오답입니다. 입력: " + testCase.getInput() +
-                                ", 예상: " + testCase.getOutput() +
-                                ", 실제: " + output,
-                        "");
+                // 오답은 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.WRONG_ANSWER;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 오답");
+            } else {
+                // 정답인 경우 통과 개수 증가
+                passedTestCases++;
             }
         }
 
-        // 모든 테스트케이스 통과
+        // 비율 계산: (통과 개수 / 전체 개수) * 100
+        int score = totalTestCases > 0 ? (int) Math.round((passedTestCases * 100.0) / totalTestCases) : 0;
+
+        // 메시지 구성
+        String message;
+        if (passedTestCases == totalTestCases) {
+            message = "모든 테스트케이스를 통과했습니다! (" + passedTestCases + "/" + totalTestCases + ")";
+        } else {
+            message = "테스트케이스 통과: " + passedTestCases + "/" + totalTestCases + " (" + score + "%)";
+            if (messageBuilder.length() > 0) {
+                message += " - " + messageBuilder.toString();
+            }
+        }
+
         return new JudgeResultDTO(
-                JudgeResultDTO.Status.ACCEPTED,
-                "모든 테스트케이스를 통과했습니다!",
-                0, // 실행시간은 추후 개선 필요
+                finalStatus,
+                message,
+                totalExecutionTime, // 총 실행 시간
                 0, // 메모리 사용량은 추후 구현
-                100 // 기본 점수 (points 필드 제거로 인해 기본값 사용)
+                score // 0~100 비율
         );
     }
 
@@ -284,8 +315,15 @@ public class JudgeService {
                     "");
         }
 
-        // 각 테스트케이스별로 실행
-        for (TestCase testCase : testCases) {
+        // 모든 테스트케이스 실행 및 통과 개수 카운트
+        int totalTestCases = testCases.size();
+        int passedTestCases = 0;
+        JudgeResultDTO.Status finalStatus = JudgeResultDTO.Status.ACCEPTED;
+        StringBuilder messageBuilder = new StringBuilder();
+        long totalExecutionTime = 0;
+
+        for (int i = 0; i < testCases.size(); i++) {
+            TestCase testCase = testCases.get(i);
             ProcessBuilder runBuilder = new ProcessBuilder(execFile);
             runBuilder.directory(new File(TEMP_DIR));
 
@@ -300,21 +338,28 @@ public class JudgeService {
 
             boolean runFinished = runProcess.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
             long executionTime = System.currentTimeMillis() - startTime;
+            totalExecutionTime += executionTime;
 
             if (!runFinished) {
                 runProcess.destroyForcibly();
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED,
-                        "시간 초과",
-                        "");
+                // 시간 초과는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 시간 초과");
+                continue;
             }
 
             if (runProcess.exitValue() != 0) {
                 String error = readStream(runProcess.getErrorStream());
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.RUNTIME_ERROR,
-                        "런타임 에러",
-                        error);
+                // 런타임 에러는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.RUNTIME_ERROR;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 런타임 에러");
+                continue;
             }
 
             // 출력 결과 확인
@@ -322,22 +367,38 @@ public class JudgeService {
 
             // TestCase 기반 정답 검증
             if (!testCase.isCorrect(output)) {
-                return new JudgeResultDTO(
-                        JudgeResultDTO.Status.WRONG_ANSWER,
-                        "오답입니다. 입력: " + testCase.getInput() +
-                                ", 예상: " + testCase.getOutput() +
-                                ", 실제: " + output,
-                        "");
+                // 오답은 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.WRONG_ANSWER;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 오답");
+            } else {
+                // 정답인 경우 통과 개수 증가
+                passedTestCases++;
             }
         }
 
-        // 모든 테스트케이스 통과
+        // 비율 계산: (통과 개수 / 전체 개수) * 100
+        int score = totalTestCases > 0 ? (int) Math.round((passedTestCases * 100.0) / totalTestCases) : 0;
+
+        // 메시지 구성
+        String message;
+        if (passedTestCases == totalTestCases) {
+            message = "모든 테스트케이스를 통과했습니다! (" + passedTestCases + "/" + totalTestCases + ")";
+        } else {
+            message = "테스트케이스 통과: " + passedTestCases + "/" + totalTestCases + " (" + score + "%)";
+            if (messageBuilder.length() > 0) {
+                message += " - " + messageBuilder.toString();
+            }
+        }
+
         return new JudgeResultDTO(
-                JudgeResultDTO.Status.ACCEPTED,
-                "모든 테스트케이스를 통과했습니다!",
-                0, // 실행시간은 추후 개선 필요
+                finalStatus,
+                message,
+                totalExecutionTime, // 총 실행 시간
                 0, // 메모리 사용량은 추후 구현
-                100 // 기본 점수 (points 필드 제거로 인해 기본값 사용)
+                score // 0~100 비율
         );
     }
 
