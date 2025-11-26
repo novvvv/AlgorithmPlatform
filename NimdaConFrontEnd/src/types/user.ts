@@ -7,7 +7,7 @@ export interface IAuthority {
 
 export interface IUser {
   id: number;
-  userId: number;
+  userId: string;
   userName: string;
   password?: string;  
   email: string;
@@ -18,7 +18,7 @@ export interface IUser {
 
 export interface IUserDetail {
   id: number;
-  userId: number;
+  userId: string;
   userName: string;
   password?: string;  
   email: string;

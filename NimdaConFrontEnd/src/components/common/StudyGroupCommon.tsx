@@ -161,9 +161,9 @@ if (!groupData) {
             <InfoGrid>
               <InfoItem>
                 <InfoLabel>그룹장</InfoLabel>
-                <InfoValue>{ groupData?.currentMembers?.find(m => m.role === 'LEADER')?.userName ||
-                             groupData?.currentMembers?.find(m => m.role === 'LEADER')?.user?.userName ||
-                             '알 수 없음'}
+                <InfoValue>
+                  {groupData?.currentMembers?.find((m) => m.role === 'LEADER')
+                    ?.userName || '알 수 없음'}
                 </InfoValue>
               </InfoItem>
               <InfoItem>
@@ -189,19 +189,27 @@ if (!groupData) {
           <Card>
             <CardTitle>멤버 목록</CardTitle>
             <MembersList>
-              {groupData.currentMembers?.map((member: IGroupMembership, idx: number) => {
-                if (!member) return null;
-                const solvedCount = problems.filter(p => p.group === groupData.groupId && p.solvedBy?.includes(member.userId)).length;
-                return (
-                  <MemberItem key={member.membershipId ?? idx}>
-                    <MemberName>
-                      {member.userName || '알 수 없음'}
-                      {member.role === 'LEADER' && ' (리더)'}
-                    </MemberName>
-                    <MemberGoal>{solvedCount}문제 해결</MemberGoal>
-                  </MemberItem>
-                );
-              })}
+              {groupData.currentMembers
+                ?.filter((member) => member)
+                .map((member: IGroupMembership, idx: number) => {
+                  const key = member.membershipId ?? idx; 
+                  const currentUserId: number = member.userId;
+                  const solvedCount = problems.filter(
+                    (p) =>
+                      p.groupId === groupData.groupId &&
+                      (p.solvedBy as number[])?.includes(currentUserId)
+                  ).length;
+
+                  return (
+                    <MemberItem key={key}>
+                      <MemberName>
+                        {member.userName || '알 수 없음'}
+                        {member.role === 'LEADER' && ' (리더)'}
+                      </MemberName>
+                      <MemberGoal>{solvedCount}문제 해결</MemberGoal>
+                    </MemberItem>
+                  );
+                })}
             </MembersList>
           </Card>
           
@@ -231,14 +239,15 @@ if (!groupData) {
             </TabBar>
             <ProblemList>
             {problems
-              .filter(p => p.group === groupData.groupId)
+              .filter(p => p.groupId === groupData.groupId && p.id !== undefined) 
               .map((problem) => {
+                const problemId = problem.id as number;
                 const groupMemberIds = groupData.currentMembers?.filter(Boolean).map(m => m.userId) || [];
                 const completionCount = (problem.solvedBy || []).filter(uid => groupMemberIds.includes(uid)).length;
                 const totalMembers = groupMemberIds.length;
                 const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
                 return (
-                  <ProblemItem key={problem.id}>
+                  <ProblemItem key={problemId}>
                     <ProblemHeader>
                       <ProblemTitle>{problem.title}</ProblemTitle>
                       <ProgressText>{problem.description}</ProgressText>
@@ -255,8 +264,8 @@ if (!groupData) {
                       </ProgressLabel>
                     </ProgressGroup>
                     <ActionGroup>
-                      <DetailButton onClick={() => handleDetail(problem.id)}>상세</DetailButton>
-                      <SolveButton onClick={() => handleSolve(problem.id)}>풀기</SolveButton>
+                      <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
+                      <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
                     </ActionGroup>
                   </ProblemItem>
                 );

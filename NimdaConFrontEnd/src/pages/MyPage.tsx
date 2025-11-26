@@ -75,11 +75,11 @@ export default function MyPage() {
       ? Math.round((userSolvedProblems.length / mockProblems.length) * 100)
       : 0;
     
-    const languages = userSolvedProblems.map(p => p.language ?? "UNKNOWN");
+    const languages = userSolvedProblems.map(p => p.language || "UNKNOWN");
     const languageCount: Record<string, number> = {};
     languages.forEach(lang => {
       languageCount[lang] = (languageCount[lang] || 0) + 1;
-    });
+    }, [userSolvedProblems]);
 
     const rawMostUsedLang = languages.length > 0
       ? Object.entries(languageCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "PYTHON"
@@ -152,8 +152,11 @@ export default function MyPage() {
             <ProblemContainer>
               {userSolvedProblems.length > 0 ? (
                 <ProblemList>
-                  {userSolvedProblems.map((problem) => {
-                    const testcaseRate = problem.completionRate ?? 0;
+                  {userSolvedProblems
+                    .filter((problem) => problem.id !== undefined) 
+                    .map((problem) => {
+                      const testcaseRate = 0; 
+                      const problemId = problem.id as number;
                     return (
                       <ProblemItem key={problem.id}>
                         <ProblemHeader>
@@ -173,8 +176,8 @@ export default function MyPage() {
                         </ProgressGroup>  
 
                         <ActionGroup>
-                          <DetailButton onClick={() => handleDetail(problem.id)}>상세</DetailButton>
-                          <SolveButton onClick={() => handleSolve(problem.id)}>풀기</SolveButton>
+                          <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
+                          <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
                         </ActionGroup>
                         
                       </ProblemItem>
