@@ -2,7 +2,11 @@ package com.nimda.con.user.controller;
 
 import com.nimda.con.user.entity.User;
 import com.nimda.con.user.service.UserService;
+import com.nimda.con.common.util.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +20,13 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class UsersController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UsersController.class);
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * 모든 사용자 조회
@@ -121,5 +130,50 @@ public class UsersController {
             error.put("message", "Failed to get user: " + e.getMessage());
             return ResponseEntity.status(500).body(error);
         }
+    }
+
+    /**
+     * 현재 로그인한 사용자 정보 조회
+     * JWT 토큰에서 사용자 ID를 추출하여 사용자 정보를 반환합니다.
+     * 
+     * @param authHeader Authorization 헤더 (Bearer 토큰)
+     * @return 현재 로그인한 사용자 정보
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Authorization token is required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.extractUserId(token);
+
+        if (userId == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        Optional<User> userOpt = userService.findById(userId);
+        if (userOpt.isEmpty()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        User user = userOpt.get();
+        User userWithoutPassword = new User();
+        userWithoutPassword.setId(user.getId());
+        userWithoutPassword.setUserId(user.getUserId());
+        userWithoutPassword.setUserName(user.getUserName());
+        userWithoutPassword.setEmail(user.getEmail());
+        userWithoutPassword.setUniversityName(user.getUniversityName());
+        userWithoutPassword.setDepartment(user.getDepartment());
+        userWithoutPassword.setGrade(user.getGrade());
+
+        return ResponseEntity.ok(userWithoutPassword);
     }
 }

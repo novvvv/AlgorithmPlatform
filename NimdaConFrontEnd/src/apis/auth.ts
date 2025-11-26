@@ -15,13 +15,19 @@ export const loginAPI = async (
 ): Promise<LoginResponse> => {
   try {
     const response = await apiClient.post<LoginResponse>("/auth/login", loginData);
+    console.log("로그인 API 전체 응답:", response);
+    console.log("로그인 API 응답 데이터:", response.data);
     const result = response.data;
     // accessToken 및 user 정보 저장
     if (result.accessToken) {
       localStorage.setItem("authToken", result.accessToken);
+      console.log("토큰 저장 완료:", result.accessToken.substring(0, 20) + "...");
       if (result.user) {
         localStorage.setItem("user", JSON.stringify(result.user));
+        console.log("사용자 정보 저장 완료:", result.user);
       }
+    } else {
+      console.error("응답에 accessToken이 없습니다. 전체 응답:", result);
     }
     return result;
   } catch (error: unknown) {

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { mockProblems } from "@/mocks/mockProblems";
 import profileIcon from "@/assets/icons/profile.png";
+import { logoutAPI, getCurrentUser } from "@/apis/auth";
 
 import {
   ProblemList,
@@ -26,48 +27,44 @@ interface UserStats {
   totalSubmissions: number;
 }
 
-interface UserProfile {
-  name: string;
-  university: string;
-  department: string;
-  grade: number;
-}
-
-// 임시 사용자 정보
-const CURRENT_USER_ID = 101;
-const userProfile: UserProfile = {
-  name: "김코딩",
-  university: "공주대학교",
-  department: "컴퓨터공학과",
-  grade: 3,
-};
-
 export default function MyPage() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
 
-  const handleDetail = (id: number | string) => {
-    navigate(`/problem/detail/${id}`);
+  const handleDetail = (id: number | string | undefined) => {
+    if (id !== undefined) {
+      navigate(`/problem/detail/${id}`);
+    }
   };
 
-  const handleSolve = (id: number | string) => {
-    navigate(`/problem/${id}`);
+  const handleSolve = (id: number | string | undefined) => {
+    if (id !== undefined) {
+      navigate(`/problem/${id}`);
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("정말 로그아웃하시겠습니까?")) {
+      logoutAPI();
+      navigate("/login");
+    }
   };
 
   const getDifficultyText = (difficulty: string) => {
-  switch (difficulty) {
-    case "EASY":
-      return "하";
-    case "MEDIUM":
-      return "중";
-    case "HARD":
-      return "상";
-    default:
-      return difficulty;
+    switch (difficulty) {
+      case "EASY":
+        return "하";
+      case "MEDIUM":
+        return "중";
+      case "HARD":
+        return "상";
+      default:
+        return difficulty;
     }
   };
 
   const userSolvedProblems = useMemo(() => {
-    return mockProblems.filter(p => p.solvedBy?.includes(CURRENT_USER_ID));
+    return mockProblems.filter(p => p.solvedBy?.includes(0));
   }, []);
 
   const stats: UserStats = useMemo(() => {
@@ -109,16 +106,16 @@ export default function MyPage() {
                 <ProfileIconImage src={profileIcon} alt="프로필 아이콘" />
               </ProfileIconWrapper>
               <ProfileInfo>
-                <ProfileName>{userProfile.name}</ProfileName>
+                <ProfileName>{currentUser?.userName || "사용자"}</ProfileName>
                 <ProfileDetail>
-                  {userProfile.university} {userProfile.department} {userProfile.grade}학년
+                  {currentUser?.email || "미입력"}
                 </ProfileDetail>
               </ProfileInfo>
             </ProfileInfoWrapper>
             
             <ButtonGroup>
               <EditButton>정보 수정</EditButton>
-              <LogoutButton>로그아웃</LogoutButton>
+              <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
             </ButtonGroup>
           </ProfileSection>
 
@@ -392,4 +389,30 @@ const EmptyMessage = styled.div`
   padding: 2rem;
   color: #999;
   font-size: 1rem;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.2rem;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #d32f2f;
+  font-size: 1.2rem;
+`;
+
+const ProfileEmail = styled.p`
+  margin: 0.5rem 0 0 0;
+  color: #888;
+  font-size: 0.85rem;
+`;
+
+const ProfileErrorText = styled.p`
+  margin: 0.5rem 0 0 0;
+  color: #d32f2f;
+  font-size: 0.85rem;
 `;

@@ -4,7 +4,8 @@ import type {
   GetUserByUserIdResponse,
   GetUserByUserNameResponse,
   DeleteUserResponse, 
-  UpdateUserRoleResponse 
+  UpdateUserRoleResponse,
+  IUser
 } from "@/types/user";
 import { apiClient, getErrorMessage } from "./utils";
 
@@ -99,6 +100,21 @@ export const updateUserRoleAPI = async (
     return response.data;
   } catch (error: unknown) {
     console.error("사용자 권한 변경 API 오류:", error);
+    throw new Error(getErrorMessage(error));
+  }
+};
+
+/**
+ * 현재 로그인한 사용자 정보 조회 API
+ * GET /api/users/me
+ * JWT 토큰에서 사용자 정보를 자동으로 추출합니다.
+ */
+export const getCurrentUserAPI = async (): Promise<IUser> => {
+  try {
+    const response = await apiClient.get<IUser>("/users/me");
+    return response.data;
+  } catch (error: unknown) {
+    console.error("현재 사용자 정보 조회 오류:", error);
     throw new Error(getErrorMessage(error));
   }
 };

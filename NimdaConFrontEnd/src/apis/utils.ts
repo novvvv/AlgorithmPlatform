@@ -22,11 +22,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
-    if (!config.headers) {
-      config.headers = {}; 
-    }
-    // 토큰이 있을 때만 Authorization 헤더 설정
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -42,14 +38,6 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
-    if (isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      }
-      return Promise.reject(error);
-    }
     return Promise.reject(error);
   }
 );
