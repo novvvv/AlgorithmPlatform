@@ -42,14 +42,15 @@ import {
   ProblemHeader,
   ProblemTitle,
   DifficultyBadge,
+  ProgressGroup, 
   ProgressText,
   ProgressBar,
   ProgressFill,
   ProgressLabel,
-  SolveButton,
   ActionGroup, 
-  ProgressGroup, 
+  SolveButton,
   DetailButton,
+  ResultButton,
 } from "@/components/common/StudyGroupStyle";
 
 // 두 페이지에서 공통으로 사용할 Props 정의
@@ -90,14 +91,16 @@ export default function StudyGroupCommon({
   
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
-  const initialGroupData = useMemo(
-  () => mockStudyGroups.find(g => g.groupId === groupId),
-  [groupId]
-);
+const groupData: IStudyGroup | undefined = useMemo(() => {
+    // API 호출 대신 mockData를 사용합니다.
+    const targetGroup = mockStudyGroups.find(g => g.groupId === groupId); 
+    return targetGroup;
+  }, [groupId]);
 
-const groupData: IStudyGroup | undefined = initialGroupData;
-
-const problems = useMemo(() => mockProblems.filter(p => p.group === groupData?.groupId), [groupData]);
+  const problems = useMemo(() => {
+    // API 호출 대신 mockProblems를 사용합니다.
+    return mockProblems;
+  }, []);
 
 if (!groupData) {
   return (
@@ -115,6 +118,10 @@ if (!groupData) {
 
   const handleSolve = (id: number | string) => {
     navigate(`/problem/${id}`);
+  };
+
+  const handleResult = (id: number | string) => {
+    navigate(`/problem/results/${id}/studygroup/${groupId}`);
   };
 
   const handleCodeSubmit = (code: string) => {
@@ -224,6 +231,7 @@ if (!groupData) {
             </Card>
           )}
         </LeftSection>
+
         <RightSection>
           {/* 그룹 문제 카드 */}
           <Card>
@@ -239,10 +247,10 @@ if (!groupData) {
             </TabBar>
             <ProblemList>
             {problems
-              .filter(p => p.groupId === groupData.groupId && p.id !== undefined) 
+              .filter(p => p.id !== undefined && p.groupId === groupData.groupId) 
               .map((problem) => {
                 const problemId = problem.id as number;
-                const groupMemberIds = groupData.currentMembers?.filter(Boolean).map(m => m.userId) || [];
+                const groupMemberIds = groupData?.currentMembers?.filter(Boolean).map(m => m.userId) || [];
                 const completionCount = (problem.solvedBy || []).filter(uid => groupMemberIds.includes(uid)).length;
                 const totalMembers = groupMemberIds.length;
                 const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
@@ -263,10 +271,14 @@ if (!groupData) {
                         {completionCount}/{totalMembers} 명 해결
                       </ProgressLabel>
                     </ProgressGroup>
-                    <ActionGroup>
-                      <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
-                      <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
-                    </ActionGroup>
+
+                    {isDetailPage && (
+                      <ActionGroup>
+                        <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
+                        <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
+                        <ResultButton onClick={() => handleResult(problemId)}>채점결과</ResultButton>
+                      </ActionGroup>
+                      )}
                   </ProblemItem>
                 );
               })}

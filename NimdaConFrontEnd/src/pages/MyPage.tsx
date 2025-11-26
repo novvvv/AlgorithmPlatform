@@ -158,7 +158,7 @@ export default function MyPage() {
                       <ProblemItem key={problem.id}>
                         <ProblemHeader>
                           <ProblemTitle>{problem.title}</ProblemTitle>
-                          <ProgressText>{problem.description}</ProgressText> {/* 문제 설명 */}
+                          <ProgressText>{problem.description}</ProgressText> 
                         </ProblemHeader>
 
                         <DifficultyBadge $difficulty={problem.difficulty}>

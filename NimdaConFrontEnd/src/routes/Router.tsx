@@ -30,7 +30,7 @@ const Router = () => {
         <Route path="/problem/detail/:id?" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
         <Route path="/problem/:id?" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
         <Route path="/problem/result/:id?" element={<LayoutWrapper><ProblemResultPage /></LayoutWrapper>} />
-        <Route path="/studygroup/:groupId/problem/results/:id" element={<LayoutWrapper><ProblemGroupResultsPage /></LayoutWrapper>} />
+        <Route path="/problem/results/:id?/studygroup/:groupId?" element={<LayoutWrapper><ProblemGroupResultsPage /></LayoutWrapper>} />
       </Routes>
     </BrowserRouter>
   );

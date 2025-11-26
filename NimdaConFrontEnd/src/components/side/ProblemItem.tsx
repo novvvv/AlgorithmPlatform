@@ -55,6 +55,10 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
     navigate(`/problem/${id}`);
   };
 
+  const handleResult = () => {
+    navigate(`/problem/result/${id}`); 
+  };
+
   return (
     <ItemContainer>
       <InfoSection>
@@ -70,6 +74,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
         <ButtonWrapper>
           <ActionButton onClick={handleDetail}>상세</ActionButton>
           <ActionButton $primary onClick={handleSolve}>풀기</ActionButton>
+          <ResultActionButton onClick={handleResult}>채점결과</ResultActionButton>
         </ButtonWrapper>
       </ActionGroup>
     </ItemContainer>
@@ -112,7 +117,8 @@ const ActionGroup = styled.div`
   display: flex;
   flex-direction: column;  
   align-items: flex-end; 
-  gap: 0.5rem; 
+  gap: 0.3rem; 
+  margin-left: 0.5rem;
 `;
 
 const ButtonWrapper = styled.div`
@@ -131,7 +137,7 @@ const DifficultyTag = styled.span<{ $difficulty: ProblemDifficulty }>`
 const ActionButton = styled.button<{ $primary?: boolean }>`
   background-color: ${(props) => (props.$primary ? "#3b82f6" : "#e5e7eb")};
   color: ${(props) => (props.$primary ? "white" : "#1f2937")};
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border: none;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -140,5 +146,13 @@ const ActionButton = styled.button<{ $primary?: boolean }>`
   white-space: nowrap; 
   &:hover {
     background-color: ${(props) => (props.$primary ? "#2563eb" : "#d1d5db")};
+  }
+`;
+
+const ResultActionButton = styled(ActionButton)`
+  background-color: #e65d5dff; 
+  color: white;
+  &:hover {
+    background-color: #dc2626;
   }
 `;
