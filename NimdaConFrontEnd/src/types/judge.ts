@@ -1,6 +1,7 @@
 import type { ProgrammingLanguage } from "./problem";
-export type SubmissionStatus = 'PENDING' | 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
-export type JudgeStatus = 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE';
+
+export type JudgeStatus = 'ACCEPTED' | 'WRONG_ANSWER' | 'TIME_LIMIT_EXCEEDED' | 'MEMORY_LIMIT_EXCEEDED' | 'RUNTIME_ERROR' | 'COMPILATION_ERROR' | 'SYSTEM_ERROR';
+export type SubmissionStatus = JudgeStatus | 'PENDING';
 
 export interface ISubmission {
   submissionId: number;
@@ -22,13 +23,13 @@ export interface ITestCaseResult {
 }
 
 export interface IJudgeResult {
-  status: JudgeStatus;
+  status: JudgeStatus; // 변경된 JudgeStatus 사용
   message: string;
   output?: string;
   errorOutput: string;
-  executionTime: number;
-  memoryUsage: number;
-  score: number;
+  executionTime: number; // 밀리초 단위
+  memoryUsage: number;   // KB 단위로 가정 (API 가이드에는 단위 없음)
+  score: number; // 0 ~ 100 정수 값 (테스트케이스 통과 비율)
 }
 
 export interface SubmissionRequest {
@@ -36,6 +37,7 @@ export interface SubmissionRequest {
   code: string;
   language: ProgrammingLanguage;
   problemId: number;
+  description?: string; 
 }
 
 export interface JudgeResponse {
@@ -43,27 +45,6 @@ export interface JudgeResponse {
   submittedBy: string;
   submissionId: number;
   success: boolean;
-  message: string;
-}
-
-export interface GetAllSubmissionsResponse {
-  success: boolean;
-  submissions: ISubmission[];
-  totalCount: number;
-  message: string;
-}
-
-export interface GetUserSubmissionsResponse {
-  success: boolean;
-  submissions: ISubmission[];
-  totalCount: number;
-  message: string;
-}
-
-export interface GetUserProblemSubmissionsResponse {
-  success: boolean;
-  submissions: ISubmission[];
-  totalCount: number;
   message: string;
 }
 
@@ -77,8 +58,30 @@ export interface IRecentSubmission {
   language: string;
   status: string;
   submittedAt: string;
-  executionTime: string;
-  memoryUsage: string;
+  executionTime: string; // "120ms"와 같은 문자열
+  memoryUsage: string;   // "15MB"와 같은 문자열
+  score: number; // 제출 목록에도 score 필드 추가
+}
+
+export interface GetAllSubmissionsResponse {
+  success: boolean;
+  submissions: IRecentSubmission[];
+  totalCount: number;
+  message: string;
+}
+
+export interface GetUserSubmissionsResponse {
+  success: boolean;
+  submissions: IRecentSubmission[];
+  totalCount: number;
+  message: string;
+}
+
+export interface GetUserProblemSubmissionsResponse {
+  success: boolean;
+  submissions: IRecentSubmission[];
+  totalCount: number;
+  message: string;
 }
 
 export interface ISortInfo {
@@ -110,16 +113,4 @@ export interface GetUserRecentSubmissionsResponse {
   empty: boolean;
 }
 
-export interface GetGroupRecentSubmissionsResponse {
-  content: IRecentSubmission[];
-  pageable: IPageableInfo;
-  totalPages: number;
-  totalElements: number;
-  last: boolean;
-  numberOfElements: number;
-  first: boolean;
-  size: number;
-  number: number;
-  sort: ISortInfo;
-  empty: boolean;
-}
+export type GetGroupRecentSubmissionsResponse = GetUserRecentSubmissionsResponse;

@@ -41,14 +41,14 @@ export const getAllSubmissionsAPI = async (): Promise<GetAllSubmissionsResponse>
 
 /**
  * 사용자 닉네임 제출 목록 조회 API
- * GET /api/judge/submissions/user/{username}
+ * GET /api/judge/submissions/user/{userName}
  */
 export const getUserSubmissionsAPI = async (
-  username: string
+  userName: string
 ): Promise<GetUserSubmissionsResponse> => {
   try {
     const response = await apiClient.get<GetUserSubmissionsResponse>(
-      `/judge/submissions/user/${encodeURIComponent(username)}`
+      `/judge/submissions/user/${encodeURIComponent(userName)}`
     );
     return response.data;
   } catch (error: unknown) {
@@ -91,7 +91,7 @@ export async function getUserRecentSubmissions(
     );
     return response.data;
   } catch (error: unknown) {
-    console.error("최근 제출 목록 조회 오류:", error);
+    console.error("유저별 최근 제출 목록 조회 오류:", error);
     throw new Error(getErrorMessage(error));
   }
 }
@@ -111,7 +111,7 @@ export async function getGroupRecentSubmissions(
     );
     return response.data;
   } catch (error: unknown) {
-    console.error("최근 제출 목록 조회 오류:", error);
+    console.error("그룹별 최근 제출 목록 조회 오류:", error);
     throw new Error(getErrorMessage(error));
   }
 }

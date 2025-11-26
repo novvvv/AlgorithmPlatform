@@ -1,5 +1,5 @@
 export type ProblemDifficulty = "EASY" | "MEDIUM" | "HARD" ;
-export type ProgrammingLanguage = "JAVA" | "PYTHON" | "CPP" ;
+export type ProgrammingLanguage = "JAVA" | "PYTHON" | "CPP" | string ;
 
 export interface IProblem {
   id?: number;
@@ -9,7 +9,7 @@ export interface IProblem {
   memoryLimit: number;      // KB 단위
   difficulty: ProblemDifficulty;
   language?: ProgrammingLanguage;   
-  groupId?: number; 
+  groupId?: number | null;  
   group?: string;        
   createdAt?: string;
   updatedAt?: string;
@@ -21,14 +21,20 @@ export interface ITestCase {
   isPublic: boolean;  
 }
 export interface CreateProblemRequest {
-  problem: IProblem;
+  title: string;
+  description: string;
+  timeLimit: number;
+  memoryLimit: number;
+  difficulty: ProblemDifficulty;
+  language: ProgrammingLanguage;
+  groupId: number | null;
   testCases: ITestCase[];
 }
 
 export interface CreateProblemResponse {
-  problem: IProblem;
   success: boolean;
-  message?: string;
+  problem: IProblem;
+  message: string;
 }
 
 export interface GetAllProblemsResponse {
@@ -40,7 +46,7 @@ export interface GetAllProblemsResponse {
 export interface GetProblemByIdResponse {
   success: boolean;
   problem?: IProblem;
-  testCases?: ITestCase[];   
+  // testCases?: ITestCase[];   
   message?: string;
 }
 
