@@ -17,11 +17,6 @@ export interface IUser {
 }
 
 export interface IUserDetail {
-  id: number;
-  userId: string;
-  userName: string;
-  password?: string;  
-  email: string;
   universityName: string;
   department: string;
   grade: string;
@@ -34,27 +29,16 @@ export interface GetAllUsersResponse {
   message?: string;
 }
 
-export interface GetUserByIdResponse {
-  success: boolean;
-  user: IUser;
-  status?: number;
-  message?: string;
-}
+export type GetUserByIdResponse = IUserDetail;
 
 export interface GetUserByUserIdResponse {
-  success: boolean;
-  user: IUserDetail;
-  status?: number;
-  message?: string;
+  id: number;
+  userId: string;
+  userName: string;
+  email: string;
 }
 
-export interface GetUserByUserNameResponse {
-  success: boolean;
-  user: IUserDetail;
-  status?: number;
-  message?: string;
-}
-
+export type GetUserByUserNameResponse = GetUserByUserIdResponse;
 export interface DeleteUserResponse {
   success: boolean;
   message?: string;

@@ -1,4 +1,4 @@
-export type GroupRole = 'LEADER' | 'MEMBER';
+export type GroupRole = 'LEADER' | 'MEMBER' | 'ADMIN';
 
 export interface IStudyGroup {
   groupId: number;
@@ -20,7 +20,7 @@ export interface IGroupMembership {
   userId: number;
   userName: string;
   role: GroupRole;
-  active: boolean;
+  active: boolean; // 탈퇴 시 soft delete에 사용될 수 있음
   joinedAt: string;
   leftAt: string | null;
 }
@@ -33,15 +33,33 @@ export interface GetGroupCreateRequest {
   goal?: string;
   maxMembers: number;
   isPublic: boolean;
-  creatorUserId?: number;
+  creatorUserId: number; 
+  participationCode?: string; 
 }
+
+export interface GetGroupCreateResponse {
+  groupId: number;
+  groupName: string;
+  maxMembers: number;
+  currentMembers: number; 
+  participationCode?: string;
+  isPublic: boolean;
+  createdAt: string;
+}
+
 export type GetGroupMembersResponse = IGroupMembership[];
 
 export interface AddGroupMemberRequest {
   userId: number;
-  role: GroupRole;
-  participationCode: string;
+  role?: GroupRole;
+  participationCode?: string;
 }
-export type AddGroupMemberResponse = IGroupMembership;
+
+export interface AddGroupMemberResponse {
+  groupId: number;
+  userId: number;
+  role: GroupRole;
+  joinedAt: string;
+}
 
 export type RemoveGroupMemberResponse = void; 
