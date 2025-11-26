@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CorrectCircle from "@/assets/icons/correctCircle.png";
 import CorrectSmall from "@/assets/icons/correctSmall.png";
 import FailureCircle from "@/assets/icons/failureCircle.png";
 import FailureSmall from "@/assets/icons/failureSmall.png";
 import { mockProblemResults } from "@/mocks/mockProblemResults";
+import type { IProblemResult } from "@/types/problemResult";
+import { getProblemResultAPI } from "@/apis/problemResult";
 import {
   BackButton,
   Card,
@@ -50,16 +52,69 @@ const COMMENT_AUTHOR = "김그룹";
 const ProblemResultPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  const mock = useMemo(() => {
+  const [result, setResult] = useState<IProblemResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [commentInput, setCommentInput] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const fallbackResult = useMemo(() => {
     if (!id) return undefined;
     return mockProblemResults.find(r => r.problemId === Number(id));
   }, [id]);
 
-  const [commentInput, setCommentInput] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!id) {
+      setResult(null);
+      setIsLoading(false);
+      setError("문제 ID를 확인할 수 없습니다.");
+      return;
+    }
 
-  if (!mock) {
+    const fetchResult = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getProblemResultAPI(Number(id));
+        if (cancelled) return;
+        if (response.result) {
+          setResult(response.result);
+        } else {
+          setResult(null);
+          setError(response.message ?? "채점 결과를 찾을 수 없습니다.");
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setResult(null);
+        setError(
+          err instanceof Error ? err.message : "채점 결과를 불러오지 못했습니다."
+        );
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchResult();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const displayResult = result ?? fallbackResult ?? null;
+
+  if (isLoading) {
+    return (
+      <Page>
+        <Title>채점 결과</Title>
+        <EmptyCard>채점 결과를 불러오는 중입니다...</EmptyCard>
+      </Page>
+    );
+  }
+
+  if (!displayResult) {
     return (
       <Page>
         <Title>채점 결과</Title>
@@ -68,7 +123,7 @@ const ProblemResultPage: React.FC = () => {
     );
   }
 
-  const isCorrect = mock.status === "정답";
+  const isCorrect = displayResult.status === "정답";
 
   const handleBack = () => {
     navigate(id ? `/problem/${id}` : "/problem");
@@ -94,34 +149,35 @@ const ProblemResultPage: React.FC = () => {
   return (
     <Page>
       <Title>채점 결과</Title>
+      {error && <EmptyCard>{error}</EmptyCard>}
 
       <ContentGrid>
         <LeftColumn>
           <Card>
             <ResultHeader>
-              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={mock.status} />
+              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={displayResult.status} />
               <ResultText>
-                <ResultStatus $correct={isCorrect}>{mock.status}</ResultStatus>
+                <ResultStatus $correct={isCorrect}>{displayResult.status}</ResultStatus>
               </ResultText>
             </ResultHeader>
             <ResultStats>
               <ResultPill tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{mock.runTime}</ResultPillValue>
+                <ResultPillValue tone="time">{displayResult.runTime}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{mock.memory}</ResultPillValue>
+                <ResultPillValue tone="memory">{displayResult.memory}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
-                <ResultPillValue tone="language">{mock.language}</ResultPillValue>
+                <ResultPillValue tone="language">{displayResult.language}</ResultPillValue>
               </ResultPill>
             </ResultStats>
             <Divider />
             <SectionLabel>테스트 케이스 결과</SectionLabel>
             <TestList>
-              {mock.testCases.map(tc => {
+              {displayResult.testCases.map(tc => {
                 const displayResult = getDisplayResult(tc.result);
                 return (
                   <TestRow key={tc.name}>
@@ -139,7 +195,7 @@ const ProblemResultPage: React.FC = () => {
 
           <Card>
             <SectionLabel>제출한 코드</SectionLabel>
-            <CodeBlock spellCheck={false} readOnly value={mock.submittedCode} />
+            <CodeBlock spellCheck={false} readOnly value={displayResult.submittedCode} />
           </Card>
 
           <Card>
@@ -167,11 +223,11 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>제출 정보</SectionLabel>
             <InfoRow>
               <span>제출 시간</span>
-              <span>{mock.submissionInfo.time}</span>
+              <span>{displayResult.submissionInfo.time}</span>
             </InfoRow>
             <InfoRow>
               <span>시도 횟수</span>
-              <span>{mock.submissionInfo.attempts}</span>
+              <span>{displayResult.submissionInfo.attempts}</span>
             </InfoRow>
           </Card>
 
@@ -179,15 +235,15 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>문제 통계</SectionLabel>
             <InfoRow>
               <span>정답률</span>
-              <Highlight>{mock.stats.accuracy}</Highlight>
+              <Highlight>{displayResult.stats.accuracy}</Highlight>
             </InfoRow>
             <InfoRow>
               <span>해결 인원</span>
-              <span>{mock.stats.solved}</span>
+              <span>{displayResult.stats.solved}</span>
             </InfoRow>
             <InfoRow>
               <span>평균 시도</span>
-              <span>{mock.stats.attempts}</span>
+              <span>{displayResult.stats.attempts}</span>
             </InfoRow>
           </Card>
 
