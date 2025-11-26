@@ -94,7 +94,31 @@ public class JwtUtil {
      * @return 사용자 ID
      */
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("sub", Long.class));
+        try {
+            Object subClaim = extractClaim(token, claims -> claims.get("sub"));
+            if (subClaim == null) {
+                return null;
+            }
+            // String으로 저장된 경우 Long으로 변환
+            if (subClaim instanceof String) {
+                try {
+                    return Long.parseLong((String) subClaim);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            // 이미 Long인 경우
+            if (subClaim instanceof Long) {
+                return (Long) subClaim;
+            }
+            // Number인 경우
+            if (subClaim instanceof Number) {
+                return ((Number) subClaim).longValue();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

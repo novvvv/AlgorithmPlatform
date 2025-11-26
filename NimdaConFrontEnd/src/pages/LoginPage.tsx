@@ -46,8 +46,23 @@ export default function LoginPage() {
       });
       
       if (response.accessToken) {
+        // 토큰 저장 확인
+        const savedToken = localStorage.getItem("authToken");
+        console.log("로그인 성공! 토큰 저장됨:", savedToken ? "있음" : "없음");
+        console.log("저장된 토큰:", savedToken ? savedToken.substring(0, 20) + "..." : "없음");
+        console.log("사용자 정보:", response.user);
+        
+        if (!savedToken) {
+          console.error("토큰이 저장되지 않았습니다!");
+          alert("토큰 저장에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
+        
         alert("로그인 성공!");
-        navigate("/home");
+        navigate("/mypage");
+      } else {
+        console.error("로그인 응답에 accessToken이 없습니다:", response);
+        alert("로그인 응답에 문제가 있습니다.");
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "로그인에 실패했습니다.";
