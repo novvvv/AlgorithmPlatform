@@ -25,7 +25,7 @@ export const mockProblems: IProblemWithProgress[] = [
     completionRate: 75,
     completionCount: 3,
     totalMembers: 4,
-    solvedBy: [101, 103],
+    solvedBy: [101, 103, 104],
   },
   {
     id: 2,
@@ -43,7 +43,7 @@ export const mockProblems: IProblemWithProgress[] = [
     completionRate: 50,
     completionCount: 2,
     totalMembers: 4,
-    solvedBy: [101, 102],
+    solvedBy: [102, 103],
   },
   {
     id: 3,
@@ -61,7 +61,7 @@ export const mockProblems: IProblemWithProgress[] = [
     completionRate: 25,
     completionCount: 1,
     totalMembers: 4,
-    solvedBy: [101],
+    solvedBy: [101, 105],
   },
 ];
 // export default mockProblems; // 원본에 export default가 없으므로 생략

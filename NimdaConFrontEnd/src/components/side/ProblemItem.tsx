@@ -7,8 +7,9 @@ interface ProblemItemProps {
   id: number;
   title: string;
   language: ProgrammingLanguage;
-  correctRate: number;
   difficulty: ProblemDifficulty;
+  score: number;
+  hasSubmissionHistory: boolean;
 }
 
 const displayDifficulty = (diff: ProblemDifficulty): string => {
@@ -42,8 +43,9 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   id,
   title,
   language,
-  correctRate,
+  score,
   difficulty,
+  hasSubmissionHistory,
 }) => {
   const navigate = useNavigate();
 
@@ -64,7 +66,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <InfoSection>
         <ProblemTitle>{title}</ProblemTitle>
         <SubInfo>
-          {displayLanguage(language)} / 정답률 {correctRate}%
+          {displayLanguage(language)} / 정답률 {score}%
         </SubInfo>
       </InfoSection>
       <ActionGroup> 
@@ -74,7 +76,9 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
         <ButtonWrapper>
           <ActionButton onClick={handleDetail}>상세</ActionButton>
           <ActionButton $primary onClick={handleSolve}>풀기</ActionButton>
-          <ResultActionButton onClick={handleResult}>채점결과</ResultActionButton>
+          {hasSubmissionHistory && (
+              <ResultActionButton onClick={handleResult}>채점결과</ResultActionButton>
+          )}
         </ButtonWrapper>
       </ActionGroup>
     </ItemContainer>
