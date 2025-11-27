@@ -181,7 +181,7 @@
 
 ---
 
-### 2.4 닉네임으로 조회
+### 2.4 사용자명으로 조회
 - **Method**: `GET`
 - **URL**: `http://localhost:8080/api/users/userName/{userName}`
 - **Path Variables**: 

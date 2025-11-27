@@ -4,7 +4,6 @@ import type {
   RegisterRequest, 
   RegisterResponse 
 } from "@/types/auth";
-import type { IUserDetail } from "@/types/user";
 import { apiClient, getErrorMessage } from "./utils";
 
 /**
@@ -62,14 +61,6 @@ export const logoutAPI = (): void => {
 };
 
 /**
- * 현재 로그인된 사용자 정보 가져오기
- */
-export const getCurrentUser = () => {
-  const userStr = localStorage.getItem("user");
-  return userStr ? JSON.parse(userStr) : null;
-};
-
-/**
  * 로그인 상태 확인
  */
 export const isLoggedIn = (): boolean => {
@@ -77,20 +68,3 @@ export const isLoggedIn = (): boolean => {
   return !!token;
 };
 
-/**
- * 현재 로그인한 사용자 정보 조회 API (마이페이지)
- * GET /api/users/me
- */
-export const getCurrentUserAPI = async (): Promise<IUserDetail> => { 
-  try {
-    const response = await apiClient.get<IUserDetail>("/users/me");
-    
-    localStorage.setItem("user", JSON.stringify(response.data)); 
-
-    return response.data;
-  } catch (error: unknown) {
-    console.error("현재 사용자 정보 조회 오류:", error);
-    // 401 Unauthorized 에러 발생 시 로그아웃 처리 로직 추가 고려
-    throw new Error(getErrorMessage(error));
-  }
-};

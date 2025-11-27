@@ -8,7 +8,7 @@ import type {
 import { apiClient, getErrorMessage } from "./utils";
 
 /**
- * 문제 출제 API 호출
+ * 문제 생성 API 
  * POST /api/problems
  */
 export const createProblemAPI = async (
