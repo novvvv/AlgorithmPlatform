@@ -45,7 +45,6 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   title,
   language,
   difficulty,
-  userScore,
   averageScore,
   hasSubmissionHistory,
 }) => {
@@ -105,6 +104,7 @@ const InfoSection = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1; 
+  gap: 0.3rem;
 `;
 
 const ProblemTitle = styled.div`

@@ -1,97 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import styled from "styled-components";
 import ProblemItem from "@/components/side/ProblemItem";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
 
-import { getAllGroupsAPI } from "@/apis/group";
-import { getAllProblemsAPI } from "@/apis/problem";
-import { getCurrentUserAPI } from "@/apis/user";
-import { getErrorMessage } from "@/apis/utils";
-import type { IStudyGroup } from "@/types/group";
-import type { IProblem, GetAllProblemsResponse } from "@/types/problem";
-import type { getCurrentUserResponse } from "@/types/user";
-
-import { mockProblems } from "@/mocks/mockProblems";
-import mockStudyGroups from "@/mocks/mockStudyGroups";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
+import { useProblems } from "@/hooks/useProblems";
 
 const HomePage: React.FC = () => {
-  const [recentStudyGroups, setRecentStudyGroups] = useState<IStudyGroup[]>(mockStudyGroups.slice(0, 3));
-  const [recentProblems, setRecentProblems] = useState<any[]>(mockProblems.slice(0, 3));
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userId, isLoading: isUserLoading } = useCurrentUser();
+  const { myGroups, isLoading: isGroupLoading } = useStudyGroups(userId);
+  const { myAttemptedProblems, isLoading: isProblemLoading } = useProblems(userId);
 
-  const fetchCurrentUser = useCallback(async () => {
-    try {
-      const response: getCurrentUserResponse = await getCurrentUserAPI();
-      setCurrentUserId(response.user?.id ?? 101); 
-    } catch (error) {
-      console.error("사용자 정보 API 호출 실패. Mock ID (101) 사용:", getErrorMessage(error));
-      setCurrentUserId(101); 
-    }
-  }, []);
+  const isLoading = isUserLoading || isGroupLoading || isProblemLoading;
 
-  const fetchGroups = useCallback(async (userId: number) => {
-    try {
-      const allGroups: IStudyGroup[] = await getAllGroupsAPI(); 
-      const myGroups = allGroups.filter(group => 
-        group.currentMembers?.some(member => member.userId === userId)
-      );
-      setRecentStudyGroups(myGroups);
-    } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error);
-      console.error("그룹 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
-      const mockMyGroups = mockStudyGroups.filter(group => 
-        group.currentMembers?.some(member => member.userId === userId)
-      );
-      setRecentStudyGroups(mockMyGroups.slice(0, 5));
-    }
-  }, []);
-
-  const fetchProblems = useCallback(async (userId: number) => { 
-    try {
-      const response: GetAllProblemsResponse = await getAllProblemsAPI(); 
-      if (response.success) {
-        const allProblems = response.problems as IProblem[];
-
-        const myAttemptedProblems = allProblems.filter((problem: any) => {
-            const solvedBy = problem.solvedBy as { userId: number }[] | undefined;
-            return solvedBy?.some(s => s.userId === userId);
-        });
-        setRecentProblems(myAttemptedProblems.slice(0, 3)); 
-      } else {
-        throw new Error(response.message || "문제 목록 조회 실패");
-      }
-    } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error);
-      console.error("문제 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
-      
-      const mockAttemptedProblems = (mockProblems as IProblem[]).filter(problem => {
-          const solvedBy = (problem as any).solvedBy as number[] | undefined;
-          return solvedBy?.includes(userId);
-      });
-      
-      setRecentProblems(mockAttemptedProblems.slice(0, 3));
-    }
-  }, []);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      setIsLoading(true);
-      await fetchCurrentUser();
-      setIsLoading(false);
-    };
-    loadUser();
-  }, [fetchCurrentUser]);
-  
-  useEffect(() => {
-    if (currentUserId !== null) {
-      fetchGroups(currentUserId);
-      fetchProblems(currentUserId); 
-    }
-  }, [currentUserId, fetchGroups, fetchProblems]);
-
-
-  if (isLoading || currentUserId === null) {
+  if (isLoading || userId === null) {
     return (
       <PageContainer>
         <Title>대학생 알고리즘 스터디 플랫폼</Title>
@@ -100,7 +23,8 @@ const HomePage: React.FC = () => {
     );
   }
 
-  const userId = currentUserId as number;
+  const recentProblems = myAttemptedProblems.slice(0, 4);
+  const recentGroups = myGroups;
 
   return (
     <PageContainer>
@@ -112,10 +36,10 @@ const HomePage: React.FC = () => {
           <CardContainer>
             <SectionTitle>내 스터디그룹</SectionTitle>
             <ItemsWrapper>
-              {recentStudyGroups.length === 0 ? (
+              {recentGroups.length === 0 ? (
                 <div style={{ padding: '1rem', color: '#666' }}>가입된 스터디 그룹이 없습니다.</div>
               ) : (
-                recentStudyGroups.map((group) => (
+                recentGroups.map((group) => (
                   <StudyGroupItem
                     key={group.groupId}
                     id={group.groupId}
@@ -123,7 +47,7 @@ const HomePage: React.FC = () => {
                     currentMembers={group.currentMembers}
                     maxMembers={group.maxMembers}
                     isPublic={group.isPublic}
-                    currentUserId={userId} 
+                    currentUserId={userId}
                   />
                 ))
               )}
@@ -143,9 +67,8 @@ const HomePage: React.FC = () => {
                 <div style={{ padding: '1rem', color: '#666' }}>등록된 문제가 없습니다.</div>
               ) : (
                 recentProblems.map((problem) => {
-                  const solvedBy = (problem as any).solvedBy as number[] | undefined;
-                  const hasSubmissionHistory = solvedBy ? solvedBy.includes(userId) : false;
-                  const averageScore = problem.averageScore ?? 0;
+                  const solvedBy = (problem as any).solvedBy as { userId: number }[] | undefined;
+                  const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === userId) : false;
                   
                   return (
                     <ProblemItem
@@ -154,7 +77,7 @@ const HomePage: React.FC = () => {
                       title={problem.title}
                       language={problem.language ?? "PYTHON"}
                       difficulty={problem.difficulty}
-                      averageScore={averageScore}
+                      averageScore={problem.averageScore}
                       hasSubmissionHistory={hasSubmissionHistory} 
                     />
                   );

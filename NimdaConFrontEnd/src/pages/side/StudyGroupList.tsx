@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
-import mockStudyGroups from "@/mocks/mockStudyGroups";
 import search_icon from "@/assets/icons/search_icon.svg";
-import { getAllGroupsAPI } from "@/apis/group";
-import { getCurrentUserAPI } from "@/apis/user"; 
-import { getErrorMessage } from "@/apis/utils";
-import type { IStudyGroup, GetAllGroupsResponse } from "@/types/group"; 
-import type { getCurrentUserResponse } from "@/types/user";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
 
 import {
   ListContainer,
@@ -15,64 +11,25 @@ import {
   SearchIcon,
   ListWrapper,
   FixedButton,
-} from "@/components/common/SidePanelCommon";
+} from "@/components/common/SidePanelStyle";
 
   const StudyGroupList: React.FC = () => {
-    const [groups, setGroups] = useState<IStudyGroup[]>(mockStudyGroups); 
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null); 
-    const [isGroupsLoading, setIsGroupsLoading] = useState(true);
-    const [isUserLoading, setIsUserLoading] = useState(true);
+    const { userId, isLoading: isUserLoading } = useCurrentUser();
+    const { groups, isLoading: isGroupsLoading } = useStudyGroups(userId);
 
-    const fetchCurrentUser = useCallback(async () => {
-        setIsUserLoading(true);
-        try {
-            const response: getCurrentUserResponse = await getCurrentUserAPI();
-            if (response.user && response.user.id) {
-                setCurrentUserId(response.user.id);
-            } else {
-                setCurrentUserId(101); // Mock ID
-            }
-        } catch (error: unknown) {
-            const errorMessage = getErrorMessage(error);
-            console.error("사용자 정보 API 호출 실패. Mock ID (101) 사용:", errorMessage);
-            setCurrentUserId(101); 
-        } finally {
-            setIsUserLoading(false);
-        }
-    }, []);
-
-    const fetchGroups = useCallback(async () => {
-        setIsGroupsLoading(true);
-        try {
-            const response: GetAllGroupsResponse = await getAllGroupsAPI();
-            setGroups(response);
-        } catch (error: unknown) {
-            const errorMessage = getErrorMessage(error);
-            console.error("그룹 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
-            setGroups(mockStudyGroups);
-        } finally {
-            setIsGroupsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchCurrentUser();
-        fetchGroups();
-    }, [fetchCurrentUser, fetchGroups]);
-    
     const finalLoading = isGroupsLoading || isUserLoading;
 
     if (finalLoading) {
         return (
             <ListContainer>
                 <div style={{ padding: '1rem', textAlign: 'center' }}>
-                    {isUserLoading ? '사용자 정보를 불러오는 중...' : '스터디 그룹 목록을 불러오는 중...'}
+                    목록을 불러오는 중...
                 </div>
             </ListContainer>
         );
     }
-    
-    const userId = currentUserId as number;
+
+    const validUserId = userId ?? 101;
 
   return (
     <ListContainer>
@@ -93,7 +50,7 @@ import {
                     currentMembers={group.currentMembers} 
                     maxMembers={group.maxMembers}
                     isPublic={group.isPublic}
-                    currentUserId={userId}
+                    currentUserId={validUserId}
                 />
             ))
         )}

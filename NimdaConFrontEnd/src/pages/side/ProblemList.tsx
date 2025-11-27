@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import ProblemItem from "@/components/side/ProblemItem";
-import { mockProblems } from "@/mocks/mockProblems"; 
-import { getAllProblemsAPI } from "@/apis/problem";
-import { getCurrentUserAPI } from "@/apis/user";
-import { getErrorMessage } from "@/apis/utils";
-import type { IProblem, GetAllProblemsResponse } from "@/types/problem";
-import type { getCurrentUserResponse } from "@/types/user";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useProblems } from "@/hooks/useProblems";
 
 import {
   ListContainer,
@@ -13,65 +9,31 @@ import {
   Dropdown,
   ListWrapper,
   FixedButton,
-} from "@/components/common/SidePanelCommon";
+} from "@/components/common/SidePanelStyle";
 
 const ProblemList: React.FC = () => {
-  const [problems, setProblems] = useState<any[]>(mockProblems);
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userId, isLoading: isUserLoading } = useCurrentUser();
+  const { problems, isLoading: isProblemsLoading } = useProblems(userId);
 
-  const fetchCurrentUser = useCallback(async () => {
-        try {
-            const response: getCurrentUserResponse = await getCurrentUserAPI();
-            setCurrentUserId(response.user?.id ?? 0); 
-        } catch (error) {
-            console.error("사용자 정보 로딩 실패. Mock ID (0) 사용:", getErrorMessage(error));
-            setCurrentUserId(0); 
-        }
-    }, []);
-
-  const fetchProblems = useCallback(async () => {
-    setIsLoading(true);
-    try {
-        const response: GetAllProblemsResponse = await getAllProblemsAPI(); 
-        if (response.success) {
-            setProblems(response.problems);
-        } else {
-            throw new Error(response.message || "문제 목록 조회 API 응답 실패");
-        }
-    } catch (error: unknown) {
-        const errorMessage = getErrorMessage(error);
-        console.error("문제 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
-        setProblems(mockProblems as IProblem[]);
-    }
-  }, []);
-
-  useEffect(() => {
-        setIsLoading(true);
-        Promise.all([fetchCurrentUser(), fetchProblems()])
-            .finally(() => setIsLoading(false));
-    }, [fetchCurrentUser, fetchProblems]);
-
-    if (isLoading || currentUserId === null) {
-        return (
-            <ListContainer>
-                <div style={{ padding: '1rem', textAlign: 'center' }}>로딩 중...</div>
-            </ListContainer>
-        );
-    }
+  if (isUserLoading || isProblemsLoading || userId === null) {
+      return (
+          <ListContainer>
+              <div style={{ padding: '1rem', textAlign: 'center' }}>로딩 중...</div>
+          </ListContainer>
+      );
+  }
 
   const mapProblemToProps = (problem: any) => {
       const solvedBy = problem.solvedBy as { userId: number, score: number }[] | undefined;
-      const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === currentUserId) : false;
-      const averageScore = problem.averageScore ?? 0;
+      const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === userId) : false;
 
       return {
           key: problem.id,
-          id: problem.id!,
+          id: problem.id,
           title: problem.title,
           language: problem.language ?? "PYTHON",
           difficulty: problem.difficulty,
-          averageScore: averageScore, 
+          averageScore: problem.averageScore, 
           hasSubmissionHistory: hasSubmissionHistory,
       };
     };
