@@ -19,6 +19,28 @@ const ProblemDetailPage: React.FC = () => {
     return mockProblemDetails.find(p => p.id === Number(id));
   }, [id]);
 
+  const displayTitle = problem?.title ?? fallbackDetail?.title ?? "";
+  const description = problem?.description ?? fallbackDetail?.description ?? "";
+  const sampleData = useMemo(
+    () =>
+      (testCases.length > 0
+        ? testCases.map(tc => ({ input: tc.input, output: tc.output }))
+        : fallbackDetail?.samples) ?? [],
+    [testCases, fallbackDetail],
+  );
+
+  const constraintItems = useMemo(() => {
+    const items: string[] = [];
+    if (problem?.timeLimit) items.push(`시간 제한: ${problem.timeLimit}ms`);
+    if (problem?.memoryLimit) items.push(`메모리 제한: ${problem.memoryLimit}KB`);
+    if (problem?.difficulty) items.push(`난이도: ${problem.difficulty}`);
+    if (problem?.language) items.push(`언어: ${problem.language}`);
+    if (fallbackDetail?.constraints?.length) {
+      items.push(...fallbackDetail.constraints);
+    }
+    return items;
+  }, [problem, fallbackDetail]);
+
   useEffect(() => {
     let cancelled = false;
     if (!id) {
@@ -82,24 +104,6 @@ const ProblemDetailPage: React.FC = () => {
     );
   }
 
-  const displayTitle = problem?.title ?? fallbackDetail?.title ?? "";
-  const description = problem?.description ?? fallbackDetail?.description ?? "";
-  const sampleData =
-    (testCases.length > 0
-      ? testCases.map(tc => ({ input: tc.input, output: tc.output }))
-      : fallbackDetail?.samples) ?? [];
-
-  const constraintItems = useMemo(() => {
-    const items: string[] = [];
-    if (problem?.timeLimit) items.push(`시간 제한: ${problem.timeLimit}ms`);
-    if (problem?.memoryLimit) items.push(`메모리 제한: ${problem.memoryLimit}KB`);
-    if (problem?.difficulty) items.push(`난이도: ${problem.difficulty}`);
-    if (problem?.language) items.push(`언어: ${problem.language}`);
-    if (fallbackDetail?.constraints?.length) {
-      items.push(...fallbackDetail.constraints);
-    }
-    return items;
-  }, [problem, fallbackDetail]);
 
   const stats = fallbackDetail?.stats ?? { accuracy: "-", solved: 0, attempts: 0 };
 
