@@ -95,6 +95,14 @@ const ProblemSolvePage: React.FC = () => {
     };
   }, [id]);
 
+  
+  useEffect(() => {
+    setTestResults([]);
+    setResultMessage("코드를 실행하면 결과가 표시됩니다.");
+    setCode(`def solution(nums, target):
+    # 코드를 작성하세요`);
+  }, [id]);
+
   const buildTestResults = (
     status: SubmissionStatus,
     executionTime?: number,
