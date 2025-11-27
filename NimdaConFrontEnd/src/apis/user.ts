@@ -1,9 +1,9 @@
 import type { 
-  IUserDetail,
   GetAllUsersResponse, 
   GetUserByIdResponse,
   GetUserByUserIdResponse,
   GetUserByUserNameResponse,
+  getCurrentUserResponse,
   // DeleteUserResponse, 
   // UpdateUserRoleResponse,
 } from "@/types/user";
@@ -75,9 +75,9 @@ export const getUserByUserNameAPI = async (
  * 현재 로그인한 사용자 정보 조회 API (마이페이지)
  * GET /api/users/me
  */
-export const getCurrentUserAPI = async (): Promise<IUserDetail> => { 
+export const getCurrentUserAPI = async (): Promise<getCurrentUserResponse> => { 
   try {
-    const response = await apiClient.get<IUserDetail>("/users/me");
+    const response = await apiClient.get<getCurrentUserResponse>("/users/me");
     
     localStorage.setItem("user", JSON.stringify(response.data)); 
 

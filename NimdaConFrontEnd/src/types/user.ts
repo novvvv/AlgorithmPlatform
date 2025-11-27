@@ -17,6 +17,11 @@ export interface IUser {
 }
 
 export interface IUserDetail {
+  id: number;
+  userId: string;
+  userName: string;
+  password?: string;  
+  email: string;
   universityName: string;
   department: string;
   grade: string;
@@ -41,7 +46,7 @@ export interface GetUserByUserIdResponse {
 export type GetUserByUserNameResponse = GetUserByUserIdResponse;
 
 export interface getCurrentUserResponse {
-  user: IUser;
+  user: IUser; 
   message?: string;
 }
 
