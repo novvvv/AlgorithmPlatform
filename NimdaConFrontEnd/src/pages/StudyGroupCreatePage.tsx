@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { getErrorMessage } from "@/apis/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { createGroupAPI } from "@/apis/group"; 
 import type { 
   GetGroupCreateRequest, 
   GetGroupCreateResponse 
@@ -9,32 +11,13 @@ import type {
 
 export default function StudyGroupCreatePage() {
   const navigate = useNavigate();
+  const { userId } = useCurrentUser();
 
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [goal, setGoal] = useState("");
   const [maxMembers, setMaxMembers] = useState("");
   const [isPublic, setIsPublic] = useState(true);
-
-  const createGroupAPI = async (data: GetGroupCreateRequest): Promise<GetGroupCreateResponse> => {
-    // 실제 API 호출 로직 (axios.post 등)이 들어갑니다.
-    console.log("Mock createGroupAPI called with:", data);
-    
-    // API 성공 응답 Mock
-    return {
-        groupId: 999,
-        groupName: data.groupName,
-        maxMembers: data.maxMembers,
-        currentMembers: 1, 
-        isPublic: data.isPublic,
-        createdAt: new Date().toISOString(),
-    };
-};
-
-const getLoggedInUserId = (): number => {
-    // 실제 로직: 현재 로그인된 사용자 ID를 가져옵니다.
-    return 1; // 💡 테스트를 위해 임시로 1번 유저 ID를 반환
-};
 
   const handleCancel = () => {
     setGroupName("");
@@ -47,7 +30,11 @@ const getLoggedInUserId = (): number => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-  const creatorUserId = getLoggedInUserId(); 
+    if (!userId) {
+        alert("로그인이 필요한 서비스입니다.");
+        navigate("/login");
+        return;
+    }
 
     const newGroup: GetGroupCreateRequest = { 
         groupName, 
@@ -55,7 +42,7 @@ const getLoggedInUserId = (): number => {
         goal, 
         maxMembers: Number(maxMembers), 
         isPublic,
-        creatorUserId: creatorUserId,
+        creatorUserId: userId,
     };
 
     try {

@@ -33,7 +33,7 @@ export default Layout;
 
 const LayoutWrapper = styled.div`
   /* 중앙에서 관리하는 레이아웃 수치들 */
-  --sidebar-width: 25%; /* SidePanel 및 Logo의 너비 */
+  --sidebar-width: 27%; /* SidePanel 및 Logo의 너비 */
   --nav-height: 4rem; /* 상단 NavBar 높이 */
   --content-padding: 2rem; /* MainContent 및 Nav 탭 여백 */
 

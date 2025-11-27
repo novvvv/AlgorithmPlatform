@@ -1,7 +1,9 @@
 import React from "react";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
-import mockStudyGroups from "@/mocks/mockStudyGroups";
 import search_icon from "@/assets/icons/search_icon.svg";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
+
 import {
   ListContainer,
   SearchBarContainer,
@@ -9,11 +11,26 @@ import {
   SearchIcon,
   ListWrapper,
   FixedButton,
-} from "@/components/common/SidePanelCommon";
+} from "@/components/common/SidePanelStyle";
 
-const CURRENT_USER_ID = 101;
+  const StudyGroupList: React.FC = () => {
+    const { userId, isLoading: isUserLoading } = useCurrentUser();
+    const { groups, isLoading: isGroupsLoading } = useStudyGroups(userId);
 
-const StudyGroupList: React.FC = () => {
+    const finalLoading = isGroupsLoading || isUserLoading;
+
+    if (finalLoading) {
+        return (
+            <ListContainer>
+                <div style={{ padding: '1rem', textAlign: 'center' }}>
+                    목록을 불러오는 중...
+                </div>
+            </ListContainer>
+        );
+    }
+
+    const validUserId = userId ?? 101;
+
   return (
     <ListContainer>
       <SearchBarContainer>
@@ -22,17 +39,21 @@ const StudyGroupList: React.FC = () => {
       </SearchBarContainer>
 
       <ListWrapper>
-        {mockStudyGroups.map((group) => (
-          <StudyGroupItem 
-            key={group.groupId}
-            id={group.groupId}
-            groupName={group.groupName}
-            currentMembers={group.currentMembers}
-            maxMembers={group.maxMembers}
-            isPublic={group.isPublic}
-            currentUserId={CURRENT_USER_ID}
-          />
-        ))}
+        {groups.length === 0 ? (
+            <div style={{ padding: '1rem', textAlign: 'center' }}>가입 가능한 그룹이 없습니다.</div>
+        ) : (
+            groups.map((group) => (
+                <StudyGroupItem 
+                    key={group.groupId}
+                    id={group.groupId}
+                    groupName={group.groupName}
+                    currentMembers={group.currentMembers} 
+                    maxMembers={group.maxMembers}
+                    isPublic={group.isPublic}
+                    currentUserId={validUserId}
+                />
+            ))
+        )}
       </ListWrapper>
 
       <FixedButton onClick={() => window.location.href = '/studygroup/create'}>추가하기</FixedButton>

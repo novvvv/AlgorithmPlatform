@@ -2,17 +2,29 @@ import React from 'react';
 import styled from "styled-components";
 import ProblemItem from "@/components/side/ProblemItem";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
-import { mockProblems } from "@/mocks/mockProblems";
-import mockStudyGroups from "@/mocks/mockStudyGroups";
 
-const CURRENT_USER_ID = 101;
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
+import { useProblems } from "@/hooks/useProblems";
 
 const HomePage: React.FC = () => {
-  // 최근 3개의 내가 가입된 스터디그룹만 표시
-  const recentStudyGroups = mockStudyGroups.slice(0, 3);
-  
-  // 최근 3개의 문제만 표시
-  const recentProblems = mockProblems.slice(0, 3);
+  const { userId, isLoading: isUserLoading } = useCurrentUser();
+  const { myGroups, isLoading: isGroupLoading } = useStudyGroups(userId);
+  const { myAttemptedProblems, isLoading: isProblemLoading } = useProblems(userId);
+
+  const isLoading = isUserLoading || isGroupLoading || isProblemLoading;
+
+  if (isLoading || userId === null) {
+    return (
+      <PageContainer>
+        <Title>대학생 알고리즘 스터디 플랫폼</Title>
+        <div style={{ textAlign: 'center', marginTop: '5rem' }}>데이터를 불러오는 중입니다...</div>
+      </PageContainer>
+    );
+  }
+
+  const recentProblems = myAttemptedProblems.slice(0, 4);
+  const recentGroups = myGroups;
 
   return (
     <PageContainer>
@@ -24,17 +36,21 @@ const HomePage: React.FC = () => {
           <CardContainer>
             <SectionTitle>내 스터디그룹</SectionTitle>
             <ItemsWrapper>
-              {recentStudyGroups.map((group) => (
-                <StudyGroupItem
-                  key={group.groupId}
-                  id={group.groupId}
-                  groupName={group.groupName}
-                  currentMembers={group.currentMembers}
-                  maxMembers={group.maxMembers}
-                  isPublic={group.isPublic}
-                  currentUserId={CURRENT_USER_ID}
-                />
-              ))}
+              {recentGroups.length === 0 ? (
+                <div style={{ padding: '1rem', color: '#666' }}>가입된 스터디 그룹이 없습니다.</div>
+              ) : (
+                recentGroups.map((group) => (
+                  <StudyGroupItem
+                    key={group.groupId}
+                    id={group.groupId}
+                    groupName={group.groupName}
+                    currentMembers={group.currentMembers}
+                    maxMembers={group.maxMembers}
+                    isPublic={group.isPublic}
+                    currentUserId={userId}
+                  />
+                ))
+              )}
             </ItemsWrapper>
             <AddButton onClick={() => window.location.href = '/studygroup/create'}>
               그룹 추가
@@ -47,16 +63,26 @@ const HomePage: React.FC = () => {
           <CardContainer>
           <SectionTitle>최근 문제</SectionTitle>
             <ItemsWrapper>
-              {recentProblems.map((problem) => (
-                <ProblemItem
-                  key={problem.id}
-                  id={problem.id}
-                  title={problem.title}
-                  language={problem.language ?? "PYTHON"}
-                  correctRate={problem.correctRate ?? 0}
-                  difficulty={problem.difficulty}
-                />
-              ))}
+              {recentProblems.length === 0 ? (
+                <div style={{ padding: '1rem', color: '#666' }}>등록된 문제가 없습니다.</div>
+              ) : (
+                recentProblems.map((problem) => {
+                  const solvedBy = (problem as any).solvedBy as { userId: number }[] | undefined;
+                  const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === userId) : false;
+                  
+                  return (
+                    <ProblemItem
+                      key={problem.id}
+                      id={problem.id!}
+                      title={problem.title}
+                      language={problem.language ?? "PYTHON"}
+                      difficulty={problem.difficulty}
+                      averageScore={problem.averageScore}
+                      hasSubmissionHistory={hasSubmissionHistory} 
+                    />
+                  );
+                })
+              )}
             </ItemsWrapper>
             <AddButton onClick={() => window.location.href = '/problem/create'}>
               문제 추가

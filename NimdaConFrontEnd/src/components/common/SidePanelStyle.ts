@@ -59,6 +59,7 @@ export const Dropdown = styled.select`
 export const ListWrapper = styled.div`
   flex-grow: 1;
   overflow: auto;
+  scrollbar-width: thin;
 `;
  
 export const FixedButton = styled.button`
