@@ -25,7 +25,7 @@ export interface ITestCaseResult {
 export interface IJudgeResult {
   status: JudgeStatus; // 변경된 JudgeStatus 사용
   message: string;
-  output?: string;
+  output: string;
   errorOutput: string;
   executionTime: number; // 밀리초 단위
   memoryUsage: number;   // KB 단위로 가정 (API 가이드에는 단위 없음)
@@ -37,7 +37,7 @@ export interface SubmissionRequest {
   code: string;
   language: ProgrammingLanguage;
   problemId: number;
-  description?: string; 
+  description: string; 
 }
 
 export interface JudgeResponse {

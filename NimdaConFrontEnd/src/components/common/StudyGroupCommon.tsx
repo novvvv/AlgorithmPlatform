@@ -1,11 +1,15 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
-import type { IStudyGroup, IGroupMembership } from "@/types/group";
-
-// import { getAllGroupsAPI, getGroupMembersAPI, } from "@/apis/group";
-// import type { IProblem } from "@/types/problem";
-// import { getProblemsByGroupIdAPI } from "@/apis/problem";
+import type { 
+  IStudyGroup, 
+  IGroupMembership, 
+  AddGroupMemberRequest,
+  GetGroupMembersResponse
+} from "@/types/group";
+import type { IProblem, GetProblemsByGroupIdResponse } from "@/types/problem";
+import { getGroupMembersAPI, joinGroupAPI } from "@/apis/group"; 
+import { getProblemsByGroupIdAPI } from "@/apis/problem";
 
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 import { mockProblems } from "@/mocks/mockProblems";
@@ -21,8 +25,8 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  JoinButton, // DetailPage에서는 사용하지 않을 수 있음
-  LeaveButton, // JoinPage에서는 사용하지 않을 수 있음
+  JoinButton, // JoinPage
+  LeaveButton, // DetailPage
   AddButton,
   InfoGrid,
   InfoItem,
@@ -32,9 +36,9 @@ import {
   MemberItem,
   MemberName,
   MemberGoal,
-  InviteSection, // DetailPage 전용
-  InviteLabel, // DetailPage 전용
-  InviteCode, // DetailPage 전용
+  InviteSection, // DetailPage 
+  InviteLabel, // DetailPage 
+  InviteCode, // DetailPage 
   TabBar,
   Tab,
   ProblemList,
@@ -53,7 +57,6 @@ import {
   ResultButton,
 } from "@/components/common/StudyGroupStyle";
 
-// 두 페이지에서 공통으로 사용할 Props 정의
 interface StudyGroupContentProps {
   groupId: number;
   isDetailPage: boolean; // DetailPage인지 JoinPage인지 구분하는 플래그
@@ -91,26 +94,69 @@ export default function StudyGroupCommon({
   
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
-const groupData: IStudyGroup | undefined = useMemo(() => {
-    // API 호출 대신 mockData를 사용합니다.
+  // 기본 데이터 Mock에서 가져와서 초기화
+  const initialGroupData = mockStudyGroups.find(g => g.groupId === groupId);
+  const [groupData, setGroupData] = useState<IStudyGroup | undefined>(initialGroupData);
+
+  const [members, setMembers] = useState<IGroupMembership[]>(initialGroupData?.currentMembers || []);
+  const [problems, setProblems] = useState<IProblem[]>(mockProblems.filter(p => p.groupId === groupId) as IProblem[]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchGroupData = useCallback(async () => {
+    setIsLoading(true);
+    
     const targetGroup = mockStudyGroups.find(g => g.groupId === groupId); 
-    return targetGroup;
+    
+    if (!targetGroup) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      const membersRes: GetGroupMembersResponse = await getGroupMembersAPI(groupId);
+      setMembers(membersRes);
+      setGroupData(prev => prev ? ({ ...prev, currentMembers: membersRes }) : undefined);
+    } catch (e) {
+      console.error("그룹 멤버 API 호출 실패. 목업 데이터 사용:", e);
+    }
+    
+    try {
+      const problemsRes: GetProblemsByGroupIdResponse = await getProblemsByGroupIdAPI(groupId);
+      if (problemsRes.success) {
+        setProblems(problemsRes.problems); 
+      } else {
+        throw new Error(problemsRes.message || "문제 목록 조회 실패");
+      }
+    } catch (e) {
+      console.error("그룹 문제 API 호출 실패. 목업 데이터 사용:", e);
+    }
+    
+    setIsLoading(false);
   }, [groupId]);
 
-  const problems = useMemo(() => {
-    // API 호출 대신 mockProblems를 사용합니다.
-    return mockProblems;
-  }, []);
+  useEffect(() => {
+    fetchGroupData();
+  }, [fetchGroupData]);
 
-if (!groupData) {
-  return (
-    <PageContainer>
-      <Header>
-        <Title>스터디 그룹을 선택해주세요.</Title>
-      </Header>
-    </PageContainer>
-  );
-}
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <Header>
+          <Title>데이터를 불러오는 중...</Title>
+        </Header>
+      </PageContainer>
+    );
+  }
+
+  if (!groupData) {
+    return (
+      <PageContainer>
+        <Header>
+          <Title>스터디 그룹을 찾을 수 없습니다.</Title>
+        </Header>
+      </PageContainer>
+    );
+  }
 
   const handleDetail = (id: number | string) => {
     navigate(`/problem/detail/${id}`);
@@ -124,27 +170,51 @@ if (!groupData) {
     navigate(`/problem/results/${id}/studygroup/${groupId}`);
   };
 
-  const handleCodeSubmit = (code: string) => {
-    console.log("참여코드 제출:", code);
-    setIsModalOpen(false);
-    // 실제 서버 연동 후 navigate가 필요
-    navigate(`/studygroup/${groupData.groupId}`);
+  const handleCodeSubmit = async (code: string) => {
+   try {
+        const data: AddGroupMemberRequest = {
+          userId: 0,
+          participationCode: code,
+        };
+        // API 호출: 그룹 가입 (비공개 그룹)
+        await joinGroupAPI(groupData.groupId, data); 
+        
+        alert(`${groupData.groupName} 그룹에 성공적으로 가입했습니다!`);
+        setIsModalOpen(false);
+        navigate(`/studygroup/${groupData.groupId}`);
+
+    } catch (error: any) {
+        console.error("그룹 가입 실패:", error);
+        alert(`가입 실패: ${error.message || '서버 오류'}`);
+    }
   };
 
   const HeaderButton = () => {
     if (isDetailPage) {
       return <LeaveButton onClick={onHeaderButtonClick}>그룹 나가기</LeaveButton>;
     } else {
-      return (
-        <JoinButton 
-          onClick={() => {
-            if (!groupData.isPublic) {
-              setIsModalOpen(true);
-            } else {
+      const handleJoinClick = async () => {
+        if (!groupData!.isPublic) {
+          setIsModalOpen(true);
+        } else {
+          // 공개 그룹: 바로 가입 API 호출
+          try {
+              const data: AddGroupMemberRequest = {
+                userId: 0, 
+              }; 
+              await joinGroupAPI(groupData!.groupId, data); 
+              
               alert("공개 그룹: 가입 완료");
-            }
-          }}
-        >
+              navigate(`/studygroup/${groupData!.groupId}`);
+              
+          } catch (error: any) {
+              console.error("그룹 가입 실패:", error);
+              alert(`가입 실패: ${error.message || '서버 오류'}`);
+          }
+        }
+      };
+      return (
+        <JoinButton onClick={handleJoinClick}>
           가입하기
         </JoinButton>
       );
@@ -169,13 +239,13 @@ if (!groupData) {
               <InfoItem>
                 <InfoLabel>그룹장</InfoLabel>
                 <InfoValue>
-                  {groupData?.currentMembers?.find((m) => m.role === 'LEADER')
+                  {members?.find((m) => m.role === 'LEADER')
                     ?.userName || '알 수 없음'}
                 </InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>멤버 수</InfoLabel>
-                <InfoValue>{groupData.currentMembers?.length || 0}/{groupData.maxMembers} 명</InfoValue>
+                <InfoValue>{members?.length || 0}/{groupData.maxMembers} 명</InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>공개 설정</InfoLabel>
@@ -202,7 +272,7 @@ if (!groupData) {
                   const key = member.membershipId ?? idx; 
                   const currentUserId: number = member.userId;
                   const solvedCount = problems.filter(
-                    (p) =>
+                    (p: any) =>
                       p.groupId === groupData.groupId &&
                       (p.solvedBy as number[])?.includes(currentUserId)
                   ).length;
@@ -250,11 +320,10 @@ if (!groupData) {
               .filter(p => p.id !== undefined && p.groupId === groupData.groupId) 
               .map((problem) => {
                 const problemId = problem.id as number;
-                const groupMemberIds = groupData?.currentMembers?.filter(Boolean).map(m => m.userId) || [];
-                const completionCount = (problem.solvedBy || []).filter(uid => groupMemberIds.includes(uid)).length;
+                const groupMemberIds = members?.filter(Boolean).map(m => m.userId) || [];
+                const completionCount = (problem as any).solvedBy ? (problem as any).solvedBy.filter((uid: number) => groupMemberIds.includes(uid)).length : 0;
                 const totalMembers = groupMemberIds.length;
-                const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
-                return (
+                const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;return (
                   <ProblemItem key={problemId}>
                     <ProblemHeader>
                       <ProblemTitle>{problem.title}</ProblemTitle>

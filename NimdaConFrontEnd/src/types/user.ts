@@ -17,6 +17,11 @@ export interface IUser {
 }
 
 export interface IUserDetail {
+  id: number;
+  userId: string;
+  userName: string;
+  password?: string;  
+  email: string;
   universityName: string;
   department: string;
   grade: string;
@@ -39,14 +44,20 @@ export interface GetUserByUserIdResponse {
 }
 
 export type GetUserByUserNameResponse = GetUserByUserIdResponse;
-export interface DeleteUserResponse {
-  success: boolean;
+
+export interface getCurrentUserResponse {
+  user: IUser; 
   message?: string;
-  status?: number;
 }
 
-export interface UpdateUserRoleResponse {
-  success: boolean;
-  message?: string;
-  status?: number;
-}
+// export interface DeleteUserResponse {
+//   success: boolean;
+//   message?: string;
+//   status?: number;
+// }
+
+// export interface UpdateUserRoleResponse {
+//   success: boolean;
+//   message?: string;
+//   status?: number;
+// }
