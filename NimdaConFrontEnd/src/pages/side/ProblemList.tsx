@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ProblemItem from "@/components/side/ProblemItem";
-import { mockProblems } from "@/mocks/mockProblems";
-import { getAllProblemsAPI } from "@/apis/problem"; 
-import { getErrorMessage } from "@/apis/utils"; 
-import type { IProblem, GetAllProblemsResponse } from "@/types/problem";
+import { mockProblems } from "@/mocks/mockProblems"; 
+import { getAllProblemsAPI } from "@/apis/problem";
 import { getCurrentUserAPI } from "@/apis/user";
+import { getErrorMessage } from "@/apis/utils";
+import type { IProblem, GetAllProblemsResponse } from "@/types/problem";
 import type { getCurrentUserResponse } from "@/types/user";
 
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/common/SidePanelCommon";
 
 const ProblemList: React.FC = () => {
-  const [problems, setProblems] = useState<IProblem[]>(mockProblems as IProblem[]); 
+  const [problems, setProblems] = useState<any[]>(mockProblems);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,8 +25,8 @@ const ProblemList: React.FC = () => {
             const response: getCurrentUserResponse = await getCurrentUserAPI();
             setCurrentUserId(response.user?.id ?? 0); 
         } catch (error) {
-            console.error("사용자 정보 로딩 실패. Mock ID (101) 사용:", getErrorMessage(error));
-            setCurrentUserId(101); 
+            console.error("사용자 정보 로딩 실패. Mock ID (0) 사용:", getErrorMessage(error));
+            setCurrentUserId(0); 
         }
     }, []);
 
@@ -43,8 +43,6 @@ const ProblemList: React.FC = () => {
         const errorMessage = getErrorMessage(error);
         console.error("문제 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
         setProblems(mockProblems as IProblem[]);
-    } finally {
-        setIsLoading(false);
     }
   }, []);
 
@@ -62,17 +60,18 @@ const ProblemList: React.FC = () => {
         );
     }
 
-  const mapProblemToProps = (problem: IProblem) => {
-      const solvedBy = (problem as any).solvedBy as number[] | undefined;
-      const hasSubmissionHistory = solvedBy ? solvedBy.includes(currentUserId!) : false;
-      
+  const mapProblemToProps = (problem: any) => {
+      const solvedBy = problem.solvedBy as { userId: number, score: number }[] | undefined;
+      const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === currentUserId) : false;
+      const averageScore = problem.averageScore ?? 0;
+
       return {
           key: problem.id,
           id: problem.id!,
           title: problem.title,
           language: problem.language ?? "PYTHON",
-          score: (problem as any).score ?? (problem as any).correctRate ?? 0, 
           difficulty: problem.difficulty,
+          averageScore: averageScore, 
           hasSubmissionHistory: hasSubmissionHistory,
       };
     };

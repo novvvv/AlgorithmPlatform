@@ -8,7 +8,8 @@ interface ProblemItemProps {
   title: string;
   language: ProgrammingLanguage;
   difficulty: ProblemDifficulty;
-  score: number;
+  averageScore: number; 
+  userScore?: number;   
   hasSubmissionHistory: boolean;
 }
 
@@ -43,8 +44,9 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   id,
   title,
   language,
-  score,
   difficulty,
+  userScore,
+  averageScore,
   hasSubmissionHistory,
 }) => {
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <InfoSection>
         <ProblemTitle>{title}</ProblemTitle>
         <SubInfo>
-          {displayLanguage(language)} / 정답률 {score}%
+          {displayLanguage(language)} / 정답률 {averageScore}%
         </SubInfo>
       </InfoSection>
       <ActionGroup> 

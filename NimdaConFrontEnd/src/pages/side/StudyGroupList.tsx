@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 import search_icon from "@/assets/icons/search_icon.svg";
-import { getAllGroupsAPI } from "@/apis/group"; 
-import { getErrorMessage } from "@/apis/utils"; 
-import type { IStudyGroup } from "@/types/group"; 
-import { getCurrentUserAPI } from "@/apis/user";
+import { getAllGroupsAPI } from "@/apis/group";
+import { getCurrentUserAPI } from "@/apis/user"; 
+import { getErrorMessage } from "@/apis/utils";
+import type { IStudyGroup, GetAllGroupsResponse } from "@/types/group"; 
 import type { getCurrentUserResponse } from "@/types/user";
 
 import {
@@ -18,7 +18,7 @@ import {
 } from "@/components/common/SidePanelCommon";
 
   const StudyGroupList: React.FC = () => {
-    const [groups, setGroups] = useState<IStudyGroup[]>(mockStudyGroups); // Mock 데이터로 초기화
+    const [groups, setGroups] = useState<IStudyGroup[]>(mockStudyGroups); 
     const [currentUserId, setCurrentUserId] = useState<number | null>(null); 
     const [isGroupsLoading, setIsGroupsLoading] = useState(true);
     const [isUserLoading, setIsUserLoading] = useState(true);
@@ -30,7 +30,7 @@ import {
             if (response.user && response.user.id) {
                 setCurrentUserId(response.user.id);
             } else {
-                setCurrentUserId(101); 
+                setCurrentUserId(101); // Mock ID
             }
         } catch (error: unknown) {
             const errorMessage = getErrorMessage(error);
@@ -44,7 +44,7 @@ import {
     const fetchGroups = useCallback(async () => {
         setIsGroupsLoading(true);
         try {
-            const response: IStudyGroup[] = await getAllGroupsAPI();
+            const response: GetAllGroupsResponse = await getAllGroupsAPI();
             setGroups(response);
         } catch (error: unknown) {
             const errorMessage = getErrorMessage(error);
@@ -90,7 +90,7 @@ import {
                     key={group.groupId}
                     id={group.groupId}
                     groupName={group.groupName}
-                    currentMembers={group.currentMembers}
+                    currentMembers={group.currentMembers} 
                     maxMembers={group.maxMembers}
                     isPublic={group.isPublic}
                     currentUserId={userId}

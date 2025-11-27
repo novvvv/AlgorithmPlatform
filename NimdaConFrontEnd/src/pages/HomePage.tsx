@@ -1,18 +1,106 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from "styled-components";
 import ProblemItem from "@/components/side/ProblemItem";
 import StudyGroupItem from "@/components/side/StudyGroupItem";
+
+import { getAllGroupsAPI } from "@/apis/group";
+import { getAllProblemsAPI } from "@/apis/problem";
+import { getCurrentUserAPI } from "@/apis/user";
+import { getErrorMessage } from "@/apis/utils";
+import type { IStudyGroup } from "@/types/group";
+import type { IProblem, GetAllProblemsResponse } from "@/types/problem";
+import type { getCurrentUserResponse } from "@/types/user";
+
 import { mockProblems } from "@/mocks/mockProblems";
 import mockStudyGroups from "@/mocks/mockStudyGroups";
 
-const CURRENT_USER_ID = 101;
-
 const HomePage: React.FC = () => {
-  // 최근 3개의 내가 가입된 스터디그룹만 표시
-  const recentStudyGroups = mockStudyGroups.slice(0, 3);
+  const [recentStudyGroups, setRecentStudyGroups] = useState<IStudyGroup[]>(mockStudyGroups.slice(0, 3));
+  const [recentProblems, setRecentProblems] = useState<any[]>(mockProblems.slice(0, 3));
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const response: getCurrentUserResponse = await getCurrentUserAPI();
+      setCurrentUserId(response.user?.id ?? 101); 
+    } catch (error) {
+      console.error("사용자 정보 API 호출 실패. Mock ID (101) 사용:", getErrorMessage(error));
+      setCurrentUserId(101); 
+    }
+  }, []);
+
+  const fetchGroups = useCallback(async (userId: number) => {
+    try {
+      const allGroups: IStudyGroup[] = await getAllGroupsAPI(); 
+      const myGroups = allGroups.filter(group => 
+        group.currentMembers?.some(member => member.userId === userId)
+      );
+      setRecentStudyGroups(myGroups);
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.error("그룹 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
+      const mockMyGroups = mockStudyGroups.filter(group => 
+        group.currentMembers?.some(member => member.userId === userId)
+      );
+      setRecentStudyGroups(mockMyGroups.slice(0, 5));
+    }
+  }, []);
+
+  const fetchProblems = useCallback(async (userId: number) => { 
+    try {
+      const response: GetAllProblemsResponse = await getAllProblemsAPI(); 
+      if (response.success) {
+        const allProblems = response.problems as IProblem[];
+
+        const myAttemptedProblems = allProblems.filter((problem: any) => {
+            const solvedBy = problem.solvedBy as { userId: number }[] | undefined;
+            return solvedBy?.some(s => s.userId === userId);
+        });
+        setRecentProblems(myAttemptedProblems.slice(0, 3)); 
+      } else {
+        throw new Error(response.message || "문제 목록 조회 실패");
+      }
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.error("문제 목록 API 호출 실패. Mock 데이터 사용:", errorMessage);
+      
+      const mockAttemptedProblems = (mockProblems as IProblem[]).filter(problem => {
+          const solvedBy = (problem as any).solvedBy as number[] | undefined;
+          return solvedBy?.includes(userId);
+      });
+      
+      setRecentProblems(mockAttemptedProblems.slice(0, 3));
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      setIsLoading(true);
+      await fetchCurrentUser();
+      setIsLoading(false);
+    };
+    loadUser();
+  }, [fetchCurrentUser]);
   
-  // 최근 3개의 문제만 표시
-  const recentProblems = mockProblems.slice(0, 3);
+  useEffect(() => {
+    if (currentUserId !== null) {
+      fetchGroups(currentUserId);
+      fetchProblems(currentUserId); 
+    }
+  }, [currentUserId, fetchGroups, fetchProblems]);
+
+
+  if (isLoading || currentUserId === null) {
+    return (
+      <PageContainer>
+        <Title>대학생 알고리즘 스터디 플랫폼</Title>
+        <div style={{ textAlign: 'center', marginTop: '5rem' }}>데이터를 불러오는 중입니다...</div>
+      </PageContainer>
+    );
+  }
+
+  const userId = currentUserId as number;
 
   return (
     <PageContainer>
@@ -24,17 +112,21 @@ const HomePage: React.FC = () => {
           <CardContainer>
             <SectionTitle>내 스터디그룹</SectionTitle>
             <ItemsWrapper>
-              {recentStudyGroups.map((group) => (
-                <StudyGroupItem
-                  key={group.groupId}
-                  id={group.groupId}
-                  groupName={group.groupName}
-                  currentMembers={group.currentMembers}
-                  maxMembers={group.maxMembers}
-                  isPublic={group.isPublic}
-                  currentUserId={CURRENT_USER_ID}
-                />
-              ))}
+              {recentStudyGroups.length === 0 ? (
+                <div style={{ padding: '1rem', color: '#666' }}>가입된 스터디 그룹이 없습니다.</div>
+              ) : (
+                recentStudyGroups.map((group) => (
+                  <StudyGroupItem
+                    key={group.groupId}
+                    id={group.groupId}
+                    groupName={group.groupName}
+                    currentMembers={group.currentMembers}
+                    maxMembers={group.maxMembers}
+                    isPublic={group.isPublic}
+                    currentUserId={userId} 
+                  />
+                ))
+              )}
             </ItemsWrapper>
             <AddButton onClick={() => window.location.href = '/studygroup/create'}>
               그룹 추가
@@ -47,16 +139,27 @@ const HomePage: React.FC = () => {
           <CardContainer>
           <SectionTitle>최근 문제</SectionTitle>
             <ItemsWrapper>
-              {recentProblems.map((problem) => (
-                <ProblemItem
-                  key={problem.id}
-                  id={problem.id}
-                  title={problem.title}
-                  language={problem.language ?? "PYTHON"}
-                  correctRate={problem.correctRate ?? 0}
-                  difficulty={problem.difficulty}
-                />
-              ))}
+              {recentProblems.length === 0 ? (
+                <div style={{ padding: '1rem', color: '#666' }}>등록된 문제가 없습니다.</div>
+              ) : (
+                recentProblems.map((problem) => {
+                  const solvedBy = (problem as any).solvedBy as number[] | undefined;
+                  const hasSubmissionHistory = solvedBy ? solvedBy.includes(userId) : false;
+                  const averageScore = problem.averageScore ?? 0;
+                  
+                  return (
+                    <ProblemItem
+                      key={problem.id}
+                      id={problem.id!}
+                      title={problem.title}
+                      language={problem.language ?? "PYTHON"}
+                      difficulty={problem.difficulty}
+                      averageScore={averageScore}
+                      hasSubmissionHistory={hasSubmissionHistory} 
+                    />
+                  );
+                })
+              )}
             </ItemsWrapper>
             <AddButton onClick={() => window.location.href = '/problem/create'}>
               문제 추가
