@@ -7,8 +7,10 @@ interface ProblemItemProps {
   id: number;
   title: string;
   language: ProgrammingLanguage;
-  correctRate: number;
   difficulty: ProblemDifficulty;
+  averageScore: number; 
+  userScore?: number;   
+  hasSubmissionHistory: boolean;
 }
 
 const displayDifficulty = (diff: ProblemDifficulty): string => {
@@ -42,8 +44,9 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   id,
   title,
   language,
-  correctRate,
   difficulty,
+  averageScore,
+  hasSubmissionHistory,
 }) => {
   const navigate = useNavigate();
 
@@ -64,7 +67,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <InfoSection>
         <ProblemTitle>{title}</ProblemTitle>
         <SubInfo>
-          {displayLanguage(language)} / 정답률 {correctRate}%
+          {displayLanguage(language)} / 정답률 {averageScore}%
         </SubInfo>
       </InfoSection>
       <ActionGroup> 
@@ -74,7 +77,9 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
         <ButtonWrapper>
           <ActionButton onClick={handleDetail}>상세</ActionButton>
           <ActionButton $primary onClick={handleSolve}>풀기</ActionButton>
-          <ResultActionButton onClick={handleResult}>채점결과</ResultActionButton>
+          {hasSubmissionHistory && (
+              <ResultActionButton onClick={handleResult}>채점결과</ResultActionButton>
+          )}
         </ButtonWrapper>
       </ActionGroup>
     </ItemContainer>
@@ -99,6 +104,7 @@ const InfoSection = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1; 
+  gap: 0.3rem;
 `;
 
 const ProblemTitle = styled.div`

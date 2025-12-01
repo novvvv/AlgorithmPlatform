@@ -6,7 +6,7 @@ export interface IStudyGroup {
   description?: string;
   goal?: string;
   maxMembers: number;
-  participationCode?: string;
+  participationCode?: string | null;
   isPublic: boolean;
   creatorUserId: number;
   createdAt: string;

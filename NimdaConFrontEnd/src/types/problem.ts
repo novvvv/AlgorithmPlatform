@@ -8,7 +8,7 @@ export interface IProblem {
   timeLimit: number;        // 밀리초 단위
   memoryLimit: number;      // KB 단위
   difficulty: ProblemDifficulty;
-  language?: ProgrammingLanguage;   
+  language: ProgrammingLanguage;   
   groupId?: number | null;  
   group?: string;        
   createdAt?: string;
@@ -18,7 +18,7 @@ export interface IProblem {
 export interface ITestCase {
   input: string;
   output: string;
-  isPublic: boolean;  
+  isPublic?: boolean | false;  
 }
 export interface CreateProblemRequest {
   title: string;

@@ -1,7 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { getErrorMessage } from "@/apis/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { createGroupAPI } from "@/apis/group"; 
+import type { 
+  GetGroupCreateRequest, 
+  GetGroupCreateResponse 
+} from "@/types/group";
 
 export default function StudyGroupCreatePage() {
+  const navigate = useNavigate();
+  const { userId } = useCurrentUser();
+
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [goal, setGoal] = useState("");
@@ -16,12 +27,36 @@ export default function StudyGroupCreatePage() {
     setIsPublic(true);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // TODO: API 연동
-    console.log("Study group create:", { groupName, description, goal, maxMembers, isPublic });
-    alert("스터디 그룹이 생성되었습니다. (UI 동작 확인용)");
+    if (!userId) {
+        alert("로그인이 필요한 서비스입니다.");
+        navigate("/login");
+        return;
+    }
+
+    const newGroup: GetGroupCreateRequest = { 
+        groupName, 
+        description, 
+        goal, 
+        maxMembers: Number(maxMembers), 
+        isPublic,
+        creatorUserId: userId,
+    };
+
+    try {
+        const response: GetGroupCreateResponse = await createGroupAPI(newGroup);
+
+        alert(`스터디 그룹 "${groupName}"이 생성되었습니다.`);
+        const createdGroupId = response.groupId; 
+        navigate(`/studygroup/${createdGroupId}`); 
+        
+    } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+        console.error("그룹 생성 실패:", error);
+        alert(`그룹 생성 실패: ${errorMessage}`);
+    }
   };
 
   return (

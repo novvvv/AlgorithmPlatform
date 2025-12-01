@@ -1,9 +1,13 @@
 import styled from "styled-components";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { mockProblems } from "@/mocks/mockProblems";
 import profileIcon from "@/assets/icons/profile.png";
-import { logoutAPI, getCurrentUser } from "@/apis/auth";
+import { logoutAPI } from "@/apis/auth";
+import { getCurrentUserAPI } from "@/apis/user";
+import type { IUser } from "@/types/user"; 
+import type { getCurrentUserResponse } from "@/types/user"; 
+import { getErrorMessage } from "@/apis/utils"; 
 
 import {
   ProblemList,
@@ -29,8 +33,9 @@ interface UserStats {
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
 
+  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  
   const handleDetail = (id: number | string | undefined) => {
     if (id !== undefined) {
       navigate(`/problem/detail/${id}`);

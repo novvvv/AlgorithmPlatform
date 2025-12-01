@@ -3,7 +3,9 @@ import type {
   GetAllGroupsResponse,
   AddGroupMemberResponse,
   GetGroupMembersResponse,
-  RemoveGroupMemberResponse 
+  RemoveGroupMemberResponse,
+  GetGroupCreateRequest, 
+  GetGroupCreateResponse
 } from "@/types/group";
 import { apiClient, getErrorMessage } from "./utils";
 
@@ -65,3 +67,18 @@ export const getGroupMembersAPI = async (
   }
 };
 
+/**
+ * 스터디그룹 생성 API
+ * POST /api/groups
+ */
+export const createGroupAPI = async (
+  data: GetGroupCreateRequest
+): Promise<GetGroupCreateResponse> => {
+  try {
+    const response = await apiClient.post<GetGroupCreateResponse>("/groups", data);
+    return response.data;
+  } catch (error: unknown) {
+    console.error("그룹 생성 API 오류:", error);
+    throw new Error(getErrorMessage(error));
+  }
+};
