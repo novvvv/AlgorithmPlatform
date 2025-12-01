@@ -35,6 +35,31 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 마이페이지 로드 시 현재 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const userData = await getCurrentUserAPI();
+        setCurrentUser(userData);
+      } catch (err) {
+        console.error("사용자 정보 조회 실패:", err);
+        setError(err instanceof Error ? err.message : "사용자 정보를 불러올 수 없습니다.");
+        // 401 에러 시 로그인 페이지로 리다이렉트
+        if (err instanceof Error && err.message.includes("401")) {
+          navigate("/login");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [navigate]);
   
   const handleDetail = (id: number | string | undefined) => {
     if (id !== undefined) {
@@ -101,6 +126,24 @@ export default function MyPage() {
       totalSubmissions: userSolvedProblems.length,
     };
   }, [userSolvedProblems]);
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <LoadingMessage>사용자 정보를 불러오는 중...</LoadingMessage>
+      </PageContainer>
+    );
+  }
+
+  // 에러 발생 시
+  if (error) {
+    return (
+      <PageContainer>
+        <ErrorMessage>{error}</ErrorMessage>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
