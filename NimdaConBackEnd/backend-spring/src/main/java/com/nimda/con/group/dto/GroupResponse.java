@@ -14,6 +14,8 @@ public class GroupResponse {
     private Integer maxMembers;
     private Boolean isPublic;
     private String participationCode;
+    private String description;
+    private String goal;
     private Long creatorUserId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

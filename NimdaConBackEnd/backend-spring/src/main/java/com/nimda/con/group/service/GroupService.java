@@ -53,7 +53,9 @@ public class GroupService {
                                 request.getMaxMembers(),
                                 participationCode,
                                 Boolean.TRUE.equals(request.getIsPublic()),
-                                creator);
+                                creator,
+                                request.getDescription(),
+                                request.getGoal());
 
                 StudyGroup saved = studyGroupRepository.save(group);
 
@@ -63,6 +65,8 @@ public class GroupService {
                                 .maxMembers(saved.getMaxMembers())
                                 .isPublic(saved.getIsPublic())
                                 .participationCode(saved.getParticipationCode())
+                                .description(saved.getDescription())
+                                .goal(saved.getGoal())
                                 .creatorUserId(saved.getCreatedBy().getId())
                                 .createdAt(saved.getCreatedAt())
                                 .updatedAt(saved.getUpdatedAt())
@@ -127,6 +131,8 @@ public class GroupService {
                                                 .maxMembers(group.getMaxMembers())
                                                 .isPublic(group.getIsPublic())
                                                 .participationCode(group.getParticipationCode())
+                                                .description(group.getDescription())
+                                                .goal(group.getGoal())
                                                 .creatorUserId(group.getCreatedBy().getId())
                                                 .createdAt(group.getCreatedAt())
                                                 .updatedAt(group.getUpdatedAt())
