@@ -67,16 +67,18 @@ INSERT IGNORE INTO test_cases (problem_id, input, output, is_public, created_at,
 -- 기본 스터디 그룹 데이터 삽입
 -- ============================================
 -- 스터디 그룹 생성 (생성자는 자동으로 ADMIN 역할로 멤버에 추가됨)
-INSERT IGNORE INTO study_groups (group_name, max_members, participation_code, is_public, created_by, created_at, updated_at) VALUES 
+INSERT INTO study_groups (group_name, max_members, participation_code, is_public, created_by, created_at, updated_at) VALUES 
 ('알고리즘 기초 스터디', 20, 'ALGO2024', false, 1, NOW(), NOW()),           -- 그룹 1: admin이 생성
 ('자료구조 심화 스터디', 15, 'DS2024', false, 2, NOW(), NOW()),              -- 그룹 2: anonymous가 생성
-('코딩 테스트 준비반', 30, 'CT2024', true, 3, NOW(), NOW());                 -- 그룹 3: seoyun이 생성 (공개)
+('코딩 테스트 준비반', 30, 'CT2024', true, 3, NOW(), NOW())                 -- 그룹 3: seoyun이 생성 (공개)
+ON DUPLICATE KEY UPDATE group_name = group_name;  -- 중복 시 업데이트하지 않음 (에러 방지)
 
 -- 기존 잘못된 role 값 수정 (ADMIN -> LEADER)
 UPDATE group_memberships SET role = 'LEADER' WHERE role = 'ADMIN' OR role = '' OR role IS NULL;
 
 -- 그룹 멤버십 추가 (각 그룹의 생성자를 LEADER 역할로 추가)
-INSERT IGNORE INTO group_memberships (user_id, group_id, role, joined_at) VALUES 
+INSERT INTO group_memberships (user_id, group_id, role, joined_at) VALUES 
 (1, 1, 'LEADER', NOW()),    -- 그룹 1: admin이 LEADER
 (2, 2, 'LEADER', NOW()),    -- 그룹 2: anonymous가 LEADER
-(3, 3, 'LEADER', NOW());    -- 그룹 3: seoyun이 LEADER
+(3, 3, 'LEADER', NOW())     -- 그룹 3: seoyun이 LEADER
+ON DUPLICATE KEY UPDATE role = role;  -- 중복 시 업데이트하지 않음 (에러 방지)
