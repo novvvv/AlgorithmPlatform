@@ -55,14 +55,18 @@ const ProblemResultPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
+
   const fallbackResult = useMemo(() => {
     if (!id) return undefined;
-    return mockProblemResults.find(r => r.problemId === Number(id));
+    const found = mockProblemResults.find(r => r.problemId === Number(id));
+    return found as unknown as IProblemResult | undefined; 
   }, [id]);
 
   useEffect(() => {
     let cancelled = false;
-    if (!id) {
+    const problemId = id ? parseInt(id, 10) : NaN;
+    
+    if (!id || isNaN(problemId)) {
       setResult(null);
       setIsLoading(false);
       setError("문제 ID를 확인할 수 없습니다.");
@@ -73,7 +77,7 @@ const ProblemResultPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getProblemResultAPI(Number(id));
+        const response = await getProblemResultAPI(problemId);
         if (cancelled) return;
         if (response.result) {
           setResult(response.result);
@@ -162,11 +166,11 @@ const ProblemResultPage: React.FC = () => {
             <ResultStats>
               <ResultPill tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{displayResult.runTime}</ResultPillValue>
+                <ResultPillValue tone="time">{displayResult.executionTime || "-"}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{displayResult.memory}</ResultPillValue>
+                <ResultPillValue tone="memory">{displayResult.memoryUsage || "-"}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
@@ -176,16 +180,16 @@ const ProblemResultPage: React.FC = () => {
             <Divider />
             <SectionLabel>테스트 케이스 결과</SectionLabel>
             <TestList>
-              {displayResult.testCases.map(tc => {
-                const displayResult = getDisplayResult(tc.result);
+              {displayResult.testCases.map((tc, idx) => {
+                const displayResultText = getDisplayResult(tc.result);
                 return (
-                  <TestRow key={tc.name}>
+                  <TestRow key={tc.name || `tc-${idx}`}>
                     <TestRowLeft>
-                      <TestIcon src={getTestIcon(tc.result)} alt={displayResult} />
+                      <TestIcon src={getTestIcon(tc.result)} alt={displayResultText} />
                       <TestName>{tc.name}</TestName>
-                      <TestResult $result={displayResult}>{displayResult}</TestResult>
+                      <TestResult $result={displayResultText}>{displayResultText}</TestResult>
                     </TestRowLeft>
-                    <TestMeta>{tc.time} / {tc.memory}</TestMeta>
+                    <TestMeta>{tc.executionTime} / {tc.memoryUsage}</TestMeta>
                   </TestRow>
                 );
               })}

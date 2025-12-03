@@ -1,9 +1,10 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BlueButton from "@/components/common/BlueButton";
 import FormField from "@/components/common/FormField";
 import { loginAPI } from "@/apis/auth";
+import type { IUser } from "@/types/user";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -13,6 +14,32 @@ export default function LoginPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // 현재 로그인 상태 확인
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("authToken");
+      const userStr = localStorage.getItem("user");
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setCurrentUser(user);
+          console.log("localStorage에서 사용자 정보 로드:", user);
+        } catch (err) {
+          console.error("사용자 정보 파싱 실패:", err);
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setCheckingAuth(false);
+    };
+    
+    checkAuthStatus();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,7 +72,7 @@ export default function LoginPage() {
         password: formData.password,
       });
       
-      if (response.accessToken) {
+      if (response.accessToken && response.user) {
         // 토큰 저장 확인
         const savedToken = localStorage.getItem("authToken");
         console.log("로그인 성공! 토큰 저장됨:", savedToken ? "있음" : "없음");
@@ -57,6 +84,9 @@ export default function LoginPage() {
           alert("토큰 저장에 실패했습니다. 다시 시도해주세요.");
           return;
         }
+        
+        // 로그인 상태 즉시 업데이트
+        setCurrentUser(response.user);
         
         alert("로그인 성공!");
         navigate("/mypage");
@@ -76,6 +106,36 @@ export default function LoginPage() {
   const handleSignUpClick = () => {
     navigate("/signup");
   };
+
+  const handleLogout = () => {
+    if (window.confirm("정말 로그아웃하시겠습니까?")) {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      setCurrentUser(null);
+    }
+  };
+
+  // 인증 확인 중
+  if (checkingAuth) {
+    return (
+      <PageContainer>
+        <LoadingMessage>로그인 상태를 확인하는 중...</LoadingMessage>
+      </PageContainer>
+    );
+  }
+
+  // 이미 로그인된 경우
+  if (currentUser) {
+    return (
+      <PageContainer>
+        <LoginCard>
+          <PageTitle>NIMDA CON</PageTitle>
+          <LoggedInMessage>이미 로그인 되었습니다</LoggedInMessage>
+          <LogoutButtonStyle onClick={handleLogout}>로그아웃</LogoutButtonStyle>
+        </LoginCard>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -185,4 +245,36 @@ const SignUpLink = styled.button`
   &:hover {
     color: #1d4ed8;
   }
+`;
+
+const LoggedInMessage = styled.h2`
+  font-size: 1.3rem;
+  margin: 2rem 0 1.5rem 0;
+  color: #555;
+  text-align: center;
+  font-weight: 600;
+`;
+
+const LogoutButtonStyle = styled.button`
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #f87171;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #ef4444;
+  }
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.2rem;
 `;

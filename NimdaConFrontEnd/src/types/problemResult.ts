@@ -5,8 +5,8 @@ export type JudgeDisplayStatus = "정답" | "오답";
 export interface IProblemTestCaseResult {
   name: string;
   result: SubmissionStatus | string;
-  time: string;
-  memory: string;
+  executionTime: string;
+  memoryUsage: string;
 }
 
 export interface IProblemResult {
@@ -14,8 +14,8 @@ export interface IProblemResult {
   submissionId: number;
   userName: string;
   status: JudgeDisplayStatus;
-  runTime: string;
-  memory: string;
+  executionTime: string;
+  memoryUsage: string;
   language: string;
   testCases: IProblemTestCaseResult[];
   submittedCode: string;
@@ -30,7 +30,7 @@ export interface IProblemResult {
   };
 }
 
-export interface IGroupProblemResult extends IProblemResult {}
+export type IGroupProblemResult = IProblemResult;
 
 export interface ProblemResultResponse {
   success: boolean;

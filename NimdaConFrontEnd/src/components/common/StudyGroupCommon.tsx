@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
 import type { AddGroupMemberRequest, IGroupMembership } from "@/types/group";
+import type { IProblem } from "@/types/problem";
 import { joinGroupAPI } from "@/apis/group"; 
 import { useStudyGroupDetail } from "@/hooks/useStudyGroupDetail";
 
@@ -47,6 +48,12 @@ import {
   DetailButton,
   ResultButton,
 } from "@/components/common/StudyGroupStyle";
+
+// Problems coming from API may include runtime-only fields like `solvedBy` and `averageScore`.
+type ProblemWithSolved = IProblem & {
+  solvedBy?: { userId: number; score?: number }[];
+  averageScore?: number;
+};
 
 interface StudyGroupContentProps {
   groupId: number;
@@ -102,6 +109,10 @@ export default function StudyGroupCommon({
     );
   }
 
+  const handleAddProblem = () => {
+    navigate('/problem/create');
+  };
+
   const handleDetail = (id: number | string) => {
     navigate(`/problem/detail/${id}`);
   };
@@ -115,19 +126,18 @@ export default function StudyGroupCommon({
   };
 
   const handleCodeSubmit = async (code: string) => {
-   try {
-        const data: AddGroupMemberRequest = {
-          userId: 0,
-          participationCode: code,
-        };
-        await joinGroupAPI(groupData.groupId, data); 
-        alert(`${groupData.groupName} 그룹에 성공적으로 가입했습니다!`);
-        setIsModalOpen(false);
-        navigate(`/studygroup/${groupData.groupId}`);
-    } catch (error: any) {
-        console.error("그룹 가입 실패:", error);
-        alert(`가입 실패: ${error.message || '서버 오류'}`);
-    }
+    const data: AddGroupMemberRequest = {
+      userId: 0, 
+      participationCode: code,
+    };
+
+    // API 호출 (실패 시 여기서 에러 발생 -> Modal의 catch로 이동)
+    await joinGroupAPI(groupData.groupId, data); 
+    
+    // 성공 시에만 아래 코드가 실행됨
+    alert(`${groupData.groupName} 그룹에 성공적으로 가입했습니다!`);
+    setIsModalOpen(false);
+    navigate(`/studygroup/${groupData.groupId}`);
   };
 
   const HeaderButton = () => {
@@ -145,9 +155,9 @@ export default function StudyGroupCommon({
               await joinGroupAPI(groupData!.groupId, data); 
               alert("공개 그룹: 가입 완료");
               navigate(`/studygroup/${groupData!.groupId}`);
-          } catch (error: any) {
+          } catch (error: unknown) {
               console.error("그룹 가입 실패:", error);
-              alert(`가입 실패: ${error.message || '서버 오류'}`);
+              alert(`가입 실패: ${error instanceof Error ? error.message : '서버 오류'}`);
           }
         }
       };
@@ -165,8 +175,8 @@ export default function StudyGroupCommon({
         <Title>{groupData.groupName}</Title>
         <HeaderButton /> 
       </Header>
-      <Subtitle>{groupData.description}</Subtitle>
-      <Subtitle>목표: {groupData.goal}</Subtitle>
+      <Subtitle>{groupData.description || '설명 없음'}</Subtitle>
+      <Subtitle>{groupData.goal ? `목표: ${groupData.goal}` : '목표 없음'}</Subtitle>
 
       <ContentWrapper>
         <LeftSection>
@@ -206,11 +216,11 @@ export default function StudyGroupCommon({
             <MembersList>
               {members?.map((member: IGroupMembership, idx: number) => {
                   const key = member.membershipId ?? idx;
-                  const solvedCount = problems.filter(
-                    (p: any) =>
-                      p.groupId === groupData.groupId &&
-                      p.solvedBy?.some((s: { userId: number }) => s.userId === member.userId)
-                  ).length;
+                      const solvedCount = problems.filter((p) => {
+                        const prob = p as unknown as ProblemWithSolved;
+                        return prob.groupId === groupData.groupId &&
+                        prob.solvedBy?.some((s) => s.userId === member.userId);
+                      }).length;
 
                   return (
                     <MemberItem key={key}>
@@ -242,7 +252,7 @@ export default function StudyGroupCommon({
           <Card>
             <CardHeader>
               <CardTitle>그룹 문제</CardTitle>
-              <AddButton onClick={() => window.location.href = '/problem/create'}>+ 문제 추가</AddButton>
+              <AddButton onClick={handleAddProblem}>+ 문제 추가</AddButton>
             </CardHeader>
             <TabBar>
               <Tab $active>전체</Tab>
@@ -253,10 +263,13 @@ export default function StudyGroupCommon({
             <ProblemList>
             {problems
               .filter(p => p.id !== undefined) 
-              .map((problem) => {
+              .map((rawProblem) => {
+                const problem = rawProblem as unknown as ProblemWithSolved;
+
                 const problemId = problem.id as number;
                 const memberIds = members.map(m => m.userId);
-                const solvedBy = (problem as any).solvedBy as { userId: number }[] | undefined;
+
+                const solvedBy = problem.solvedBy || [];
                 
                 const completionCount = solvedBy 
                     ? solvedBy.filter(s => memberIds.includes(s.userId)).length 
@@ -264,14 +277,17 @@ export default function StudyGroupCommon({
                 const totalMembers = memberIds.length;
                 const completionRate = totalMembers > 0 ? Math.round((completionCount / totalMembers) * 100) : 0;
                 
+                const description = problem.description || '';
+                const difficulty = problem.difficulty || 'EASY';
+
                 return (
                   <ProblemItem key={problemId}>
                     <ProblemHeader>
                       <ProblemTitle>{problem.title}</ProblemTitle>
-                      <ProgressText>{problem.description}</ProgressText>
+                      <ProgressText>{description}</ProgressText>
                     </ProblemHeader>
                     <DifficultyBadge $difficulty={problem.difficulty}>
-                      {getDifficultyText(problem.difficulty)}
+                      {getDifficultyText(difficulty)}
                     </DifficultyBadge>
                     <ProgressGroup>
                       <ProgressBar>

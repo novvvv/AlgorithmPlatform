@@ -7,13 +7,15 @@ import { mockProblemDetails } from "@/mocks/mockProblemDetails";
 import { mockProblemResults } from "@/mocks/mockProblemResults";
 import { getProblemByIdAPI } from "@/apis/problem";
 import { submitCodeAPI } from "@/apis/judge";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import type { SubmissionRequest, SubmissionStatus } from "@/types/judge";
 import type { IProblem } from "@/types/problem";
 
 const languageOptions = [
   { label: "Python", value: "PYTHON" },
   { label: "Java", value: "JAVA" },
-  { label: "C++", value: "CPP" },
+  { label: "C++17", value: "CPP17" },
+  { label: "C99", value: "C99" },
 ];
 
 type TestStatus = SubmissionStatus;
@@ -29,6 +31,8 @@ const ProblemSolvePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const currentUser = useCurrentUser();
+
   const fallbackProblem = useMemo(() => {
     if (!id) return undefined;
     return mockProblemDetails.find(p => p.id === Number(id));
@@ -36,7 +40,6 @@ const ProblemSolvePage: React.FC = () => {
 
   const [problem, setProblem] = useState<IProblem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState(languageOptions[0].value);
   const [code, setCode] = useState(`def solution(nums, target):
     # 코드를 작성하세요`);
@@ -63,24 +66,23 @@ const ProblemSolvePage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    if (!id) {
+    const problemId = id ? parseInt(id, 10) : NaN;
+    
+    if (!id || isNaN(problemId)) {
       setProblem(null);
       setIsLoading(false);
-      setError("문제 ID를 확인할 수 없습니다.");
       return;
     }
 
     const fetchProblem = async () => {
       setIsLoading(true);
-      setError(null);
       try {
-        const response = await getProblemByIdAPI(Number(id));
+        const response = await getProblemByIdAPI(problemId);
         if (cancelled) return;
         setProblem(response.problem ?? null);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
         setProblem(null);
-        setError(err instanceof Error ? err.message : "문제 정보를 불러오지 못했습니다.");
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -122,17 +124,23 @@ const ProblemSolvePage: React.FC = () => {
   };
 
   const handleRun = () => {
-    if (!id) {
-      setResultMessage("문제 ID를 확인할 수 없습니다.");
+    const problemId = Number(id);
+    if (!id || isNaN(problemId)) {
+      setResultMessage("유효하지 않은 문제 ID입니다.");
       return;
     }
 
+    const currentUserIdStr = currentUser?.userId ? String(currentUser.userId) : "unknown";
+
     const payload: SubmissionRequest = {
-      title: problem?.title ?? fallbackProblem?.title ?? "",
+      userId: currentUserIdStr,
       code,
       language: language as SubmissionRequest["language"],
-      problemId: Number(id),
-    };
+      problemId: problemId,
+      title: displayTitle,
+    } as unknown as SubmissionRequest;
+
+    console.log("실행 요청 데이터:", payload);
 
     setIsRunning(true);
     submitCodeAPI(payload)
@@ -144,7 +152,7 @@ const ProblemSolvePage: React.FC = () => {
         );
       })
       .catch(err => {
-        console.error(err);
+        console.error("API Error:", err);
         if (resultMock) {
           setTestResults(
             resultMock.testCases.map(tc => ({
@@ -166,17 +174,23 @@ const ProblemSolvePage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!id) {
-      setResultMessage("문제 ID를 확인할 수 없습니다.");
+    const problemId = Number(id);
+    if (!id || isNaN(problemId)) {
+      setResultMessage("유효하지 않은 문제 ID입니다.");
       return;
     }
 
+    const currentUserIdStr = currentUser?.userId ? String(currentUser.userId) : "unknown";
+
     const payload: SubmissionRequest = {
-      title: problem?.title ?? fallbackProblem?.title ?? "",
+      userId: currentUserIdStr,
       code,
       language: language as SubmissionRequest["language"],
-      problemId: Number(id),
-    };
+      problemId: problemId,
+      title: displayTitle,
+    } as unknown as SubmissionRequest;
+
+    console.log("제출 요청 데이터:", payload);
 
     setIsSubmitting(true);
     submitCodeAPI(payload)
@@ -284,12 +298,12 @@ const ProblemSolvePage: React.FC = () => {
                   <TestRow key={result.name}>
                     <TestRowLeft>
                       <TestIcon
-                        src={result.status === "AC" ? CorrectSmall : FailureSmall}
-                        alt={result.status === "AC" ? "통과" : "불통과"}
+                        src={result.status === "ACCEPTED" ? CorrectSmall : FailureSmall}
+                        alt={result.status === "ACCEPTED" ? "통과" : "불통과"}
                       />
                       <TestName>{result.name}</TestName>
-                      <TestResultText status={result.status}>
-                        {result.status === "AC" ? "통과" : "불통과"}
+                      <TestResultText $status={result.status}>
+                        {result.status === "ACCEPTED" ? "통과" : "불통과"}
                       </TestResultText>
                     </TestRowLeft>
                     <TestMeta>{result.time} / {result.memory}</TestMeta>
@@ -419,9 +433,9 @@ const TestName = styled.span`
   color: #1f2937;
 `;
 
-const TestResultText = styled.span<{ status: TestStatus }>`
+const TestResultText = styled.span<{ $status: TestStatus }>`
   font-weight: 700;
-  color: ${({ status }) => (status === "AC" ? "#16a34a" : "#dc2626")};
+  color: ${({ $status }) => ($status === "ACCEPTED" ? "#2ecc71" : "#e74c3c")};
 `;
 
 const TestMeta = styled.span`

@@ -24,13 +24,13 @@ const Router = () => {
         <Route path="/home" element={<LayoutWrapper><HomePage /></LayoutWrapper>} />
         <Route path="/mypage" element={<LayoutWrapper><MyPage /></LayoutWrapper>} />
         <Route path="/studygroup/create" element={<LayoutWrapper><StudyGroupCreatePage /></LayoutWrapper>} />
-        <Route path="/studygroup/:id?" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
         <Route path="/studygroup/join/:id?" element={<LayoutWrapper><StudyGroupJoinPage /></LayoutWrapper>} />
+        <Route path="/studygroup/:id?" element={<LayoutWrapper><StudyGroupDetailPage /></LayoutWrapper>} />
         <Route path="/problem/create" element={<LayoutWrapper><ProblemCreatePage /></LayoutWrapper>} />
         <Route path="/problem/detail/:id?" element={<LayoutWrapper><ProblemDetailPage /></LayoutWrapper>} />
-        <Route path="/problem/:id?" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
-        <Route path="/problem/result/:id?" element={<LayoutWrapper><ProblemResultPage /></LayoutWrapper>} />
         <Route path="/problem/results/:id?/studygroup/:groupId?" element={<LayoutWrapper><ProblemGroupResultsPage /></LayoutWrapper>} />
+        <Route path="/problem/result/:id?" element={<LayoutWrapper><ProblemResultPage /></LayoutWrapper>} />
+        <Route path="/problem/:id?" element={<LayoutWrapper><ProblemSolvePage /></LayoutWrapper>} />
       </Routes>
     </BrowserRouter>
   );

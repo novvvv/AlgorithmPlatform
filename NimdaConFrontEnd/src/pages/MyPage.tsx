@@ -4,11 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { mockProblems } from "@/mocks/mockProblems";
 import profileIcon from "@/assets/icons/profile.png";
 import { logoutAPI } from "@/apis/auth";
-import { getCurrentUserAPI } from "@/apis/user";
 import type { IUser } from "@/types/user"; 
-import type { getCurrentUserResponse } from "@/types/user"; 
-import { getErrorMessage } from "@/apis/utils"; 
-
 import {
   ProblemList,
   ProblemItem,
@@ -40,26 +36,32 @@ export default function MyPage() {
 
   // 마이페이지 로드 시 현재 사용자 정보 가져오기
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const userData = await getCurrentUserAPI();
-        setCurrentUser(userData);
-      } catch (err) {
-        console.error("사용자 정보 조회 실패:", err);
-        setError(err instanceof Error ? err.message : "사용자 정보를 불러올 수 없습니다.");
-        // 401 에러 시 로그인 페이지로 리다이렉트
-        if (err instanceof Error && err.message.includes("401")) {
-          navigate("/login");
+    const loadUserData = () => {
+      const token = localStorage.getItem("authToken");
+      const userStr = localStorage.getItem("user");
+      
+      setIsLoading(true);
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setCurrentUser(user);
+          setError(null);
+          console.log("localStorage에서 사용자 정보 로드:", user);
+        } catch (err) {
+          console.error("사용자 정보 파싱 실패:", err);
+          setCurrentUser(null);
+          setError("사용자 정보를 불러올 수 없습니다.");
         }
-      } finally {
-        setIsLoading(false);
+      } else {
+        setCurrentUser(null);
+        setError(null);
       }
+      setIsLoading(false);
     };
-
-    fetchCurrentUser();
-  }, [navigate]);
+    
+    loadUserData();
+  }, []);
   
   const handleDetail = (id: number | string | undefined) => {
     if (id !== undefined) {
@@ -94,7 +96,7 @@ export default function MyPage() {
   };
 
   const userSolvedProblems = useMemo(() => {
-    return mockProblems.filter(p => p.solvedBy?.includes(0));
+    return mockProblems.filter(p => p.solvedBy && p.solvedBy.some(s => s.userId === 0));
   }, []);
 
   const stats: UserStats = useMemo(() => {
@@ -145,6 +147,23 @@ export default function MyPage() {
     );
   }
 
+  // 로그인 상태에 따라 간단한 메시지와 버튼만 표시
+  if (!currentUser) {
+    return (
+      <PageContainer>
+        <ProfileSection>
+          <ProfileInfo>
+            <ProfileName>로그인이 필요합니다</ProfileName>
+            <ButtonGroup>
+              <EditButton onClick={() => navigate("/login")}>로그인</EditButton>
+            </ButtonGroup>
+          </ProfileInfo>
+        </ProfileSection>
+      </PageContainer>
+    );
+  }
+
+  // 로그인 된 경우: 전체 대시보드 표시
   return (
     <PageContainer>
       {/* 프로필 카드 */}
@@ -451,16 +470,4 @@ const ErrorMessage = styled.div`
   padding: 3rem;
   color: #d32f2f;
   font-size: 1.2rem;
-`;
-
-const ProfileEmail = styled.p`
-  margin: 0.5rem 0 0 0;
-  color: #888;
-  font-size: 0.85rem;
-`;
-
-const ProfileErrorText = styled.p`
-  margin: 0.5rem 0 0 0;
-  color: #d32f2f;
-  font-size: 0.85rem;
 `;

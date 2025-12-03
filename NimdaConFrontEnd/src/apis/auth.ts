@@ -14,6 +14,7 @@ export const loginAPI = async (
   loginData: LoginRequest
 ): Promise<LoginResponse> => {
   try {
+    console.log("로그인 요청 데이터:", loginData);
     const response = await apiClient.post<LoginResponse>("/auth/login", loginData);
     console.log("로그인 API 전체 응답:", response);
     console.log("로그인 API 응답 데이터:", response.data);
@@ -32,6 +33,11 @@ export const loginAPI = async (
     return result;
   } catch (error: unknown) {
     console.error("로그인 API 오류:", error);
+    if (error instanceof Error && 'response' in error) {
+      const axiosError = error as any;
+      console.error("백엔드 응답 데이터:", axiosError.response?.data);
+      console.error("백엔드 상태 코드:", axiosError.response?.status);
+    }
     throw new Error(getErrorMessage(error));
   }
 };

@@ -11,6 +11,15 @@ import {
   FixedButton,
 } from "@/components/common/SidePanelStyle";
 
+type ProblemData = {
+  id?: number;
+  title: string;
+  language?: string;
+  difficulty: string;
+  averageScore?: number;
+  solvedBy?: { userId: number; score: number }[];
+};
+
 const ProblemList: React.FC = () => {
   const { userId, isLoading: isUserLoading } = useCurrentUser();
   const { problems, isLoading: isProblemsLoading } = useProblems(userId);
@@ -23,17 +32,17 @@ const ProblemList: React.FC = () => {
       );
   }
 
-  const mapProblemToProps = (problem: any) => {
+  const mapProblemToProps = (problem: ProblemData) => {
       const solvedBy = problem.solvedBy as { userId: number, score: number }[] | undefined;
       const hasSubmissionHistory = solvedBy ? solvedBy.some(s => s.userId === userId) : false;
 
       return {
-          key: problem.id,
-          id: problem.id,
+          key: problem.id ?? 0,
+          id: problem.id ?? 0,
           title: problem.title,
-          language: problem.language ?? "PYTHON",
-          difficulty: problem.difficulty,
-          averageScore: problem.averageScore, 
+          language: (problem.language ?? "PYTHON") as "JAVA" | "PYTHON" | "CPP17" | "C99",
+          difficulty: (problem.difficulty ?? "EASY") as "EASY" | "MEDIUM" | "HARD" | "EXPERT",
+          averageScore: problem.averageScore ?? 0, 
           hasSubmissionHistory: hasSubmissionHistory,
       };
     };
@@ -61,14 +70,15 @@ const ProblemList: React.FC = () => {
       {/* 목록 */}
       <ListWrapper>
         {problems.length === 0 ? (
-          <div style={{ padding: '1rem', textAlign: 'center' }}>등록된 문제가 없습니다.</div>
+          <div style={{ padding: '1rem', textAlign: 'center' }} key="empty-state">등록된 문제가 없습니다.</div>
         ) : (
             problems
                 .filter(p => p.id !== undefined)
                 .map(mapProblemToProps)
-                .map((props) => (
-                    <ProblemItem {...props} />
-                ))
+                .map((props) => {
+                  const { key, ...restProps } = props;
+                  return <ProblemItem key={key} {...restProps} />;
+                })
         )}
       </ListWrapper>
 

@@ -1,14 +1,14 @@
-import type { ProgrammingLanguage } from "./problem";
+import type { Language } from "./problem";
 
 export type JudgeStatus = 'ACCEPTED' | 'WRONG_ANSWER' | 'TIME_LIMIT_EXCEEDED' | 'MEMORY_LIMIT_EXCEEDED' | 'RUNTIME_ERROR' | 'COMPILATION_ERROR' | 'SYSTEM_ERROR';
 export type SubmissionStatus = JudgeStatus | 'PENDING';
 
 export interface ISubmission {
-  submissionId: number;
-  userId: number; // FK
-  problemId: number; // FK
+  id: number;
+  userId: string;
+  problemId: number;
   code: string;
-  language: ProgrammingLanguage;
+  language: Language;
   status: SubmissionStatus;
   submittedAt?: string;
 }
@@ -23,29 +23,26 @@ export interface ITestCaseResult {
 }
 
 export interface IJudgeResult {
-  status: JudgeStatus; // 변경된 JudgeStatus 사용
+  status: JudgeStatus;
   message: string;
   output: string;
   errorOutput: string;
-  executionTime: number; // 밀리초 단위
-  memoryUsage: number;   // KB 단위로 가정 (API 가이드에는 단위 없음)
-  score: number; // 0 ~ 100 정수 값 (테스트케이스 통과 비율)
+  executionTime: number;
+  memoryUsage: number;
+  score: number;
 }
 
 export interface SubmissionRequest {
-  title: string;
+  userId: string;
   code: string;
-  language: ProgrammingLanguage;
+  language: Language;
   problemId: number;
-  description: string; 
 }
 
 export interface JudgeResponse {
   result: IJudgeResult;
   submittedBy: string;
   submissionId: number;
-  success: boolean;
-  message: string;
 }
 
 export interface IRecentSubmission {
@@ -58,30 +55,26 @@ export interface IRecentSubmission {
   language: string;
   status: string;
   submittedAt: string;
-  executionTime: string; // "120ms"와 같은 문자열
-  memoryUsage: string;   // "15MB"와 같은 문자열
-  score: number; // 제출 목록에도 score 필드 추가
+  executionTime: string;
+  memoryUsage: string;
 }
 
 export interface GetAllSubmissionsResponse {
   success: boolean;
   submissions: IRecentSubmission[];
   totalCount: number;
-  message: string;
 }
 
 export interface GetUserSubmissionsResponse {
   success: boolean;
   submissions: IRecentSubmission[];
   totalCount: number;
-  message: string;
 }
 
 export interface GetUserProblemSubmissionsResponse {
   success: boolean;
   submissions: IRecentSubmission[];
   totalCount: number;
-  message: string;
 }
 
 export interface ISortInfo {

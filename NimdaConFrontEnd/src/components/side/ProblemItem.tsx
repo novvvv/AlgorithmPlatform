@@ -1,19 +1,19 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import type { ProblemDifficulty, ProgrammingLanguage } from "@/types/problem";
+import type { Difficulty, Language } from "@/types/problem";
 
 interface ProblemItemProps {
   id: number;
   title: string;
-  language: ProgrammingLanguage;
-  difficulty: ProblemDifficulty;
+  language: Language;
+  difficulty: Difficulty;
   averageScore: number; 
   userScore?: number;   
   hasSubmissionHistory: boolean;
 }
 
-const displayDifficulty = (diff: ProblemDifficulty): string => {
+const displayDifficulty = (diff: Difficulty): string => {
   switch (diff) {
     case "EASY": return "하";
     case "MEDIUM": return "중";
@@ -22,7 +22,7 @@ const displayDifficulty = (diff: ProblemDifficulty): string => {
   }
 };
 
-const getDifficultyColor = (diff: ProblemDifficulty): string => {
+const getDifficultyColor = (diff: Difficulty): string => {
   switch (diff) {
     case "EASY": return "#69b469"; 
     case "MEDIUM": return "#f59e0b"; 
@@ -31,11 +31,12 @@ const getDifficultyColor = (diff: ProblemDifficulty): string => {
   }
 };
 
-const displayLanguage = (diff: ProgrammingLanguage): string => {
+const displayLanguage = (diff: Language): string => {
   switch (diff) {
     case "PYTHON": return "Python";
     case "JAVA": return "Java";
-    case "CPP": return "C++";
+    case "CPP17": return "C++";
+    case "C99": return "C";
     default: return "";
   }
 };
@@ -132,7 +133,7 @@ const ButtonWrapper = styled.div`
   gap: 0.5rem;
 `;
 
-const DifficultyTag = styled.span<{ $difficulty: ProblemDifficulty }>`
+const DifficultyTag = styled.span<{ $difficulty: Difficulty }>`
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px; 

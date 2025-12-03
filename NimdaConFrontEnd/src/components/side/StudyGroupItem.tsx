@@ -1,36 +1,37 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import type { IGroupMembership } from "@/types/group";
+import type { IStudyGroup, IGroupMembership } from "@/types/group";
 
 interface StudyGroupItemProps {
-  id: number;
-  groupName: string;
-  isPublic: boolean;
-  currentMembers?: IGroupMembership[]; 
-  maxMembers: number;
+  group: IStudyGroup & { currentMembers?: IGroupMembership[] };
   currentUserId: number; 
 }
 
 const StudyGroupItem: React.FC<StudyGroupItemProps> = ({
-  id,
-  groupName,
-  currentMembers,
-  maxMembers,
-  isPublic,
+  group,
   currentUserId,
 }) => {
   const navigate = useNavigate();
 
+  const { groupId, groupName, maxMembers, isPublic, currentMembers, createdBy } = group;
+
   const membersCount = currentMembers ? currentMembers.length : 0;
-  const isJoined = currentMembers?.some(member => member && member.userId === currentUserId);
+  
+  // currentMembers가 없으면 createdBy로 확인 (생성자는 최소한 가입된 것)
+  const isJoined = currentMembers 
+    ? currentMembers.some(member => member.userId === currentUserId)
+    : createdBy === currentUserId;
+
+  console.log(`그룹 "${groupName}" - 현재 사용자 ID: ${currentUserId}, 생성자 ID: ${createdBy}, 가입 상태: ${isJoined}, 멤버 목록:`, currentMembers);
 
   const handleJoin = () => {
-    navigate(`/studygroup/join/${id}`);
+    
+    navigate(`/studygroup/join/${groupId}`);
   };
 
   const handleGoToDetail = () => {
-    navigate(`/studygroup/${id}`);
+    navigate(`/studygroup/${groupId}`);
   };
   
   const ActionButton = () => {
@@ -68,7 +69,6 @@ const ItemContainer = styled.div`
   border: 1px solid #BBBBBB;
   border-radius: 0.5rem;
   background-color: #ffffff;
-  }
 `;
 
 const InfoSection = styled.div`

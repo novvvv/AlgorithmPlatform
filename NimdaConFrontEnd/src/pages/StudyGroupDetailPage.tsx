@@ -7,9 +7,16 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 export default function StudyGroupDetailPage() {
   const params = useParams();
   const navigate = useNavigate();
-  const groupId = Number(params.id || params['id']);
+  
+  const rawId = params.id;
+  const groupId = Number(rawId);
 
   const { userId, isLoading } = useCurrentUser();
+
+  // ID가 유효하지 않으면 에러 메시지 표시 또는 리다이렉트
+  if (!rawId || isNaN(groupId)) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}>유효하지 않은 그룹 ID입니다.</div>;
+  }
 
   const handleLeaveGroup = async () => {
     if (isLoading) return;

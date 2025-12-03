@@ -3,29 +3,31 @@ import styled from "styled-components";
 import type {
   CreateProblemRequest,
   ITestCase,
-  ProblemDifficulty,
-  ProgrammingLanguage,
+  Difficulty,
+  Language,
 } from "@/types/problem";
 
 type TestCase = ITestCase;
 
-const difficultyOptions: Array<{ label: string; value: ProblemDifficulty }> = [
+const difficultyOptions: Array<{ label: string; value: Difficulty }> = [
   { label: "하", value: "EASY" },
   { label: "중", value: "MEDIUM" },
   { label: "상", value: "HARD" },
+  { label: "상급", value: "EXPERT" },
 ];
 
-const languageOptions: Array<{ label: string; value: ProgrammingLanguage }> = [
+const languageOptions: Array<{ label: string; value: Language }> = [
   { label: "Python", value: "PYTHON" },
   { label: "Java", value: "JAVA" },
-  { label: "C++", value: "CPP" },
+  { label: "C++17", value: "CPP17" },
+  { label: "C99", value: "C99" },
 ];
 
 export default function ProblemCreatePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [difficulty, setDifficulty] = useState<ProblemDifficulty>("EASY");
-  const [language, setLanguage] = useState<ProgrammingLanguage>("PYTHON");
+  const [difficulty, setDifficulty] = useState<Difficulty>("EASY");
+  const [language, setLanguage] = useState<Language>("PYTHON");
   const [timeLimit, setTimeLimit] = useState("");
   const [memoryLimit, setMemoryLimit] = useState("");
   const [testCases, setTestCases] = useState<TestCase[]>([{ input: "", output: "", isPublic: true }]);
@@ -56,18 +58,17 @@ export default function ProblemCreatePage() {
     event.preventDefault();
 
     // API
-    const timeLimitMs = Number(timeLimit) > 0 ? Number(timeLimit) * 1000 : 0;
-    const memoryLimitKb = Number(memoryLimit) > 0 ? Number(memoryLimit) * 1024 : 0;
+    const timeLimitMs = Number(timeLimit) > 0 ? Number(timeLimit) : 5000;
+    const memoryLimitKb = Number(memoryLimit) > 0 ? Number(memoryLimit) : 256 * 1024;
 
     const payload: CreateProblemRequest = {
-      problem: {
-        title,
-        description,
-        difficulty,
-        language,
-        timeLimit: timeLimitMs,
-        memoryLimit: memoryLimitKb,
-      },
+      title,
+      description,
+      difficulty,
+      language,
+      timeLimit: timeLimitMs,
+      memoryLimit: memoryLimitKb,
+      groupId: null,
       testCases: testCases.map(tc => ({
         input: tc.input,
         output: tc.output,
@@ -108,7 +109,7 @@ export default function ProblemCreatePage() {
           <Row>
             <Field>
               <Label>난이도</Label>
-              <Select value={difficulty} onChange={e => setDifficulty(e.target.value as ProblemDifficulty)}>
+              <Select value={difficulty} onChange={e => setDifficulty(e.target.value as Difficulty)}>
                 {difficultyOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
@@ -116,7 +117,7 @@ export default function ProblemCreatePage() {
             </Field>
             <Field>
               <Label>언어</Label>
-              <Select value={language} onChange={e => setLanguage(e.target.value as ProgrammingLanguage)}>
+              <Select value={language} onChange={e => setLanguage(e.target.value as Language)}>
                 {languageOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}

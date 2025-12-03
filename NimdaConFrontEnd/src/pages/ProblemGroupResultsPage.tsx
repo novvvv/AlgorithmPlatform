@@ -57,7 +57,7 @@ const ProblemGroupResultsPage: React.FC = () => {
     return mockProblemGroupResults.filter(r => r.problemId === Number(id));
   }, [id]);
 
-  const [resultsForProblem, setResultsForProblem] = useState<IGroupProblemResult[]>(fallbackResults);
+  const [resultsForProblem, setResultsForProblem] = useState<IGroupProblemResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -74,8 +74,11 @@ const ProblemGroupResultsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchGroupResults = async () => {
-      if (!groupId || !id) {
-        setResultsForProblem([]);
+      const groupIdNum = groupId ? parseInt(groupId, 10) : NaN;
+      const problemIdNum = id ? parseInt(id, 10) : NaN;
+      
+      if (!groupId || !id || isNaN(groupIdNum) || isNaN(problemIdNum)) {
+        setResultsForProblem(fallbackResults);
         setIsLoading(false);
         setError("그룹 또는 문제 정보를 확인할 수 없습니다.");
         return;
@@ -84,7 +87,7 @@ const ProblemGroupResultsPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getGroupProblemResultsAPI(Number(groupId), Number(id));
+        const response = await getGroupProblemResultsAPI(groupIdNum, problemIdNum);
         if (response.results.length > 0) {
           setResultsForProblem(response.results);
         } else {
@@ -197,11 +200,11 @@ const ProblemGroupResultsPage: React.FC = () => {
             <ResultStats>
               <ResultPill tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{activeResult.runTime}</ResultPillValue>
+                <ResultPillValue tone="time">{activeResult.executionTime}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{activeResult.memory}</ResultPillValue>
+                <ResultPillValue tone="memory">{activeResult.memoryUsage}</ResultPillValue>
               </ResultPill>
               <ResultPill tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
@@ -220,7 +223,7 @@ const ProblemGroupResultsPage: React.FC = () => {
                       <TestName>{tc.name}</TestName>
                       <TestResult $result={displayResult}>{displayResult}</TestResult>
                     </TestRowLeft>
-                    <TestMeta>{tc.time} / {tc.memory}</TestMeta>
+                    <TestMeta>{tc.executionTime} / {tc.memoryUsage}</TestMeta>
                   </TestRow>
                 );
               })}

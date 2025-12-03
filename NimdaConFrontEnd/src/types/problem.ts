@@ -1,57 +1,63 @@
-export type ProblemDifficulty = "EASY" | "MEDIUM" | "HARD" ;
-export type ProgrammingLanguage = "JAVA" | "PYTHON" | "CPP" | string ;
+export type Difficulty = "EASY" | "MEDIUM" | "HARD" | "EXPERT";
+export type Language = "JAVA" | "PYTHON" | "CPP17" | "C99";
 
 export interface IProblem {
   id?: number;
   title: string;
   description: string;
-  timeLimit: number;        // 밀리초 단위
-  memoryLimit: number;      // KB 단위
-  difficulty: ProblemDifficulty;
-  language: ProgrammingLanguage;   
-  groupId?: number | null;  
-  group?: string;        
+  timeLimit: number;
+  memoryLimit: number;
+  difficulty: Difficulty;
+  language: Language;   
+  groupId?: number | null;
   createdAt?: string;
   updatedAt?: string;
+  solvedBy?: { userId: number; score?: number }[];
+  averageScore?: number;
 }
 
 export interface ITestCase {
   input: string;
   output: string;
-  isPublic?: boolean | false;  
+  isPublic?: boolean;
 }
+
 export interface CreateProblemRequest {
   title: string;
   description: string;
   timeLimit: number;
   memoryLimit: number;
-  difficulty: ProblemDifficulty;
-  language: ProgrammingLanguage;
+  difficulty: Difficulty;
+  language: Language;
   groupId: number | null;
   testCases: ITestCase[];
 }
 
 export interface CreateProblemResponse {
-  success: boolean;
-  problem: IProblem;
-  message: string;
+  id: number;
+  title: string;
+  description: string;
+  timeLimit: number;
+  memoryLimit: number;
+  difficulty: Difficulty;
+  language: Language;
+  groupId: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GetAllProblemsResponse {
   success: boolean;
   problems: IProblem[];
-  message?: string;
 }
 
 export interface GetProblemByIdResponse {
   success: boolean;
   problem?: IProblem;
-  // testCases?: ITestCase[];   
-  message?: string;
+  testCases?: ITestCase[];
 }
 
 export interface GetProblemsByGroupIdResponse {
   success: boolean;
   problems: IProblem[]; 
-  message?: string;
 }

@@ -44,6 +44,10 @@ export const getAllProblemsAPI = async (): Promise<GetAllProblemsResponse> => {
 export const getProblemByIdAPI = async (
   id: number
 ): Promise<GetProblemByIdResponse> => {
+  if (!Number.isInteger(id) || id <= 0) {
+    console.error("유효하지 않은 문제 ID:", id);
+    throw new Error(`유효하지 않은 문제 ID입니다: ${id}`);
+  }
   try {
     const response = await apiClient.get<GetProblemByIdResponse>(`/problems/${id}`);
     return response.data;

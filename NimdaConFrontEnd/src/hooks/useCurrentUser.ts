@@ -1,26 +1,29 @@
 import { useState, useEffect, useCallback } from "react";
-import { getCurrentUserAPI } from "@/apis/user";
-import { getErrorMessage } from "@/apis/utils";
-import type { IUserDetail } from "@/types/user";
+import type { IUser } from "@/types/user";
 
 export const useCurrentUser = () => {
-  const [user, setUser] = useState<IUserDetail | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUser = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await getCurrentUserAPI();
-      const userData = (response as any).user || response; 
-      
-      setUser(userData);
-      setUserId(userData.id);
-    } catch (error) {
-      console.error("사용자 정보 로딩 실패. Mock ID (101) 사용:", getErrorMessage(error));
-      setUserId(101); // Fallback ID
-    } finally {
-      setIsLoading(false);
+  const fetchUser = useCallback(() => {
+    // localStorage에서 사용자 정보 가져오기
+    const token = localStorage.getItem("authToken");
+    const userStr = localStorage.getItem("user");
+    
+    if (token && userStr) {
+      try {
+        const userData: IUser = JSON.parse(userStr);
+        setUser(userData);
+        setUserId(userData.id);
+        console.log("localStorage에서 사용자 정보 로드:", userData);
+      } catch (err) {
+        console.error("사용자 정보 파싱 실패:", err);
+        setUser(null);
+        setUserId(null);
+      }
+    } else {
+      setUser(null);
+      setUserId(null);
     }
   }, []);
 
@@ -28,5 +31,5 @@ export const useCurrentUser = () => {
     fetchUser();
   }, [fetchUser]);
 
-  return { user, userId, isLoading, refetch: fetchUser };
+  return { user, userId, isLoading: false, refetch: fetchUser };
 };

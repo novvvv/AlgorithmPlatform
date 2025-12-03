@@ -4,7 +4,7 @@ import styled from "styled-components";
 interface ParticipationCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (code: string) => void;
+  onSubmit: (code: string) => Promise<void>; 
   groupName: string;
 }
 
@@ -17,18 +17,31 @@ export const ParticipationCodeModal: React.FC<ParticipationCodeModalProps> = ({
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
-    if (code.trim()) {
-      // 실제로는 API 검증 후 에러 처리
-      if (code !== "ABC123") {
-        setError(true);
-        return;
-      }
-      onSubmit(code);
+  const handleSubmit = async () => {
+    if (!code.trim()) return;
+
+    setIsSubmitting(true); // 로딩 시작
+    setError(false);       // 에러 초기화
+
+    try {
+      await onSubmit(code);
       setCode("");
-      setError(false);
+    } catch (err) {
+      console.error("코드 검증 실패:", err);
+      setError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 엔터키 입력 시 제출 처리
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
     }
   };
 
@@ -36,19 +49,28 @@ export const ParticipationCodeModal: React.FC<ParticipationCodeModalProps> = ({
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalTitle>{groupName}의<br/>참여코드를 입력하세요.</ModalTitle>
-        {error && <ModalSubtitle>참여코드가 일치하지 않습니다!</ModalSubtitle>}
+        {error && <ModalSubtitle>참여코드가 일치하지 않거나 서버 오류입니다.</ModalSubtitle>}
         <ModalInput 
           type="text" 
           value={code}
           onChange={(e) => {
             setCode(e.target.value);
-            setError(false);
+            setError(false); // 입력 시 에러 초기화
           }}
+          onKeyDown={handleKeyDown}
           placeholder="참여코드 입력"
+          disabled={isSubmitting} // 로딩 중 입력 방지
         />
         <ModalButtons>
-          <CancelButton onClick={onClose}>취소</CancelButton>
-          <ConfirmButton onClick={handleSubmit}>가입하기</ConfirmButton>
+          <CancelButton onClick={onClose} disabled={isSubmitting}>
+            취소
+          </CancelButton>
+          <ConfirmButton 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || !code.trim()}
+          >
+            {isSubmitting ? "확인 중..." : "가입하기"}
+          </ConfirmButton>
         </ModalButtons>
       </ModalContent>
     </ModalOverlay>

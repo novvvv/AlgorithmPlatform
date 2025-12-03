@@ -28,7 +28,7 @@ public class GroupCreateRequest {
 
     private Boolean isPublic = Boolean.FALSE;
 
-    @Size(max = 5000, message = "그룹 설명은 5000자 이하여야 합니다.")
+     @Size(max = 5000, message = "그룹 설명은 5000자 이하여야 합니다.")
     private String description;
 
     @Size(max = 5000, message = "그룹 목표는 5000자 이하여야 합니다.")

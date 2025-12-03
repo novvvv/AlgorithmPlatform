@@ -41,10 +41,10 @@ const HomePage: React.FC = () => {
               ) : (
                 recentGroups.map((group) => (
                   <StudyGroupItem
-                    key={group.groupId}
-                    id={group.groupId}
+                    key={group.id}
+                    id={group.id}
                     groupName={group.groupName}
-                    currentMembers={group.currentMembers}
+                    currentMembers={[]}
                     maxMembers={group.maxMembers}
                     isPublic={group.isPublic}
                     currentUserId={userId}

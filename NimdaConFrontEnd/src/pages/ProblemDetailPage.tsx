@@ -43,7 +43,9 @@ const ProblemDetailPage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    if (!id) {
+    const problemId = id ? parseInt(id, 10) : NaN;
+    
+    if (!id || isNaN(problemId)) {
       setProblem(null);
       setTestCases([]);
       setIsLoading(false);
@@ -55,7 +57,7 @@ const ProblemDetailPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getProblemByIdAPI(Number(id));
+        const response = await getProblemByIdAPI(problemId);
         if (cancelled) return;
         setProblem(response.problem ?? null);
         setTestCases(response.testCases ?? []);

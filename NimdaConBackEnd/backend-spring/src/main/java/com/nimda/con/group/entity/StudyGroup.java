@@ -66,6 +66,7 @@ public class StudyGroup {
     @Column(name = "goal", columnDefinition = "TEXT")
     private String goal; // 그룹 목표
 
+
     // 그룹 생성자 (N:1 관계)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
@@ -85,7 +86,7 @@ public class StudyGroup {
 
     // 생성용 생성자
     public StudyGroup(String groupName, Integer maxMembers, String participationCode, Boolean isPublic,
-            User createdBy, String description, String goal) {
+           User createdBy, String description, String goal) {
         this.groupName = groupName;
         this.maxMembers = maxMembers;
         this.participationCode = participationCode;

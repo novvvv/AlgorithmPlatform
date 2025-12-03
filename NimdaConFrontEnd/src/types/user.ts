@@ -1,8 +1,7 @@
-export type AuthorityName = 'ADMIN' | 'AUTHOR' | 'USER';
+export type AuthorityName = 'ADMIN' | 'USER';
 
 export interface IAuthority {
-  authority_id: number;
-  authority_name: AuthorityName;
+  authorityName: AuthorityName;
 }
 
 export interface IUser {
@@ -30,8 +29,6 @@ export interface IUserDetail {
 export interface GetAllUsersResponse {
   success: boolean;
   users: IUser[];
-  status?: number;
-  message?: string;
 }
 
 export type GetUserByIdResponse = IUserDetail;
@@ -47,7 +44,6 @@ export type GetUserByUserNameResponse = GetUserByUserIdResponse;
 
 export interface getCurrentUserResponse {
   user: IUser; 
-  message?: string;
 }
 
 // export interface DeleteUserResponse {

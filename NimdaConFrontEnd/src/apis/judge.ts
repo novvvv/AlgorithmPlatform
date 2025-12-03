@@ -8,6 +8,7 @@ import type {
   GetGroupRecentSubmissionsResponse,
 } from "@/types/judge";
 import { apiClient, getErrorMessage } from "./utils";
+import { isAxiosError, AxiosError } from "axios";
 
 /**
  * 코드 제출 및 채점 API 호출
@@ -20,6 +21,17 @@ export const submitCodeAPI = async (
     const response = await apiClient.post<JudgeResponse>("/judge/submit", submissionData);
     return response.data;
   } catch (error: unknown) {
+    
+    // Axios 에러인지 확인
+    if (isAxiosError(error)) {
+      // [2] error를 AxiosError로 명시적 변환하여 TypeScript 에러 해결
+      const axiosError = error as AxiosError;
+      
+      if (axiosError.response && axiosError.response.data) {
+        console.error("🔥 서버 에러 상세 내용:", axiosError.response.data);
+      }
+    }
+
     console.error("채점 API 오류:", error);
     throw new Error(getErrorMessage(error));
   }

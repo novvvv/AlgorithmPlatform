@@ -21,6 +21,10 @@ export const apiClient = axios.create({
  */
 apiClient.interceptors.request.use(
   (config) => {
+    // 로그인/회원가입 엔드포인트는 토큰 없이 전송
+    if (config.url?.includes('/auth/login') || config.url?.includes('/auth/register')) {
+      return config;
+    }
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
