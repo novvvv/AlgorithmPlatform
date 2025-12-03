@@ -110,7 +110,14 @@ public class JudgeService {
                     break;
                 case "c++17":
                 case "cpp":
+                case "cpp17":
                     resultDTO = judgeCppCode(submissionDTO, problem);
+                    break;
+                case "python":
+                    resultDTO = judgePythonCode(submissionDTO, problem);
+                    break;
+                case "c99":
+                    resultDTO = judgeC99Code(submissionDTO, problem);
                     break;
                 default:
                     resultDTO = new JudgeResultDTO(
@@ -294,6 +301,242 @@ public class JudgeService {
         // 컴파일
         ProcessBuilder compileBuilder = new ProcessBuilder(
                 "g++", "-std=c++17", "-O2", "-o", execFile, sourceFile);
+        compileBuilder.directory(new File(TEMP_DIR));
+        Process compileProcess = compileBuilder.start();
+
+        boolean compileFinished = compileProcess.waitFor(10, TimeUnit.SECONDS);
+        if (!compileFinished || compileProcess.exitValue() != 0) {
+            String error = readStream(compileProcess.getErrorStream());
+            return new JudgeResultDTO(
+                    JudgeResultDTO.Status.COMPILATION_ERROR,
+                    "컴파일 에러",
+                    error);
+        }
+
+        // TestCase 조회
+        List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId());
+        if (testCases.isEmpty()) {
+            return new JudgeResultDTO(
+                    JudgeResultDTO.Status.SYSTEM_ERROR,
+                    "테스트케이스가 없습니다",
+                    "");
+        }
+
+        // 모든 테스트케이스 실행 및 통과 개수 카운트
+        int totalTestCases = testCases.size();
+        int passedTestCases = 0;
+        JudgeResultDTO.Status finalStatus = JudgeResultDTO.Status.ACCEPTED;
+        StringBuilder messageBuilder = new StringBuilder();
+        long totalExecutionTime = 0;
+
+        for (int i = 0; i < testCases.size(); i++) {
+            TestCase testCase = testCases.get(i);
+            ProcessBuilder runBuilder = new ProcessBuilder(execFile);
+            runBuilder.directory(new File(TEMP_DIR));
+
+            long startTime = System.currentTimeMillis();
+            Process runProcess = runBuilder.start();
+
+            // TestCase의 입력값 사용
+            try (PrintWriter writer = new PrintWriter(runProcess.getOutputStream())) {
+                writer.println(testCase.getInput()); // 동적 입력!
+                writer.flush();
+            }
+
+            boolean runFinished = runProcess.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
+            long executionTime = System.currentTimeMillis() - startTime;
+            totalExecutionTime += executionTime;
+
+            if (!runFinished) {
+                runProcess.destroyForcibly();
+                // 시간 초과는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 시간 초과");
+                continue;
+            }
+
+            if (runProcess.exitValue() != 0) {
+                String error = readStream(runProcess.getErrorStream());
+                // 런타임 에러는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.RUNTIME_ERROR;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 런타임 에러");
+                continue;
+            }
+
+            // 출력 결과 확인
+            String output = readStream(runProcess.getInputStream()).trim();
+
+            // TestCase 기반 정답 검증
+            if (!testCase.isCorrect(output)) {
+                // 오답은 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.WRONG_ANSWER;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 오답");
+            } else {
+                // 정답인 경우 통과 개수 증가
+                passedTestCases++;
+            }
+        }
+
+        // 비율 계산: (통과 개수 / 전체 개수) * 100
+        int score = totalTestCases > 0 ? (int) Math.round((passedTestCases * 100.0) / totalTestCases) : 0;
+
+        // 메시지 구성
+        String message;
+        if (passedTestCases == totalTestCases) {
+            message = "모든 테스트케이스를 통과했습니다! (" + passedTestCases + "/" + totalTestCases + ")";
+        } else {
+            message = "테스트케이스 통과: " + passedTestCases + "/" + totalTestCases + " (" + score + "%)";
+            if (messageBuilder.length() > 0) {
+                message += " - " + messageBuilder.toString();
+            }
+        }
+
+        return new JudgeResultDTO(
+                finalStatus,
+                message,
+                totalExecutionTime, // 총 실행 시간
+                0, // 메모리 사용량은 추후 구현
+                score // 0~100 비율
+        );
+    }
+
+    /**
+     * Python 코드 채점 (TestCase 기반)
+     */
+    private JudgeResultDTO judgePythonCode(SubmissionDTO submission, Problem problem)
+            throws IOException, InterruptedException {
+        String fileName = "solution";
+        String sourceFile = TEMP_DIR + fileName + ".py";
+
+        // 소스 코드를 파일로 저장
+        try (FileWriter writer = new FileWriter(sourceFile)) {
+            writer.write(submission.getCode());
+        }
+
+        // Python은 컴파일이 필요 없으므로 바로 실행
+
+        // TestCase 조회
+        List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId());
+        if (testCases.isEmpty()) {
+            return new JudgeResultDTO(
+                    JudgeResultDTO.Status.SYSTEM_ERROR,
+                    "테스트케이스가 없습니다",
+                    "");
+        }
+
+        // 모든 테스트케이스 실행 및 통과 개수 카운트
+        int totalTestCases = testCases.size();
+        int passedTestCases = 0;
+        JudgeResultDTO.Status finalStatus = JudgeResultDTO.Status.ACCEPTED;
+        StringBuilder messageBuilder = new StringBuilder();
+        long totalExecutionTime = 0;
+
+        for (int i = 0; i < testCases.size(); i++) {
+            TestCase testCase = testCases.get(i);
+            ProcessBuilder runBuilder = new ProcessBuilder("python3", sourceFile);
+            runBuilder.directory(new File(TEMP_DIR));
+
+            long startTime = System.currentTimeMillis();
+            Process runProcess = runBuilder.start();
+
+            // TestCase의 입력값 사용
+            try (PrintWriter writer = new PrintWriter(runProcess.getOutputStream())) {
+                writer.println(testCase.getInput()); // 동적 입력!
+                writer.flush();
+            }
+
+            boolean runFinished = runProcess.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
+            long executionTime = System.currentTimeMillis() - startTime;
+            totalExecutionTime += executionTime;
+
+            if (!runFinished) {
+                runProcess.destroyForcibly();
+                // 시간 초과는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.TIME_LIMIT_EXCEEDED;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 시간 초과");
+                continue;
+            }
+
+            if (runProcess.exitValue() != 0) {
+                String error = readStream(runProcess.getErrorStream());
+                // 런타임 에러는 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.RUNTIME_ERROR;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 런타임 에러");
+                continue;
+            }
+
+            // 출력 결과 확인
+            String output = readStream(runProcess.getInputStream()).trim();
+
+            // TestCase 기반 정답 검증
+            if (!testCase.isCorrect(output)) {
+                // 오답은 해당 테스트케이스만 실패로 카운트하고 계속 진행
+                finalStatus = JudgeResultDTO.Status.WRONG_ANSWER;
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append(" ");
+                }
+                messageBuilder.append("테스트케이스 ").append(i + 1).append(": 오답");
+            } else {
+                // 정답인 경우 통과 개수 증가
+                passedTestCases++;
+            }
+        }
+
+        // 비율 계산: (통과 개수 / 전체 개수) * 100
+        int score = totalTestCases > 0 ? (int) Math.round((passedTestCases * 100.0) / totalTestCases) : 0;
+
+        // 메시지 구성
+        String message;
+        if (passedTestCases == totalTestCases) {
+            message = "모든 테스트케이스를 통과했습니다! (" + passedTestCases + "/" + totalTestCases + ")";
+        } else {
+            message = "테스트케이스 통과: " + passedTestCases + "/" + totalTestCases + " (" + score + "%)";
+            if (messageBuilder.length() > 0) {
+                message += " - " + messageBuilder.toString();
+            }
+        }
+
+        return new JudgeResultDTO(
+                finalStatus,
+                message,
+                totalExecutionTime, // 총 실행 시간
+                0, // 메모리 사용량은 추후 구현
+                score // 0~100 비율
+        );
+    }
+
+    /**
+     * C99 코드 채점 (TestCase 기반)
+     */
+    private JudgeResultDTO judgeC99Code(SubmissionDTO submission, Problem problem)
+            throws IOException, InterruptedException {
+        String fileName = "solution";
+        String sourceFile = TEMP_DIR + fileName + ".c";
+        String execFile = TEMP_DIR + fileName;
+
+        // 소스 코드를 파일로 저장
+        try (FileWriter writer = new FileWriter(sourceFile)) {
+            writer.write(submission.getCode());
+        }
+
+        // 컴파일 (C99 표준 사용)
+        ProcessBuilder compileBuilder = new ProcessBuilder(
+                "gcc", "-std=c99", "-O2", "-o", execFile, sourceFile);
         compileBuilder.directory(new File(TEMP_DIR));
         Process compileProcess = compileBuilder.start();
 

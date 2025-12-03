@@ -125,7 +125,27 @@ const ProblemResultPage: React.FC = () => {
     );
   }
 
-  const isCorrect = displayResult.status === "정답";
+  // 백엔드 응답을 프론트엔드 형식으로 변환
+  const normalizedResult: IProblemResult = {
+    ...displayResult,
+    status: (displayResult.status === "ACCEPTED" || displayResult.status === "정답") 
+      ? "정답" 
+      : "오답",
+    testCases: displayResult.testCases || [],
+    submissionInfo: displayResult.submissionInfo || {
+      time: (displayResult as any).submittedAt 
+        ? new Date((displayResult as any).submittedAt).toLocaleString('ko-KR')
+        : "-",
+      attempts: "1",
+    },
+    stats: displayResult.stats || {
+      accuracy: "-",
+      solved: "-",
+      attempts: "-",
+    },
+  };
+
+  const isCorrect = normalizedResult.status === "정답";
 
   const handleBack = () => {
     navigate(id ? `/problem/${id}` : "/problem");
@@ -134,7 +154,7 @@ const ProblemResultPage: React.FC = () => {
   const handleAddComment = () => {
     const next = commentInput.trim();
     if (!next) return;
-    const author = displayResult.userName ?? "제출자";
+    const author = normalizedResult.userName ?? "제출자";
     setComments(prev => [...prev, { author, content: next }]);
     setCommentInput("");
   };
@@ -158,47 +178,55 @@ const ProblemResultPage: React.FC = () => {
         <LeftColumn>
           <Card>
             <ResultHeader>
-              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={displayResult.status} />
+              <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={normalizedResult.status} />
               <ResultText>
-                <ResultStatus $correct={isCorrect}>{displayResult.status}</ResultStatus>
+                <ResultStatus $correct={isCorrect}>{normalizedResult.status}</ResultStatus>
               </ResultText>
             </ResultHeader>
             <ResultStats>
-              <ResultPill tone="time">
+              <ResultPill $tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{displayResult.executionTime || "-"}</ResultPillValue>
+                <ResultPillValue $tone="time">{normalizedResult.executionTime || "-"}</ResultPillValue>
               </ResultPill>
-              <ResultPill tone="memory">
+              <ResultPill $tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{displayResult.memoryUsage || "-"}</ResultPillValue>
+                <ResultPillValue $tone="memory">{normalizedResult.memoryUsage || "-"}</ResultPillValue>
               </ResultPill>
-              <ResultPill tone="language">
+              <ResultPill $tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
-                <ResultPillValue tone="language">{displayResult.language}</ResultPillValue>
+                <ResultPillValue $tone="language">{normalizedResult.language}</ResultPillValue>
               </ResultPill>
             </ResultStats>
             <Divider />
             <SectionLabel>테스트 케이스 결과</SectionLabel>
             <TestList>
-              {displayResult.testCases.map((tc, idx) => {
-                const displayResultText = getDisplayResult(tc.result);
-                return (
-                  <TestRow key={tc.name || `tc-${idx}`}>
-                    <TestRowLeft>
-                      <TestIcon src={getTestIcon(tc.result)} alt={displayResultText} />
-                      <TestName>{tc.name}</TestName>
-                      <TestResult $result={displayResultText}>{displayResultText}</TestResult>
-                    </TestRowLeft>
-                    <TestMeta>{tc.executionTime} / {tc.memoryUsage}</TestMeta>
-                  </TestRow>
-                );
-              })}
+              {normalizedResult.testCases && normalizedResult.testCases.length > 0 ? (
+                normalizedResult.testCases.map((tc, idx) => {
+                  const displayResultText = getDisplayResult(tc.result);
+                  return (
+                    <TestRow key={tc.name || `tc-${idx}`}>
+                      <TestRowLeft>
+                        <TestIcon src={getTestIcon(tc.result)} alt={displayResultText} />
+                        <TestName>{tc.name}</TestName>
+                        <TestResult $result={displayResultText}>{displayResultText}</TestResult>
+                      </TestRowLeft>
+                      <TestMeta>{tc.executionTime || "-"} / {tc.memoryUsage || "-"}</TestMeta>
+                    </TestRow>
+                  );
+                })
+              ) : (
+                <TestRow>
+                  <TestRowLeft>
+                    <TestName>테스트케이스 정보 없음</TestName>
+                  </TestRowLeft>
+                </TestRow>
+              )}
             </TestList>
           </Card>
 
           <Card>
             <SectionLabel>제출한 코드</SectionLabel>
-            <CodeBlock spellCheck={false} readOnly value={displayResult.submittedCode} />
+            <CodeBlock spellCheck={false} readOnly value={normalizedResult.submittedCode || ""} />
           </Card>
 
           <Card>
@@ -226,11 +254,11 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>제출 정보</SectionLabel>
             <InfoRow>
               <span>제출 시간</span>
-              <span>{displayResult.submissionInfo.time}</span>
+              <span>{normalizedResult.submissionInfo.time}</span>
             </InfoRow>
             <InfoRow>
               <span>시도 횟수</span>
-              <span>{displayResult.submissionInfo.attempts}</span>
+              <span>{normalizedResult.submissionInfo.attempts}</span>
             </InfoRow>
           </Card>
 
@@ -238,15 +266,15 @@ const ProblemResultPage: React.FC = () => {
             <SectionLabel>문제 통계</SectionLabel>
             <InfoRow>
               <span>정답률</span>
-              <Highlight>{displayResult.stats.accuracy}</Highlight>
+              <Highlight>{normalizedResult.stats.accuracy}</Highlight>
             </InfoRow>
             <InfoRow>
               <span>해결 인원</span>
-              <span>{displayResult.stats.solved}</span>
+              <span>{normalizedResult.stats.solved}</span>
             </InfoRow>
             <InfoRow>
               <span>평균 시도</span>
-              <span>{displayResult.stats.attempts}</span>
+              <span>{normalizedResult.stats.attempts}</span>
             </InfoRow>
           </Card>
 

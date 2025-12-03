@@ -8,7 +8,6 @@ import type {
   GetGroupRecentSubmissionsResponse,
 } from "@/types/judge";
 import { apiClient, getErrorMessage } from "./utils";
-import { isAxiosError, AxiosError } from "axios";
 
 /**
  * 코드 제출 및 채점 API 호출
@@ -18,18 +17,50 @@ export const submitCodeAPI = async (
   submissionData: SubmissionRequest
 ): Promise<JudgeResponse> => {
   try {
-    const response = await apiClient.post<JudgeResponse>("/judge/submit", submissionData);
+    console.log("📤 채점 API 요청 시작:", submissionData);
+    const response = await apiClient.post<JudgeResponse>("/judge/submit", submissionData, {
+      timeout: 60000, // 60초 (채점은 여러 테스트케이스를 실행하므로 시간이 걸릴 수 있음)
+    });
+    console.log("✅ 채점 API 응답 성공:", response.data);
     return response.data;
-  } catch (error: unknown) {
+  } catch (error: any) {
     
-    // Axios 에러인지 확인
-    if (isAxiosError(error)) {
-      // [2] error를 AxiosError로 명시적 변환하여 TypeScript 에러 해결
-      const axiosError = error as AxiosError;
+    // Axios 에러인지 확인 (response 속성이 있으면 axios 에러)
+    if (error?.response || error?.request) {
+      console.error("❌ 채점 API Axios 에러 발생:");
+      console.error("  - 상태 코드:", error.response?.status);
+      console.error("  - 상태 텍스트:", error.response?.statusText);
+      console.error("  - 요청 URL:", error.config?.url);
+      console.error("  - 요청 메서드:", error.config?.method);
+      console.error("  - 요청 데이터:", error.config?.data);
       
-      if (axiosError.response && axiosError.response.data) {
-        console.error("🔥 서버 에러 상세 내용:", axiosError.response.data);
+      if (error.response) {
+        console.error("  - 응답 헤더:", error.response.headers);
+        console.error("  - 응답 데이터:", JSON.stringify(error.response.data, null, 2));
+        
+        // 서버에서 보낸 에러 메시지 추출
+        const errorData = error.response.data;
+        if (errorData?.message) {
+          console.error("  - 서버 에러 메시지:", errorData.message);
+        }
+        if (errorData?.result?.message) {
+          console.error("  - 채점 결과 메시지:", errorData.result.message);
+        }
+        if (errorData?.result?.status) {
+          console.error("  - 채점 상태:", errorData.result.status);
+        }
+      } else if (error.request) {
+        console.error("  - 요청은 보냈지만 응답을 받지 못함");
+        console.error("  - 요청 정보:", error.request);
       }
+      
+      console.error("  - 에러 메시지:", error.message);
+      console.error("  - 에러 코드:", error.code);
+      console.error("  - 전체 에러 객체:", error);
+    } else {
+      console.error("❌ 채점 API 알 수 없는 에러:", error);
+      console.error("  - 에러 타입:", typeof error);
+      console.error("  - 에러 내용:", error);
     }
 
     console.error("채점 API 오류:", error);

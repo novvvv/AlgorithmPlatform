@@ -68,11 +68,7 @@ public class GroupService {
 
                 StudyGroup saved = studyGroupRepository.save(group);
 
-<<<<<<< HEAD
                 // * [Entity] 생성자를 LEADER 역할로 그룹에 자동 추가 *
-=======
-                 // * [Entity] 생성자를 LEADER 역할로 그룹에 자동 추가 *
->>>>>>> fb93752 (fix: 프론트, 백 연동 오류 수정)
                 GroupMembership creatorMembership = new GroupMembership(creator, saved, GroupRole.LEADER);
                 groupMembershipRepository.save(creatorMembership);
 

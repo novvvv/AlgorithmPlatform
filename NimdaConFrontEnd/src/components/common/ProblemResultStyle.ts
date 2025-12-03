@@ -96,9 +96,9 @@ export const ResultStats = styled.div`
   gap: 0.75rem;
 `;
 
-export const ResultPill = styled.div<{ tone: "time" | "memory" | "language" }>`
-  background: ${({ tone }) =>
-    tone === "time" ? "#eef4ff" : tone === "memory" ? "#f7f2ff" : "#eefaf3"};
+export const ResultPill = styled.div<{ $tone: "time" | "memory" | "language" }>`
+  background: ${({ $tone }) =>
+    $tone === "time" ? "#eef4ff" : $tone === "memory" ? "#f7f2ff" : "#eefaf3"};
   border-radius: 12px;
   padding: 0.85rem 0.75rem;
   display: flex;
@@ -113,11 +113,11 @@ export const ResultPillLabel = styled.span`
   font-weight: 600;
 `;
 
-export const ResultPillValue = styled.span<{ tone: "time" | "memory" | "language" }>`
+export const ResultPillValue = styled.span<{ $tone: "time" | "memory" | "language" }>`
   font-size: 1rem;
   font-weight: 800;
-  color: ${({ tone }) =>
-    tone === "time" ? "#2563eb" : tone === "memory" ? "#7c3aed" : "#15803d"};
+  color: ${({ $tone }) =>
+    $tone === "time" ? "#2563eb" : $tone === "memory" ? "#7c3aed" : "#15803d"};
 `;
 
 export const Divider = styled.div`

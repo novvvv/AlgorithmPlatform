@@ -2,10 +2,17 @@ package com.nimda.con.judge.controller;
 
 import com.nimda.con.judge.dto.ProblemCreateDTO;
 import com.nimda.con.judge.entity.Problem;
+import com.nimda.con.judge.entity.Submission;
 import com.nimda.con.judge.entity.TestCase;
 import com.nimda.con.judge.repository.TestCaseRepository;
+import com.nimda.con.judge.service.JudgeService;
 import com.nimda.con.judge.service.ProblemService;
+import com.nimda.con.common.util.JwtUtil;
+import com.nimda.con.user.entity.User;
+import com.nimda.con.user.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +28,18 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class ProblemController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProblemController.class);
+
     @Autowired
     private ProblemService problemService;
     @Autowired
     private TestCaseRepository testCaseRepository;
+    @Autowired
+    private JudgeService judgeService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * 문제 생성
@@ -180,6 +195,101 @@ public class ProblemController {
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
             error.put("message", "전역 문제 조회 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    /**
+     * 특정 문제에 대한 사용자의 최신 제출 결과 조회
+     * GET /api/problems/{id}/result
+     */
+    @GetMapping("/{id}/result")
+    public ResponseEntity<?> getProblemResult(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            // JWT 토큰에서 사용자 정보 추출
+            Long userId = null;
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                try {
+                    userId = jwtUtil.extractUserId(token);
+                } catch (Exception e) {
+                    logger.warn("토큰에서 사용자 ID 추출 실패: {}", e.getMessage());
+                }
+            }
+
+            if (userId == null) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "인증이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // 사용자의 해당 문제에 대한 최신 제출 조회
+            List<Submission> submissions = judgeService.getSubmissionsByUserAndProblem(userId, id);
+
+            if (submissions.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("result", null);
+                response.put("message", "제출 기록이 없습니다.");
+                return ResponseEntity.ok(response);
+            }
+
+            // 최신 제출 (첫 번째 항목)
+            Submission latestSubmission = submissions.get(0);
+
+            // 응답 데이터 구성
+            Map<String, Object> resultData = new HashMap<>();
+            resultData.put("problemId", id);
+            resultData.put("submissionId", latestSubmission.getId());
+            resultData.put("userName", user.getUserName());
+            resultData.put("status", latestSubmission.getStatus().name());
+            resultData.put("language", latestSubmission.getLanguage().name());
+            resultData.put("submittedCode", latestSubmission.getCode());
+            resultData.put("submittedAt", latestSubmission.getSubmittedAt());
+
+            // JudgeResult 정보 추가
+            if (latestSubmission.getJudgeResult() != null) {
+                resultData.put("executionTime", latestSubmission.getJudgeResult().getExecutionTime() != null
+                        ? latestSubmission.getJudgeResult().getExecutionTime() + "ms"
+                        : "-");
+                resultData.put("memoryUsage", latestSubmission.getJudgeResult().getMemoryUsage() != null
+                        ? latestSubmission.getJudgeResult().getMemoryUsage() + "KB"
+                        : "-");
+                resultData.put("score", latestSubmission.getJudgeResult().getScore());
+                resultData.put("message", latestSubmission.getJudgeResult().getMessage());
+            } else {
+                resultData.put("executionTime", "-");
+                resultData.put("memoryUsage", "-");
+                resultData.put("score", 0);
+                resultData.put("message", "채점 중입니다.");
+            }
+
+            // 테스트케이스 결과는 간단하게 처리 (실제로는 JudgeResult에 저장된 정보를 활용)
+            resultData.put("testCases", List.of());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("result", resultData);
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            logger.error("문제 결과 조회 중 오류 발생", e);
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "문제 결과 조회 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }

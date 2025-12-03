@@ -198,17 +198,17 @@ const ProblemGroupResultsPage: React.FC = () => {
               </ResultText>
             </ResultHeader>
             <ResultStats>
-              <ResultPill tone="time">
+              <ResultPill $tone="time">
                 <ResultPillLabel>실행 시간</ResultPillLabel>
-                <ResultPillValue tone="time">{activeResult.executionTime}</ResultPillValue>
+                <ResultPillValue $tone="time">{activeResult.executionTime}</ResultPillValue>
               </ResultPill>
-              <ResultPill tone="memory">
+              <ResultPill $tone="memory">
                 <ResultPillLabel>메모리</ResultPillLabel>
-                <ResultPillValue tone="memory">{activeResult.memoryUsage}</ResultPillValue>
+                <ResultPillValue $tone="memory">{activeResult.memoryUsage}</ResultPillValue>
               </ResultPill>
-              <ResultPill tone="language">
+              <ResultPill $tone="language">
                 <ResultPillLabel>언어</ResultPillLabel>
-                <ResultPillValue tone="language">{activeResult.language}</ResultPillValue>
+                <ResultPillValue $tone="language">{activeResult.language}</ResultPillValue>
               </ResultPill>
             </ResultStats>
             <Divider />

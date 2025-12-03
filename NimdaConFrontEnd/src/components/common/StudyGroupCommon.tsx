@@ -5,6 +5,7 @@ import type { AddGroupMemberRequest, IGroupMembership } from "@/types/group";
 import type { IProblem } from "@/types/problem";
 import { joinGroupAPI } from "@/apis/group"; 
 import { useStudyGroupDetail } from "@/hooks/useStudyGroupDetail";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import {
   PageContainer,
@@ -90,6 +91,7 @@ export default function StudyGroupCommon({
 }: StudyGroupContentProps) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false); 
+  const { userId } = useCurrentUser();
 
   const { groupData, members, problems, isLoading } = useStudyGroupDetail(groupId);
 
@@ -126,8 +128,13 @@ export default function StudyGroupCommon({
   };
 
   const handleCodeSubmit = async (code: string) => {
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     const data: AddGroupMemberRequest = {
-      userId: 0, 
+      userId: userId, 
       participationCode: code,
     };
 
@@ -145,12 +152,17 @@ export default function StudyGroupCommon({
       return <LeaveButton onClick={onHeaderButtonClick}>그룹 나가기</LeaveButton>;
     } else {
       const handleJoinClick = async () => {
+        if (!userId) {
+          alert("로그인이 필요합니다.");
+          return;
+        }
+
         if (!groupData!.isPublic) {
           setIsModalOpen(true);
         } else {
           try {
               const data: AddGroupMemberRequest = {
-                userId: 0, 
+                userId: userId, 
               }; 
               await joinGroupAPI(groupData!.groupId, data); 
               alert("공개 그룹: 가입 완료");
