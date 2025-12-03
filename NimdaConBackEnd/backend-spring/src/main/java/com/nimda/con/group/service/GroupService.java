@@ -36,23 +36,30 @@ public class GroupService {
                 User creator = userService.findById(request.getCreatorUserId())
                                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-                // * [Logic] 참여 코드 자동 생성 (중복 체크 포함) *
-                String participationCode = request.getParticipationCode();
-                if (!StringUtils.hasText(participationCode)) {
-                        participationCode = generateUniqueParticipationCode();
-                } else {
-                        // 사용자가 직접 입력한 경우 중복 체크
-                        if (studyGroupRepository.existsByParticipationCode(participationCode)) {
-                                throw new IllegalStateException("이미 사용 중인 참여 코드입니다.");
+                // * [Logic] 참여 코드 처리 (공개 그룹은 null, 비공개 그룹은 필수) *
+                Boolean isPublic = Boolean.TRUE.equals(request.getIsPublic());
+                String participationCode = null;
+
+                if (!isPublic) {
+                        // 비공개 그룹: 참여 코드 자동 생성 또는 중복 체크
+                        participationCode = request.getParticipationCode();
+                        if (!StringUtils.hasText(participationCode)) {
+                                participationCode = generateUniqueParticipationCode();
+                        } else {
+                                // 사용자가 직접 입력한 경우 중복 체크
+                                if (studyGroupRepository.existsByParticipationCode(participationCode)) {
+                                        throw new IllegalStateException("이미 사용 중인 참여 코드입니다.");
+                                }
                         }
                 }
+                // 공개 그룹은 participationCode를 null로 유지
 
                 // * [Entity] StudyGroup - 스터디 그룹 엔터티 생성 *
                 StudyGroup group = new StudyGroup(
                                 request.getGroupName(),
                                 request.getMaxMembers(),
                                 participationCode,
-                                Boolean.TRUE.equals(request.getIsPublic()),
+                                isPublic,
                                 creator,
                                 request.getDescription(),
                                 request.getGoal());
