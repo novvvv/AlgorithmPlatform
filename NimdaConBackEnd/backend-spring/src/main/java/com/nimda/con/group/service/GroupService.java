@@ -6,6 +6,7 @@ import com.nimda.con.group.dto.GroupMemberResponse;
 import com.nimda.con.group.dto.GroupResponse;
 import com.nimda.con.group.entity.GroupMembership;
 import com.nimda.con.group.entity.StudyGroup;
+import com.nimda.con.group.enums.GroupRole;
 import com.nimda.con.group.repository.GroupMembershipRepository;
 import com.nimda.con.group.repository.StudyGroupRepository;
 import com.nimda.con.user.entity.User;
@@ -65,6 +66,10 @@ public class GroupService {
                                 request.getGoal());
 
                 StudyGroup saved = studyGroupRepository.save(group);
+
+                // * [Entity] 생성자를 LEADER 역할로 그룹에 자동 추가 *
+                GroupMembership creatorMembership = new GroupMembership(creator, saved, GroupRole.LEADER);
+                groupMembershipRepository.save(creatorMembership);
 
                 return GroupResponse.builder()
                                 .groupId(saved.getId())
