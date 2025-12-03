@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { mockProblems } from "@/mocks/mockProblems";
 import profileIcon from "@/assets/icons/profile.png";
 import { logoutAPI } from "@/apis/auth";
-import type { IUser } from "@/types/user"; 
+import type { IUser } from "@/types/user";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getUserRecentSubmissions } from "@/apis/judge";
+import type { IRecentSubmission } from "@/types/judge"; 
 import {
   ProblemList,
   ProblemItem,
@@ -29,39 +32,38 @@ interface UserStats {
 
 export default function MyPage() {
   const navigate = useNavigate();
+  const { user: currentUser, userId } = useCurrentUser();
 
-  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submissions, setSubmissions] = useState<IRecentSubmission[]>([]);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
 
-  // 마이페이지 로드 시 현재 사용자 정보 가져오기
+  // 마이페이지 로드 시 제출 기록 가져오기
   useEffect(() => {
-    const loadUserData = () => {
-      const token = localStorage.getItem("authToken");
-      const userStr = localStorage.getItem("user");
-      
-      setIsLoading(true);
-      
-      if (token && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          setCurrentUser(user);
-          setError(null);
-          console.log("localStorage에서 사용자 정보 로드:", user);
-        } catch (err) {
-          console.error("사용자 정보 파싱 실패:", err);
-          setCurrentUser(null);
-          setError("사용자 정보를 불러올 수 없습니다.");
-        }
-      } else {
-        setCurrentUser(null);
-        setError(null);
+    const loadSubmissions = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
+
+      setIsLoadingSubmissions(true);
+      try {
+        const response = await getUserRecentSubmissions(userId, 0, 20);
+        setSubmissions(response.content || []);
+        setError(null);
+      } catch (err) {
+        console.error("제출 기록 조회 실패:", err);
+        setSubmissions([]);
+        // 에러가 있어도 페이지는 표시
+      } finally {
+        setIsLoadingSubmissions(false);
+        setIsLoading(false);
+      }
     };
     
-    loadUserData();
-  }, []);
+    loadSubmissions();
+  }, [userId]);
   
   const handleDetail = (id: number | string | undefined) => {
     if (id !== undefined) {
@@ -95,39 +97,51 @@ export default function MyPage() {
     }
   };
 
-  const userSolvedProblems = useMemo(() => {
-    return mockProblems.filter(p => p.solvedBy && p.solvedBy.some(s => s.userId === 0));
-  }, []);
+  // 제출 기록에서 해결한 문제 추출 (ACCEPTED 상태인 제출)
+  const solvedSubmissions = useMemo(() => {
+    return submissions.filter(s => s.status === "ACCEPTED");
+  }, [submissions]);
+
+  // 고유한 문제 ID 추출 (같은 문제를 여러 번 해결한 경우 한 번만 카운트)
+  const uniqueSolvedProblemIds = useMemo(() => {
+    return Array.from(new Set(solvedSubmissions.map(s => s.problemId)));
+  }, [solvedSubmissions]);
 
   const stats: UserStats = useMemo(() => {
-    const totalRate = mockProblems.length > 0 
-      ? Math.round((userSolvedProblems.length / mockProblems.length) * 100)
+    const totalSubmissions = submissions.length;
+    const totalSolved = uniqueSolvedProblemIds.length;
+    
+    // 정답률 계산 (전체 제출 중 정답 비율)
+    const solvedRate = totalSubmissions > 0 
+      ? Math.round((solvedSubmissions.length / totalSubmissions) * 100)
       : 0;
     
-    const languages = userSolvedProblems.map(p => p.language || "UNKNOWN");
+    // 언어별 사용 횟수 계산
+    const languages = submissions.map(s => s.language || "UNKNOWN");
     const languageCount: Record<string, number> = {};
     languages.forEach(lang => {
       languageCount[lang] = (languageCount[lang] || 0) + 1;
-    }, [userSolvedProblems]);
+    });
 
     const rawMostUsedLang = languages.length > 0
       ? Object.entries(languageCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "PYTHON"
       : "PYTHON";
     const mostUsedLangDisplay = (function (langCode: string) {
-      switch (langCode) {
+      switch (langCode.toUpperCase()) {
         case "PYTHON": return "Python";
         case "JAVA": return "Java";
-        case "CPP": return "C++";
+        case "CPP17": return "C++17";
+        case "C99": return "C99";
         default: return langCode;
       }
     })(rawMostUsedLang);
 
     return {
-      totalSolvedRate: totalRate,
+      totalSolvedRate: solvedRate,
       preferredLanguage: mostUsedLangDisplay,
-      totalSubmissions: userSolvedProblems.length,
+      totalSubmissions: totalSubmissions,
     };
-  }, [userSolvedProblems]);
+  }, [submissions, solvedSubmissions, uniqueSolvedProblemIds]);
 
   // 로딩 중일 때
   if (isLoading) {
@@ -214,42 +228,48 @@ export default function MyPage() {
           <ProblemsSection>
             <SectionTitle>최근 시도한 문제</SectionTitle>
             <ProblemContainer>
-              {userSolvedProblems.length > 0 ? (
+              {isLoadingSubmissions ? (
+                <EmptyMessage>제출 기록을 불러오는 중...</EmptyMessage>
+              ) : submissions.length > 0 ? (
                 <ProblemList>
-                  {userSolvedProblems
-                    .filter((problem) => problem.id !== undefined) 
-                    .map((problem) => {
-                      const testcaseRate = 0; 
-                      const problemId = problem.id as number;
-                    return (
-                      <ProblemItem key={problem.id}>
-                        <ProblemHeader>
-                          <ProblemTitle>{problem.title}</ProblemTitle>
-                          <ProgressText>{problem.description}</ProgressText> 
-                        </ProblemHeader>
+                  {submissions
+                    .filter((submission) => submission.problemId !== undefined) 
+                    .map((submission) => {
+                      const problemId = submission.problemId;
+                      const isSolved = submission.status === "ACCEPTED";
+                      return (
+                        <ProblemItem key={submission.id}>
+                          <ProblemHeader>
+                            <ProblemTitle>{submission.problemTitle || `문제 #${problemId}`}</ProblemTitle>
+                            <ProgressText>
+                              {submission.language} • {submission.status === "ACCEPTED" ? "정답" : submission.status}
+                            </ProgressText> 
+                          </ProblemHeader>
 
-                        <DifficultyBadge $difficulty={problem.difficulty}>
-                          {getDifficultyText(problem.difficulty)}
-                        </DifficultyBadge>
+                          <DifficultyBadge $difficulty="MEDIUM">
+                            {submission.language}
+                          </DifficultyBadge>
 
-                        <ProgressGroup>
-                          <ProgressBar>
-                            <ProgressFill style={{ width: `${testcaseRate}%` }} />
-                          </ProgressBar>  
-                          <ProgressLabel>{testcaseRate}% 달성</ProgressLabel>
-                        </ProgressGroup>  
+                          <ProgressGroup>
+                            <ProgressBar>
+                              <ProgressFill style={{ width: isSolved ? "100%" : "0%" }} />
+                            </ProgressBar>  
+                            <ProgressLabel>
+                              {isSolved ? "해결 완료" : submission.status}
+                            </ProgressLabel>
+                          </ProgressGroup>  
 
-                        <ActionGroup>
-                          <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
-                          <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
-                        </ActionGroup>
-                        
-                      </ProblemItem>
+                          <ActionGroup>
+                            <DetailButton onClick={() => handleDetail(problemId)}>상세</DetailButton>
+                            <SolveButton onClick={() => handleSolve(problemId)}>풀기</SolveButton>
+                          </ActionGroup>
+                          
+                        </ProblemItem>
                       );
                   })}
               </ProblemList>
               ) : (
-                <EmptyMessage>아직 해결한 문제가 없습니다.</EmptyMessage>
+                <EmptyMessage>아직 제출한 문제가 없습니다.</EmptyMessage>
               )}
             </ProblemContainer>
           </ProblemsSection>
