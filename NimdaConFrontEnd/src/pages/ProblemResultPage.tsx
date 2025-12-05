@@ -127,16 +127,23 @@ const ProblemResultPage: React.FC = () => {
 
   // 백엔드 응답을 프론트엔드 형식으로 변환
   const normalizedResult: IProblemResult = {
-    ...displayResult,
-    status: (displayResult.status === "ACCEPTED" || displayResult.status === "정답") 
+    problemId: displayResult.problemId,
+    submissionId: displayResult.submissionId || 0,
+    userName: displayResult.userName || "제출자",
+    status: displayResult.status === "정답"
       ? "정답" 
       : "오답",
+    score: displayResult.score,
+    executionTime: displayResult.executionTime,
+    memoryUsage: displayResult.memoryUsage,
+    language: displayResult.language,
     testCases: displayResult.testCases || [],
+    submittedCode: displayResult.submittedCode || displayResult.submittedCode || "",
     submissionInfo: displayResult.submissionInfo || {
       time: (displayResult as any).submittedAt 
         ? new Date((displayResult as any).submittedAt).toLocaleString('ko-KR')
         : "-",
-      attempts: "1",
+      attempts: (displayResult as any).attempts || "1",
     },
     stats: displayResult.stats || {
       accuracy: "-",
@@ -180,7 +187,10 @@ const ProblemResultPage: React.FC = () => {
             <ResultHeader>
               <ResultIconImg src={isCorrect ? CorrectCircle : FailureCircle} alt={normalizedResult.status} />
               <ResultText>
-                <ResultStatus $correct={isCorrect}>{normalizedResult.status}</ResultStatus>
+                <ResultStatus $correct={isCorrect}>
+                  {normalizedResult.status}
+                  {normalizedResult.score !== undefined && ` (${normalizedResult.score}점)`}
+                </ResultStatus>
               </ResultText>
             </ResultHeader>
             <ResultStats>
@@ -234,7 +244,7 @@ const ProblemResultPage: React.FC = () => {
             <CommentInput
               placeholder="댓글을 입력하세요."
               value={commentInput}
-              onChange={e => setCommentInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCommentInput(e.target.value)}
             />
             <CommentButton type="button" onClick={handleAddComment}>댓글 작성</CommentButton>
             {comments.length > 0 && (

@@ -14,6 +14,7 @@ export interface IProblemResult {
   submissionId: number;
   userName: string;
   status: JudgeDisplayStatus;
+  score?: number;
   executionTime: string;
   memoryUsage: string;
   language: string;
