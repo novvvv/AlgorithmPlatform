@@ -48,6 +48,7 @@ export const useStudyGroupDetail = (groupId: number) => {
         setGroupData(undefined);
         setMembers([]);
     }
+    // 초기값으로만 mock 데이터 설정 (API 응답이 오면 교체됨)
     setProblems(currentMockProblems.map(p => ({ ...p } as unknown as ApiProblem)));
 
     try {
@@ -79,21 +80,31 @@ export const useStudyGroupDetail = (groupId: number) => {
       // 3. 문제 목록 업데이트
       try {
         const problemsRes = await getProblemsByGroupIdAPI(groupId);
-        if (problemsRes && problemsRes.success && problemsRes.problems.length > 0) {
-          const mergedProblems = problemsRes.problems.map((apiProblem) => {
-            const mockMatch = mockProblems.find(m => m.id === apiProblem.id);
-            const typedProblem = apiProblem as unknown as ApiProblem;
+        console.log("문제 API 응답:", problemsRes);
+        if (problemsRes && problemsRes.success) {
+          // API 응답이 성공하면 문제가 0개여도 빈 배열로 설정 (mock 데이터 제거)
+          if (problemsRes.problems && problemsRes.problems.length > 0) {
+            const mergedProblems = problemsRes.problems.map((apiProblem) => {
+              const mockMatch = mockProblems.find(m => m.id === apiProblem.id);
+              const typedProblem = apiProblem as unknown as ApiProblem;
 
-            return {
-              ...typedProblem,
-              solvedBy: typedProblem.solvedBy || mockMatch?.solvedBy,
-              averageScore: typedProblem.averageScore ?? mockMatch?.averageScore ?? 0,
-            };
-          });
-          setProblems(mergedProblems as ApiProblem[]);
+              return {
+                ...typedProblem,
+                solvedBy: typedProblem.solvedBy || mockMatch?.solvedBy,
+                averageScore: typedProblem.averageScore ?? mockMatch?.averageScore ?? 0,
+              };
+            });
+            setProblems(mergedProblems as ApiProblem[]);
+          } else {
+            // 문제가 없으면 빈 배열로 설정 (mock 데이터 제거)
+            setProblems([]);
+          }
+        } else {
+          console.warn("문제 API 응답이 성공하지 않음:", problemsRes);
         }
       } catch (err) {
-        console.warn("문제 API 호출 실패, 목업 유지:", getErrorMessage(err));
+        console.warn("문제 API 호출 실패:", getErrorMessage(err));
+        // API 호출 실패 시에만 mock 데이터 유지
       }
     } catch (error) {
       console.error("데이터 로딩 중 오류:", getErrorMessage(error));

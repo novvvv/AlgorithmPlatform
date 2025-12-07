@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ParticipationCodeModal } from "@/pages/modal/ParticipationCodeModal";
 import type { AddGroupMemberRequest, IGroupMembership } from "@/types/group";
 import type { IProblem } from "@/types/problem";
@@ -90,10 +90,20 @@ export default function StudyGroupCommon({
   onHeaderButtonClick,
 }: StudyGroupContentProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false); 
   const { userId } = useCurrentUser();
 
-  const { groupData, members, problems, isLoading } = useStudyGroupDetail(groupId);
+  const { groupData, members, problems, isLoading, refetch } = useStudyGroupDetail(groupId);
+
+  // 문제 생성 후 돌아왔을 때 목록 갱신
+  useEffect(() => {
+    if (location.state && (location.state as { fromProblemCreate?: boolean }).fromProblemCreate) {
+      refetch();
+      // state 초기화
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, refetch, navigate]);
 
   if (isLoading) {
     return (
@@ -112,7 +122,7 @@ export default function StudyGroupCommon({
   }
 
   const handleAddProblem = () => {
-    navigate('/problem/create');
+    navigate('/problem/create', { state: { groupId: groupId } });
   };
 
   const handleDetail = (id: number | string) => {

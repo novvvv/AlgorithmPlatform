@@ -107,7 +107,7 @@ export const JoinButton = styled.button`
 
 export const AddButton = styled.button`
   background: #2563eb;
-  color: white;
+  color: #1a1a1a;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;

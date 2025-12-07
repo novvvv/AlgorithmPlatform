@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import type {
   CreateProblemRequest,
@@ -6,6 +7,7 @@ import type {
   Difficulty,
   Language,
 } from "@/types/problem";
+import { createProblemAPI } from "@/apis/problem";
 
 type TestCase = ITestCase;
 
@@ -24,6 +26,10 @@ const languageOptions: Array<{ label: string; value: Language }> = [
 ];
 
 export default function ProblemCreatePage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const groupId = (location.state as { groupId?: number })?.groupId ?? null;
+  
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("EASY");
@@ -54,12 +60,22 @@ export default function ProblemCreatePage() {
     # 정답코드를 작성하세요`);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     // API
     const timeLimitMs = Number(timeLimit) > 0 ? Number(timeLimit) : 5000;
     const memoryLimitKb = Number(memoryLimit) > 0 ? Number(memoryLimit) : 256 * 1024;
+
+    // 빈 테스트 케이스 필터링 (input과 output이 모두 있는 경우만 포함)
+    const validTestCases = testCases.filter(tc => 
+      tc.input.trim() !== '' && tc.output.trim() !== ''
+    );
+
+    if (validTestCases.length === 0) {
+      alert("최소 하나의 테스트 케이스(입력과 출력)를 입력해주세요.");
+      return;
+    }
 
     const payload: CreateProblemRequest = {
       title,
@@ -68,17 +84,27 @@ export default function ProblemCreatePage() {
       language,
       timeLimit: timeLimitMs,
       memoryLimit: memoryLimitKb,
-      groupId: null,
-      testCases: testCases.map(tc => ({
-        input: tc.input,
-        output: tc.output,
+      groupId: groupId,
+      testCases: validTestCases.map(tc => ({
+        input: tc.input.trim(),
+        output: tc.output.trim(),
         isPublic: tc.isPublic,
       })),
     };
 
-    console.log("[Mock] 문제 생성 요청", payload);
-    alert("문제가 생성되었습니다. (목업 전송)");
-    handleCancel();
+    try {
+      await createProblemAPI(payload);
+      alert("문제가 성공적으로 생성되었습니다.");
+      if (groupId) {
+        navigate(`/studygroup/${groupId}`, { state: { fromProblemCreate: true } });
+      } else {
+        handleCancel();
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error("문제 생성 실패:", error);
+      alert(`문제 생성 실패: ${error instanceof Error ? error.message : '서버 오류'}`);
+    }
   };
 
   return (
@@ -237,6 +263,7 @@ const Input = styled.input`
   border: 1px solid #d1d5db;
   border-radius: 6px;
   background: #ffffff;
+  color: #1a1a1a;
   font-size: 0.95rem;
   box-sizing: border-box;
 
@@ -254,6 +281,7 @@ const TextArea = styled.textarea`
   border: 1px solid #d1d5db;
   border-radius: 6px;
   background: #ffffff;
+  color: #1a1a1a;
   font-size: 0.95rem;
   resize: vertical;
   font-family: inherit;
@@ -272,6 +300,7 @@ const Select = styled.select`
   border: 1px solid #d1d5db;
   border-radius: 6px;
   background: #ffffff;
+  color: #1a1a1a;
   font-size: 0.95rem;
   box-sizing: border-box;
   appearance: none;
