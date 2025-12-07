@@ -10,7 +10,6 @@
 - [프로젝트 실행](#프로젝트-실행)
 - [기본 계정](#기본-계정)
 - [API 문서](#api-문서)
-- [트러블슈팅](#트러블슈팅)
 
 ## 🔧 환경 요구사항
 
@@ -193,70 +192,6 @@ npm run dev
 ## 📚 API 문서
 
 API 사용 가이드는 `POSTMAN_API_GUIDE.md` 파일을 참조하세요.
-
-## 🔍 트러블슈팅
-
-### 1. MySQL 연결 실패
-
-**증상**: 백엔드 실행 시 MySQL 연결 오류
-
-**해결 방법**:
-1. MySQL 서버가 실행 중인지 확인:
-   ```bash
-   # macOS/Linux
-   brew services list  # 또는 systemctl status mysql
-   
-   # Windows
-   # 서비스 관리자에서 MySQL 서비스 확인
-   ```
-
-2. 데이터베이스 및 사용자가 올바르게 생성되었는지 확인:
-   ```sql
-   mysql -u root -p
-   SHOW DATABASES;
-   SELECT user, host FROM mysql.user WHERE user='nimda';
-   ```
-
-3. `application-dev.yml`의 데이터베이스 설정 확인
-
-### 2. 포트 충돌
-
-**증상**: 포트가 이미 사용 중이라는 오류
-
-**해결 방법**:
-- 백엔드 포트 변경: `application-dev.yml`에서 `server.port` 수정
-- 프론트엔드 포트 변경: `NimdaConFrontEnd/vite.config.ts`에서 포트 설정 수정
-
-### 3. Maven 빌드 실패
-
-**증상**: `mvnw` 실행 시 권한 오류
-
-**해결 방법**:
-```bash
-chmod +x NimdaConBackEnd/backend-spring/mvnw
-```
-
-### 4. npm 의존성 설치 실패
-
-**증상**: `npm install` 실행 시 오류
-
-**해결 방법**:
-```bash
-# 캐시 정리 후 재설치
-cd NimdaConFrontEnd
-rm -rf node_modules package-lock.json
-npm cache clean --force
-npm install
-```
-
-### 5. 프론트엔드에서 API 호출 실패
-
-**증상**: CORS 오류 또는 404 오류
-
-**해결 방법**:
-1. 백엔드가 실행 중인지 확인 (http://localhost:8080)
-2. 프론트엔드 API 설정 확인: `NimdaConFrontEnd/src/apis/utils.ts`에서 baseURL 확인
-3. 백엔드 CORS 설정 확인: `@CrossOrigin(origins = "*")` 어노테이션 확인
 
 ## 🛠️ 개발 환경
 
