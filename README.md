@@ -191,7 +191,9 @@ npm run dev
 
 ## 📚 API 문서
 
-API 사용 가이드는 `POSTMAN_API_GUIDE.md` 파일을 참조하세요.
+API 사용 가이드는 다음 Postman 문서를 참조하세요:
+
+**Postman API 문서**: https://documenter.getpostman.com/view/32066564/2sB3WtseZc
 
 ## 🛠️ 개발 환경
 
@@ -302,8 +304,4 @@ docker run -d \
 
 > 💡 **참고**: 실제 Docker Hub 저장소 URL은 프로젝트 배포 시 설정된 주소를 사용하세요.
 
-## 📝 추가 정보
-
-- **부하 테스트**: `load-tests/` 디렉토리 참조
-- **K6 부하 테스트 보고서**: `K6_부하테스트_보고서.md` 참조
 
